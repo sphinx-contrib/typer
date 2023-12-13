@@ -1,17 +1,33 @@
 [tool.poetry]
-name = "sphinx-typer"
+name = "sphinxcontrib-typer"
 version = "0.1.0"
 description = "Auto generate docs for typer commands."
 authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Framework :: Sphinx :: Extension",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Documentation",
+    "Topic :: Utilities",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 typer = "^0.9.0"
 sphinx = "^7.0.0"
 sphinx-click = "^5.1.0"
-
 
 [build-system]
 requires = ["poetry-core"]

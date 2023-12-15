@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 .DS_Store
+doc/source/typer_cache.json
+poetry.lock

@@ -19,8 +19,8 @@ If we have a command that looks like this:
     :prog: example1
     :make-sections:
     :show-nested:
-    :width: 65
-    :preferred: text
+    :width: 70
+    :preferred: html
 
 .. typer:: examples.example1.app:bar
     :prog: example1 bar

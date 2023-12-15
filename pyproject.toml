@@ -6,7 +6,7 @@ authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Environment :: Web Environment",
     "Framework :: Sphinx :: Extension",
@@ -21,10 +21,11 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Documentation",
     "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 packages = [
-    { include = "sphinxcontrib/typer" }
+  { include = "sphinxcontrib", from = "" }
 ]
 
 [tool.poetry.dependencies]
@@ -36,7 +37,61 @@ rich = "^13.7.0"
 [tool.poetry.group.dev.dependencies]
 sphinx-rtd-theme = "^2.0.0"
 ipdb = "^0.13.13"
+pytest = "^7.4.3"
+isort = "^5.13.2"
+pylint = "^3.0.3"
+pytest-cov = "^4.1.0"
+doc8 = "^1.1.1"
+black = "^23.12.0"
+mypy = "^1.7.1"
+
+
+[tool.poetry.group.html.dependencies]
+selenium = "^4.16.0"
+webdriver-manager = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
+target-version = ['py38']
+skip-string-normalization = true
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.tox
+    | \.venv
+    | build
+    | dist
+    | doc
+  )
+)
+'''
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/tests.py",
+]
+addopts = [
+    "--doctest-modules",
+    "--cov=sphinxcontrib.typer",
+    "--cov-report=html",
+    "--cov-fail-under=85",
+    "--no-cov-on-fail",
+    #"-x",
+    #"--pdb",
+    #"--flake8",
+]
+
+[tool.isort]
+# isort configuration:
+# https://github.com/timothycrosley/isort/wiki/isort-Settings
+include_trailing_comma = true
+use_parentheses = true
+# See https://github.com/timothycrosley/isort#multi-line-output-modes
+multi_line_output = 3
+line_length = 79

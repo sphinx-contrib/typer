@@ -2,7 +2,8 @@ from datetime import datetime
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
-import render_static
+sys.path.append(str(Path(__file__).parent.parent))
+from sphinxcontrib import typer as sphinxcontrib_typer
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -28,7 +29,7 @@ copyright = f'2023-{datetime.now().year}, Brian Kohan'
 author = 'Brian Kohan'
 
 # The full version, including alpha/beta/rc tags
-release = render_static.__version__
+release = sphinxcontrib_typer.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,11 +39,7 @@ release = render_static.__version__
 # ones.
 extensions = [
     'sphinx_rtd_theme',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinxarg.ext',
-    'sphinx.ext.todo',
-    # 'sphinx_js'
+    'sphinxcontrib.typer'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

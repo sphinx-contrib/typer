@@ -50,6 +50,14 @@ mypy = "^1.7.1"
 selenium = "^4.16.0"
 webdriver-manager = "^4.0.1"
 
+
+[tool.poetry.group.pdf.dependencies]
+cairosvg = "^2.7.1"
+tinycss = "^0.4"
+lxml = "^4.9.3"
+cssselect = "^1.2.0"
+tinycss2 = "^1.2.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -81,6 +89,7 @@ addopts = [
     "--cov=sphinxcontrib.typer",
     "--cov-report=html",
     "--cov-fail-under=85",
+    "--cov-report=term-missing:skip-covered",
     "--no-cov-on-fail",
     #"-x",
     #"--pdb",

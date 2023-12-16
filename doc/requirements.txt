@@ -8,4 +8,5 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 selenium==4.16.0
 webdriver-manager==4.0.1
+cairosvg==2.7.1
 sphinxcontrib-typer==0.1.0

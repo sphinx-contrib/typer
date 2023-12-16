@@ -24,9 +24,11 @@ import json
 import re
 import traceback
 import typing as t
+import os
 from html import escape as html_escape
 from importlib import import_module
 from pathlib import Path
+import hashlib
 import click
 from enum import StrEnum
 from docutils import nodes
@@ -169,7 +171,7 @@ class TyperDirective(rst.Directive):
         'epub': [RenderTarget.HTML, RenderTarget.SVG, RenderTarget.TEXT],
         **{
             builder: [RenderTarget.SVG, RenderTarget.TEXT]
-            for builder in ['latex', 'texinfo']
+            for builder in ['latex', 'latexpdf', 'texinfo']
         },
         **{builder: [RenderTarget.TEXT] for builder in ['text', 'gettext']},
     }
@@ -177,6 +179,22 @@ class TyperDirective(rst.Directive):
     @property
     def builder(self) -> str:
         return self.env.app.builder.name
+
+    def uuid(self, normal_cmd: str) -> str:
+        """
+        Get a repeatable unique hash id for a given directive instance and command.
+
+        This is used to generate repeatable unique filenames for any build artifacts
+        like svg -> pdf conversions.
+
+        :param normal_cmd: The normalized command name
+        """
+        # Contextual information
+        source = self.state_machine.get_source_and_line()[0]
+        line_number = self.state_machine.get_source_and_line()[1]
+        return hashlib.sha256(
+            f"{source}.{line_number}[{normal_cmd}]".encode('utf-8')
+        ).hexdigest()[:8]
 
     def import_object(
         self,
@@ -367,11 +385,16 @@ class TyperDirective(rst.Directive):
                 **resolve_options(self.svg_kwargs, 'svg_kwargs'),
                 clear=False,
             )
-            section += (
-                nodes.raw('', svg, format='html')
-                if 'html' in self.builder
-                else nodes.image('', svg)
-            )
+            if 'html' in self.builder:
+                section += nodes.raw('', svg, format='html')
+            else:
+                img_name = f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
+                out_dir = Path(self.env.app.builder.outdir)
+                (out_dir / f'{img_name}.svg').write_text(svg)
+                pdf_img = out_dir / f'{img_name}.pdf'
+                self.env.app.config.typer_svg2pdf(self, svg, pdf_img)
+                section += nodes.image(uri=os.path.relpath(pdf_img, Path(self.env.srcdir)), alt=source_name)
+
         elif self.target == RenderTarget.TEXT:
             section += nodes.literal_block(
                 '',
@@ -551,6 +574,24 @@ def render_html_iframe(
     )
 
 
+def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
+    """
+    The default svg2pdf function. This function uses the cairosvg package to
+    convert svg to pdf.
+
+    .. note::
+
+        You will likely need to install fonts locally on your machine for the output
+        of these conversions to look correct. The default font used by the svg
+        export from rich is `FiraCode <https://github.com/tonsky/FiraCode/wiki/Installing>`_.
+    """
+    try:
+        import cairosvg
+        cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
+    except ImportError:
+        directive.error(f'cairosvg must be installed to render SVG in pdfs')
+
+
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive('typer', TyperDirective)
@@ -565,6 +606,9 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
     app.add_config_value(
         'typer_get_iframe_height', lambda _: get_iframe_height, 'env'
+    )
+    app.add_config_value(
+        'typer_svg2pdf', lambda _: svg2pdf, 'env'
     )
     app.add_config_value('typer_iframe_height_padding', 30, 'env')
     app.add_config_value(

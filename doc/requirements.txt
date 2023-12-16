@@ -5,7 +5,7 @@ sphinxcontrib-htmlhelp==2.0.4
 sphinxcontrib-jquery==4.1
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.6
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==1.1.9
 selenium==4.16.0
 webdriver-manager==4.0.1
 cairosvg==2.7.1

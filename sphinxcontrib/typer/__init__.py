@@ -537,7 +537,9 @@ def get_iframe_height(
 
     # Set up headless browser options
     options = Options()
-    options.headless = True
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
     # Initialize WebDriver
     driver = webdriver.Chrome(

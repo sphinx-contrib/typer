@@ -6,16 +6,75 @@ sphinxcontrib-typer
 .. _Click: https://click.palletsprojects.com/
 .. _sphinx-click: https://sphinx-click.readthedocs.io/en/latest/
 
-A Sphinx directive for auto generating docs for Typer_ commands. Typer_ is a
-typed interface built on top of Click_. This means that the sphinx-click_
-package will also work to generate documentation and if your goal is to
-customize the generated documentation sphinx-click_ provides more hooks and
-functionality for doing that.
+A Sphinx directive for auto generating docs for Typer_ (and Click_ commands!)
+using the rich console formatting available in Typer_. This package generates
+beautiful command documentation in text, html or svg formats out of the box,
+but if your goal is to greatly customize the generated documentation 
+sphinx-click_ may be more appropriate and will also work for Typer_ commands.
 
-The goal of sphinxcontrib-typer is to generate documentation that looks like
-the rich console output of the typer commands. It is therefore less
-customizable than the sphinx-click_ generated docs.
+Installation
+============
 
+Install with pip::
+
+    pip install sphinxcontrib-typer
+
+Add ``sphinxcontrib.typer`` to your ``conf.py`` file::
+
+    extensions = [
+        ...
+        'sphinxcontrib.typer',
+        ...
+    ]
+
+Usage
+=====
+
+Say you have a command in the file ``examples/example.py`` that looks like
+this:
+
+.. literalinclude:: ../examples/example.py
+   :language: python
+
+You can generate documentation for this command using the ``typer`` directive
+like so:
+
+.. code-block:: rst
+
+    .. typer:: examples.example.app
+        :prog: example1
+        :width: 70
+        :preferred: html
+
+
+This would generate html that looks like this:
+
+.. typer:: examples.example.app
+   :prog: example
+   :width: 70
+   :preferred: html
+
+
+You could change ``:preferred:`` to svg, to generate svg instead:
+
+.. typer:: examples.example.app
+   :prog: example
+   :preferred: svg
+
+|
+
+Or to text:
+
+.. typer:: examples.example.app
+   :prog: example
+   :preferred: text
+   :width: 93
+
+
+The ``typer`` directive has options for generating docs for all subcommands as well
+and optionally generating independent sections for each. There are also mechanisms
+for passing options to the underlying console and svg generation functions. See the
+official documentation for more information.
 
 .. toctree::
    :maxdepth: 2

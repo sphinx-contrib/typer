@@ -19,7 +19,15 @@ Install with pip::
 
     pip install sphinxcontrib-typer
 
-Add ``sphinxcontrib.typer`` to your ``conf.py`` file::
+Add ``sphinxcontrib.typer`` to your ``conf.py`` file:
+
+.. code-block:: python
+
+    # be sure that the commands you want to document are importable
+    # from the python path when building the docs
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent / '../path/to/your/commands'))
 
     extensions = [
         ...

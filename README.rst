@@ -1,4 +1,4 @@
-|MIT license| |PyPI version fury.io| |PyPI pyversions| |PyPi djversions| |PyPI status| |Documentation Status|
+|MIT license| |PyPI version fury.io| |PyPI pyversions| |PyPI status| |Documentation Status|
 |Code Cov| |Test Status|
 
 .. |MIT license| image:: https://img.shields.io/badge/License-MIT-blue.svg

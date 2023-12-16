@@ -19,18 +19,19 @@ r"""
 """
 import base64
 import contextlib
+import hashlib
 import io
 import json
+import os
 import re
 import traceback
 import typing as t
-import os
+from enum import Enum
 from html import escape as html_escape
 from importlib import import_module
 from pathlib import Path
-import hashlib
+
 import click
-from enum import StrEnum
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
@@ -38,7 +39,6 @@ from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
 from sphinx.util import logging
-
 from typer import rich_utils as typer_rich_utils
 from typer.main import Typer, TyperCommand, TyperGroup
 from typer.main import get_command as get_typer_command
@@ -76,10 +76,13 @@ def _filter_commands(
     return [lookup[command] for command in commands if command in lookup]
 
 
-class RenderTarget(StrEnum):
+class RenderTarget(str, Enum):
     HTML = 'html'
     SVG = 'svg'
     TEXT = 'text'
+
+    def __str__(self) -> str:
+        return self.value
 
     @classmethod
     def __missing__(cls, argument) -> str:
@@ -388,12 +391,17 @@ class TyperDirective(rst.Directive):
             if 'html' in self.builder:
                 section += nodes.raw('', svg, format='html')
             else:
-                img_name = f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
+                img_name = (
+                    f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
+                )
                 out_dir = Path(self.env.app.builder.outdir)
                 (out_dir / f'{img_name}.svg').write_text(svg)
                 pdf_img = out_dir / f'{img_name}.pdf'
                 self.env.app.config.typer_svg2pdf(self, svg, pdf_img)
-                section += nodes.image(uri=os.path.relpath(pdf_img, Path(self.env.srcdir)), alt=source_name)
+                section += nodes.image(
+                    uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
+                    alt=source_name,
+                )
 
         elif self.target == RenderTarget.TEXT:
             section += nodes.literal_block(
@@ -587,6 +595,7 @@ def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
     """
     try:
         import cairosvg
+
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
     except ImportError:
         directive.error(f'cairosvg must be installed to render SVG in pdfs')
@@ -607,9 +616,7 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     app.add_config_value(
         'typer_get_iframe_height', lambda _: get_iframe_height, 'env'
     )
-    app.add_config_value(
-        'typer_svg2pdf', lambda _: svg2pdf, 'env'
-    )
+    app.add_config_value('typer_svg2pdf', lambda _: svg2pdf, 'env')
     app.add_config_value('typer_iframe_height_padding', 30, 'env')
     app.add_config_value(
         'typer_iframe_height_cache_path',

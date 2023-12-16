@@ -44,6 +44,8 @@ pytest-cov = "^4.1.0"
 doc8 = "^1.1.1"
 black = "^23.12.0"
 mypy = "^1.7.1"
+readme-renderer = "^42.0"
+aiohttp = "^3.9.1"
 
 
 [tool.poetry.group.html.dependencies]

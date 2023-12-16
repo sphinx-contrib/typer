@@ -30,7 +30,7 @@ from importlib import import_module
 from pathlib import Path
 import hashlib
 import click
-from enum import StrEnum
+from enum import Enum 
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
@@ -76,10 +76,13 @@ def _filter_commands(
     return [lookup[command] for command in commands if command in lookup]
 
 
-class RenderTarget(StrEnum):
+class RenderTarget(str, Enum):
     HTML = 'html'
     SVG = 'svg'
     TEXT = 'text'
+
+    def __str__(self) -> str:
+        return self.value
 
     @classmethod
     def __missing__(cls, argument) -> str:

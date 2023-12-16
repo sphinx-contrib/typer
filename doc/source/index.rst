@@ -9,7 +9,7 @@ sphinxcontrib-typer
 A Sphinx directive for auto generating docs for Typer_ (and Click_ commands!)
 using the rich console formatting available in Typer_. This package generates
 beautiful command documentation in text, html or svg formats out of the box,
-but if your goal is to greatly customize the generated documentation 
+but if your goal is to greatly customize the generated documentation
 sphinx-click_ may be more appropriate and will also work for Typer_ commands.
 
 Installation
@@ -27,7 +27,7 @@ Add ``sphinxcontrib.typer`` to your ``conf.py`` file:
     # from the python path when building the docs
     import sys
     from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent / '../path/to/your/commands'))
+    sys.path.insert(0, str(Path(__file__).parent / 'path/to/your/commands'))
 
     extensions = [
         ...
@@ -79,10 +79,10 @@ Or to text:
    :width: 93
 
 
-The ``typer`` directive has options for generating docs for all subcommands as well
-and optionally generating independent sections for each. There are also mechanisms
-for passing options to the underlying console and svg generation functions. See the
-official documentation for more information.
+The ``typer`` directive has options for generating docs for all subcommands as
+well and optionally generating independent sections for each. There are also
+mechanisms for passing options to the underlying console and svg generation
+functions. See table of contents for more information.
 
 .. toctree::
    :maxdepth: 2

@@ -31,7 +31,7 @@ jobs:
       - name: Run Static Analysis
         run: |
           poetry run isort sphinxcontrib/typer
-          poetry run black sphinxcontrib/typer
+          poetry run black sphinxcontrib/typer --check
           poetry run doc8 -q doc
           poetry check
           poetry run pip check

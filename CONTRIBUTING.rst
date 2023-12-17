@@ -55,7 +55,7 @@ justified is acceptable:
 
 .. code-block::
 
-    poetry run isort sphinxcontrib
+    poetry run isort sphinxcontrib/typer
     poetry run black sphinxcontrib/typer
     poetry run pytest
     poetry run doc8 -q doc

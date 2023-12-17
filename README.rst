@@ -128,11 +128,8 @@ You could change ``:preferred:`` to svg, to generate svg instead:
 
 |
 
-Or to text:
-
-.. raw:: html
-
-    <pre><span></span>                                                                                             
+Or to text::
+                                                                                            
     Usage: example [OPTIONS] COMMAND [ARGS]...                                                  
                                                                                                 
     This is the callback function.                                                              
@@ -146,7 +143,6 @@ Or to text:
     │ bar           This is the bar command.                                                    │
     │ foo           This is the foo command.                                                    │
     ╰───────────────────────────────────────────────────────────────────────────────────────────╯
-    </pre>
 
 
 The ``typer`` directive has options for generating docs for all subcommands as well

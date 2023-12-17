@@ -685,7 +685,6 @@ def convert_png(
         top = location['y'] * pixel_ratio
         if directive.target is RenderTarget.TEXT:
             # getting the width of the text is actually a bit tricky
-            # thanks chatgpt!!
             script = """
                 const pre = arguments[0];
                 const textContent = pre.textContent || pre.innerText;
@@ -699,10 +698,7 @@ def convert_png(
                 temporarySpan.style.whiteSpace = 'pre';
                 temporarySpan.textContent = textContent;
 
-                // Measure width
-                const width = temporarySpan.offsetWidth;
-                document.body.removeChild(temporarySpan);
-                return width;
+                return temporarySpan.offsetWidth;
             """
             width = driver.execute_script(script, element)
             right = left + width * pixel_ratio

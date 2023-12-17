@@ -137,7 +137,7 @@ class TyperDirective(rst.Directive):
         'preferred': RenderTarget,
         'builders': directives.unchanged,
         'iframe-height': directives.nonnegative_int,
-        'convert-png': directives.unchanged
+        'convert-png': directives.unchanged,
     }
 
     # resolved options
@@ -290,13 +290,13 @@ class TyperDirective(rst.Directive):
         return resolve_root_command(
             self.import_object(typer_path, accessor=access_command)
         )
-    
+
     def get_html(self, **options):
         return self.console.export_html(**options, clear=False)
-    
+
     def get_svg(self, **options):
         return self.console.export_svg(**options, clear=False)
-    
+
     def get_text(self, **options):
         return self.console.export_text(**options, clear=False)
 
@@ -384,13 +384,16 @@ class TyperDirective(rst.Directive):
         ##############################################################################
 
         export_options = resolve_options(
-            getattr(self, f'{self.target}_kwargs', {}),
-            f'{self.target}-kwargs'
+            getattr(self, f'{self.target}_kwargs', {}), f'{self.target}-kwargs'
         )
-        
+
         rendered = getattr(self, f'get_{self.target}')(
-            **({'title': source_name} if self.target is RenderTarget.SVG else {}),
-            **export_options
+            **(
+                {'title': source_name}
+                if self.target is RenderTarget.SVG
+                else {}
+            ),
+            **export_options,
         )
 
         if self.convert_png:
@@ -406,9 +409,7 @@ class TyperDirective(rst.Directive):
             section += nodes.raw(
                 '',
                 self.env.app.config.typer_render_html(
-                    self,
-                    normal_cmd,
-                    rendered
+                    self, normal_cmd, rendered
                 ),
                 format='html',
             )
@@ -456,7 +457,7 @@ class TyperDirective(rst.Directive):
         self.width = self.options.get('width', 80)
         self.iframe_height = self.options.get('iframe-height', None)
 
-        # if no builders supplied but convert-png is set, 
+        # if no builders supplied but convert-png is set,
         # force png for all builders, otherwise require the builder
         # to be in the list of convert_png builders
         self.convert_png = 'convert-png' in self.options
@@ -468,9 +469,8 @@ class TyperDirective(rst.Directive):
             setattr(
                 self,
                 f'{trg}_kwargs',
-                self.import_object(
-                    self.options.get(f'{trg}-kwargs', None)
-                ) or {}
+                self.import_object(self.options.get(f'{trg}-kwargs', None))
+                or {},
             )
 
         self.preferred = self.options.get('preferred', None)
@@ -487,9 +487,12 @@ class TyperDirective(rst.Directive):
         builder_targets = {**builder_targets, **self.builder_targets}
 
         if self.convert_png:
-            self.target = self.preferred or (
-                builder_targets.get(self.builder, []) or [RenderTarget.SVG]
-            )[0]
+            self.target = (
+                self.preferred
+                or (
+                    builder_targets.get(self.builder, []) or [RenderTarget.SVG]
+                )[0]
+            )
         elif self.builder not in builder_targets:
             self.target = self.preferred or RenderTarget.TEXT
             self.logger.debug(
@@ -592,6 +595,7 @@ def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
     """
     try:
         import cairosvg
+
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
     except ImportError:
         directive.error(f'cairosvg must be installed to render SVG in pdfs')
@@ -602,7 +606,7 @@ def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
     """
     The default get_web_driver function. This function returns a selenium web driver
     instance. It requires selenium to be installed.
-    
+
     To override this function with a custom function see the ``typer_get_web_driver``
     configuration parameter.
 
@@ -619,7 +623,7 @@ def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
     except ImportError:
         directive.error(
             f'This feature requires selenium and webdriver-manager to be '
-             'installed.'
+            'installed.'
         )
         return 600
 
@@ -631,17 +635,14 @@ def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
 
     # Initialize WebDriver
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
+        service=Service(ChromeDriverManager().install()), options=options
     )
     yield driver
     driver.quit()
 
 
 def convert_png(
-    directive: TyperDirective,
-    rendered: str,
-    png_path: t.Union[str, Path]
+    directive: TyperDirective, rendered: str, png_path: t.Union[str, Path]
 ):
     """
     The default convert_png function. This function writes a png file to the given
@@ -649,15 +650,16 @@ def convert_png(
     To override this function with a custom function see the ``typer_convert_png``
     configuration parameter.
     """
-    from PIL import Image
-    from io import BytesIO
     import tempfile
+    from io import BytesIO
+
+    from PIL import Image
     from selenium.webdriver.common.by import By
 
     tag = 'code'
     with (
         tempfile.NamedTemporaryFile(suffix='.html') as tmp,
-        directive.env.app.config.typer_get_web_driver(directive) as driver
+        directive.env.app.config.typer_get_web_driver(directive) as driver,
     ):
         if directive.target is RenderTarget.TEXT:
             tag = 'pre'
@@ -665,7 +667,7 @@ def convert_png(
         elif directive.target is RenderTarget.SVG:
             tag = 'svg'
             rendered = f'<html><body>{rendered}</body></html>'
-            
+
         tmp.write(rendered.encode('utf-8'))
         tmp.flush()
         driver.get(f"file://{tmp.name}")
@@ -705,7 +707,7 @@ def convert_png(
             width = driver.execute_script(script, element)
             right = left + width * pixel_ratio
         else:
-            right = left + size['width']  * pixel_ratio
+            right = left + size['width'] * pixel_ratio
         bottom = top + size['height'] * pixel_ratio
         im = im.crop((left, top, right, bottom))  # Defines crop points
         im.save(str(png_path))  # Saves the screenshot
@@ -730,7 +732,9 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
 
     app.add_config_value('typer_convert_png', lambda _: convert_png, 'env')
-    app.add_config_value('typer_get_web_driver', lambda _: get_selenium_webdriver, 'env')
+    app.add_config_value(
+        'typer_get_web_driver', lambda _: get_selenium_webdriver, 'env'
+    )
 
     return {
         'parallel_read_safe': True,

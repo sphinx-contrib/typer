@@ -1,7 +1,6 @@
 from datetime import datetime
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
 from sphinxcontrib import typer as sphinxcontrib_typer
 
 # Configuration file for the Sphinx documentation builder.
@@ -12,13 +11,7 @@ from sphinxcontrib import typer as sphinxcontrib_typer
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+sys.path.append(str(Path(__file__).parent.parent))
 
 
 # -- Project information -----------------------------------------------------
@@ -63,8 +56,3 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = []
 
 todo_include_todos = True
-
-# js_source_path = (
-#   str(Path(__file__).parent.parent.parent / 'render_static' / 'tests' /
-#   'examples' / 'static' / 'examples'
-# )

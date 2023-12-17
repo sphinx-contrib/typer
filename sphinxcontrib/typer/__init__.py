@@ -41,7 +41,7 @@ from rich.theme import Theme
 from sphinx import application
 from sphinx.util import logging
 from typer import rich_utils as typer_rich_utils
-from typer.main import Typer, TyperCommand, TyperGroup
+from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
@@ -54,7 +54,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Brian Kohan'
 
 
-def _get_lazyload_commands(ctx: TyperContext) -> t.Dict[str, TyperCommand]:
+def _get_lazyload_commands(ctx: click.Context) -> t.Dict[str, click.Command]:
     commands = {}
     for command in ctx.command.list_commands(ctx):
         commands[command] = ctx.command.get_command(ctx, command)
@@ -63,9 +63,9 @@ def _get_lazyload_commands(ctx: TyperContext) -> t.Dict[str, TyperCommand]:
 
 
 def _filter_commands(
-    ctx: TyperContext,
+    ctx: click.Context,
     commands: t.Optional[t.List[str]] = None,
-) -> t.List[TyperCommand]:
+) -> t.List[click.Command]:
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
     if not lookup and isinstance(ctx.command, click.MultiCommand):
@@ -95,7 +95,7 @@ class RenderTarget(str, Enum):
         return None
 
 
-Command = t.Union[TyperCommand, TyperGroup]
+Command = t.Union[click.Command, click.Group]
 
 """
 Callbacks that return a dict of kwargs to pass to various renderer functions
@@ -106,8 +106,8 @@ RenderCallback = t.Callable[
         'TyperDirective',  # directive - the TyperDirective instance
         str,  # name - the name of the command
         Command,  # command - the command instance
-        TyperContext,  # ctx - the TyperContext instance
-        t.Optional[TyperContext],  # parent - the parent TyperContext instance
+        click.Context,  # ctx - the click.Context instance
+        t.Optional[click.Context],  # parent - the parent click.Context instance
     ],
     t.Dict[str, t.Any],
 ]
@@ -149,6 +149,7 @@ class TyperDirective(rst.Directive):
     convert_png: bool = False
 
     console: Console
+    parent: click.Context
 
     preferred: t.Optional[RenderTarget] = None
 
@@ -205,7 +206,7 @@ class TyperDirective(rst.Directive):
     def import_object(
         self,
         obj_path: t.Optional[str],
-        accessor: t.Callable[[t.Any, str], t.Any] = lambda obj, attr: getattr(
+        accessor: t.Callable[[t.Any, str], t.Any] = lambda obj, attr, _: getattr(
             obj, attr
         ),
     ) -> t.Any:
@@ -227,9 +228,10 @@ class TyperDirective(rst.Directive):
                 # attributes
                 try:
                     tries += 1
-                    obj = import_module('.'.join(parts[0 : -(tries - 1)]))
-                    for attr in parts[-(tries - 1) :]:
-                        obj = accessor(obj, attr)
+                    try_path = '.'.join(parts[0 : -(tries - 1)])
+                    obj = import_module(try_path)
+                    for attr in parts[-(tries - 1):]:
+                        obj = accessor(obj, attr, try_path)
                     break
                 except (ImportError, ModuleNotFoundError):
                     if tries >= len(parts):
@@ -249,8 +251,9 @@ class TyperDirective(rst.Directive):
         return obj
 
     def load_root_command(
-        self, typer_path: str
-    ) -> t.Union[TyperCommand, TyperGroup]:
+        self,
+        typer_path: str
+    ) -> t.Union[click.Command, click.Group]:
         """
         Load the module.
 
@@ -258,7 +261,7 @@ class TyperDirective(rst.Directive):
         """
 
         def resolve_root_command(obj):
-            if isinstance(obj, (TyperCommand, TyperGroup)):
+            if isinstance(obj, (click.Command, click.Group)):
                 return obj
 
             if isinstance(obj, Typer):
@@ -268,21 +271,24 @@ class TyperDirective(rst.Directive):
                 ret = obj()
                 if isinstance(ret, Typer):
                     return get_typer_command(obj)
-                if isinstance(ret, (TyperCommand, TyperGroup)):
+                if isinstance(ret, (click.Command, click.Group)):
                     return ret
 
             raise self.error(
-                f'"{typer_path}" of type {type(obj)} is not Typer, TyperCommand or '
-                'TyperGroup.'
+                f'"{typer_path}" of type {type(obj)} is not Typer, click.Command or '
+                'click.Group.'
             )
 
-        def access_command(obj, attr) -> t.Union[TyperCommand, TyperGroup]:
+        def access_command(obj, attr, imprt_path) -> t.Union[click.Command, click.Group]:
             try:
                 return resolve_root_command(getattr(obj, attr))
             except Exception:
-                cmds = _filter_commands(
-                    TyperContext(resolve_root_command(obj)), [attr]
+                self.parent = TyperContext(
+                    resolve_root_command(obj),
+                    info_name=imprt_path.split('.')[-1],
+                    parent=getattr(self, 'parent', None)
                 )
+                cmds = _filter_commands(self.parent, [attr])
                 if cmds:
                     return cmds[0]
                 raise
@@ -301,14 +307,14 @@ class TyperDirective(rst.Directive):
         return self.console.export_text(**options, clear=False)
 
     def generate_nodes(
-        self, name: str, command: TyperCommand, parent: t.Optional[TyperContext]
+        self, name: str, command: click.Command, parent: t.Optional[click.Context]
     ) -> t.List[nodes.section]:
         """
         Generate the relevant Sphinx nodes.
 
-        Generate node help for `TyperGroup` or `TyperCommand`.
+        Generate node help for `click.Group` or `click.Command`.
 
-        :param command: Instance of `TyperGroup` or `TyperCommand`
+        :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `typer.models.Context`, or None
         :returns: A list of nested docutil nodes
         """
@@ -376,11 +382,23 @@ class TyperDirective(rst.Directive):
         # todo
         # typer provides no official way to alter the console that prints out the help
         # command so we have to monkey patch it - revisit in future if this changes!
+        # we also monkey patch get_help incase its a click command
         orig_getter = typer_rich_utils._get_rich_console
+        orig_format_help = command.format_help
+        command.rich_markup_mode = getattr(
+            command,
+            'rich_markup_mode',
+            'markdown'
+        )
+        command.format_help = TyperGroup.format_help.__get__(
+            command,
+            command.__class__
+        )
         typer_rich_utils._get_rich_console = get_console
         with contextlib.redirect_stdout(io.StringIO()):
             command.get_help(ctx)
         typer_rich_utils._get_rich_console = orig_getter
+        command.format_help = orig_format_help
         ##############################################################################
 
         export_options = resolve_options(
@@ -448,12 +466,23 @@ class TyperDirective(rst.Directive):
 
         command = self.load_root_command(self.arguments[0])
 
-        if 'prog' not in self.options:
-            raise self.error(':prog: must be specified')
-
         self.make_sections = 'make-sections' in self.options
         self.nested = 'show-nested' in self.options
-        self.prog_name = self.options.get('prog')
+        self.prog_name = self.options.get('prog', None)
+        if not self.prog_name:
+            try:
+                self.prog_name = (
+                    command.callback.__module__.split('.')[-1]
+                    if hasattr(command, 'callback') or
+                    not hasattr(self, 'parent') else
+                    re.split(r'::|[.:]', self.arguments[0])[-1]
+                )
+            except Exception as err:
+                raise self.error(
+                    'Unable to determine program name, please specify using '
+                    ':prog:'
+                ) from err
+
         self.width = self.options.get('width', 80)
         self.iframe_height = self.options.get('iframe-height', None)
 
@@ -506,7 +535,7 @@ class TyperDirective(rst.Directive):
                 self.preferred if self.preferred in supported else supported[0]
             )
 
-        return self.generate_nodes(self.prog_name, command, None)
+        return self.generate_nodes(self.prog_name, command, getattr(self, 'parent', None))
 
 
 def get_iframe_height(

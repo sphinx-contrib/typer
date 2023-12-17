@@ -33,7 +33,7 @@ sphinxcontrib-typer
 
 A Sphinx directive for auto generating docs for Typer_ (and Click_ commands!)
 using the rich console formatting available in Typer_. This package generates
-beautiful command documentation in text, html or svg formats out of the box,
+concise command documentation in text, html or svg formats out of the box,
 but if your goal is to greatly customize the generated documentation 
 sphinx-click_ may be more appropriate and will also work for Typer_ commands.
 

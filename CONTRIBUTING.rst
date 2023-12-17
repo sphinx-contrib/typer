@@ -27,7 +27,7 @@ Installation
 `sphinxcontrib-typer` uses Poetry_ for environment, package and dependency
 management:
 
-.. code-block::
+.. code-block:: bash
 
     poetry install -E all
 
@@ -38,10 +38,10 @@ Documentation
 readthedocs_ theme. Any new feature PRs must provide updated documentation for
 the features added. To build the docs run:
 
-.. code-block::
+.. code-block:: bash
 
     cd ./doc
-    poetry run make html
+    poetry run make html latexpdf text
 
 
 Static Analysis
@@ -53,7 +53,7 @@ accepted the following must be run, and static analysis tools should not
 produce any errors or warnings. Disabling certain errors or warnings where
 justified is acceptable:
 
-.. code-block::
+.. code-block:: bash
 
     poetry run isort sphinxcontrib/typer
     poetry run black sphinxcontrib/typer
@@ -74,19 +74,19 @@ exempted error handling branches are acceptable.
 
 To run the full suite:
 
-.. code-block::
+.. code-block:: bash
 
     poetry run pytest
 
 To run a single test, or group of tests in a class:
 
-.. code-block::
+.. code-block:: bash
 
     poetry run pytest <path_to_tests_file>::test_name
 
 For instance to run the docs test you would do:
 
-.. code-block::
+.. code-block:: bash
 
     poetry run pytest tests/tests.py::test_sphinx_html_build
 

@@ -206,9 +206,9 @@ class TyperDirective(rst.Directive):
     def import_object(
         self,
         obj_path: t.Optional[str],
-        accessor: t.Callable[[t.Any, str], t.Any] = lambda obj, attr, _: getattr(
-            obj, attr
-        ),
+        accessor: t.Callable[
+            [t.Any, str], t.Any
+        ] = lambda obj, attr, _: getattr(obj, attr),
     ) -> t.Any:
         """
         Imports an arbitrary object from a python string path.
@@ -230,7 +230,7 @@ class TyperDirective(rst.Directive):
                     tries += 1
                     try_path = '.'.join(parts[0 : -(tries - 1)])
                     obj = import_module(try_path)
-                    for attr in parts[-(tries - 1):]:
+                    for attr in parts[-(tries - 1) :]:
                         obj = accessor(obj, attr, try_path)
                     break
                 except (ImportError, ModuleNotFoundError):
@@ -251,8 +251,7 @@ class TyperDirective(rst.Directive):
         return obj
 
     def load_root_command(
-        self,
-        typer_path: str
+        self, typer_path: str
     ) -> t.Union[click.Command, click.Group]:
         """
         Load the module.
@@ -279,14 +278,16 @@ class TyperDirective(rst.Directive):
                 'click.Group.'
             )
 
-        def access_command(obj, attr, imprt_path) -> t.Union[click.Command, click.Group]:
+        def access_command(
+            obj, attr, imprt_path
+        ) -> t.Union[click.Command, click.Group]:
             try:
                 return resolve_root_command(getattr(obj, attr))
             except Exception:
                 self.parent = TyperContext(
                     resolve_root_command(obj),
                     info_name=imprt_path.split('.')[-1],
-                    parent=getattr(self, 'parent', None)
+                    parent=getattr(self, 'parent', None),
                 )
                 cmds = _filter_commands(self.parent, [attr])
                 if cmds:
@@ -307,7 +308,10 @@ class TyperDirective(rst.Directive):
         return self.console.export_text(**options, clear=False)
 
     def generate_nodes(
-        self, name: str, command: click.Command, parent: t.Optional[click.Context]
+        self,
+        name: str,
+        command: click.Command,
+        parent: t.Optional[click.Context],
     ) -> t.List[nodes.section]:
         """
         Generate the relevant Sphinx nodes.
@@ -386,13 +390,10 @@ class TyperDirective(rst.Directive):
         orig_getter = typer_rich_utils._get_rich_console
         orig_format_help = command.format_help
         command.rich_markup_mode = getattr(
-            command,
-            'rich_markup_mode',
-            'markdown'
+            command, 'rich_markup_mode', 'markdown'
         )
         command.format_help = TyperGroup.format_help.__get__(
-            command,
-            command.__class__
+            command, command.__class__
         )
         typer_rich_utils._get_rich_console = get_console
         with contextlib.redirect_stdout(io.StringIO()):
@@ -473,9 +474,9 @@ class TyperDirective(rst.Directive):
             try:
                 self.prog_name = (
                     command.callback.__module__.split('.')[-1]
-                    if hasattr(command, 'callback') or
-                    not hasattr(self, 'parent') else
-                    re.split(r'::|[.:]', self.arguments[0])[-1]
+                    if hasattr(command, 'callback')
+                    or not hasattr(self, 'parent')
+                    else re.split(r'::|[.:]', self.arguments[0])[-1]
                 )
             except Exception as err:
                 raise self.error(
@@ -535,7 +536,9 @@ class TyperDirective(rst.Directive):
                 self.preferred if self.preferred in supported else supported[0]
             )
 
-        return self.generate_nodes(self.prog_name, command, getattr(self, 'parent', None))
+        return self.generate_nodes(
+            self.prog_name, command, getattr(self, 'parent', None)
+        )
 
 
 def get_iframe_height(
@@ -686,56 +689,56 @@ def convert_png(
     from selenium.webdriver.common.by import By
 
     tag = 'code'
-    with (
-        tempfile.NamedTemporaryFile(suffix='.html') as tmp,
-        directive.env.app.config.typer_get_web_driver(directive) as driver,
-    ):
-        if directive.target is RenderTarget.TEXT:
-            tag = 'pre'
-            rendered = f'<html><body><pre>{rendered}</pre></body></html>'
-        elif directive.target is RenderTarget.SVG:
-            tag = 'svg'
-            rendered = f'<html><body>{rendered}</body></html>'
+    with directive.env.app.config.typer_get_web_driver(directive) as driver:
+        with tempfile.NamedTemporaryFile(suffix='.html') as tmp:
+            if directive.target is RenderTarget.TEXT:
+                tag = 'pre'
+                rendered = f'<html><body><pre>{rendered}</pre></body></html>'
+            elif directive.target is RenderTarget.SVG:
+                tag = 'svg'
+                rendered = f'<html><body>{rendered}</body></html>'
 
-        tmp.write(rendered.encode('utf-8'))
-        tmp.flush()
-        driver.get(f"file://{tmp.name}")
-        png = driver.get_screenshot_as_png()
-        # Find the element you want a screenshot of
-        element = driver.find_element(By.CSS_SELECTOR, tag)
-        pixel_ratio = driver.execute_script("return window.devicePixelRatio")
-        # Get the element's location and size
-        location = element.location
-        size = element.size
+            tmp.write(rendered.encode('utf-8'))
+            tmp.flush()
+            driver.get(f"file://{tmp.name}")
+            png = driver.get_screenshot_as_png()
+            # Find the element you want a screenshot of
+            element = driver.find_element(By.CSS_SELECTOR, tag)
+            pixel_ratio = driver.execute_script(
+                "return window.devicePixelRatio"
+            )
+            # Get the element's location and size
+            location = element.location
+            size = element.size
 
-        # Open the screenshot and crop it to the element
-        im = Image.open(BytesIO(png))
-        left = location['x'] * pixel_ratio
-        top = location['y'] * pixel_ratio
-        if directive.target is RenderTarget.TEXT:
-            # getting the width of the text is actually a bit tricky
-            script = """
-                const pre = arguments[0];
-                const textContent = pre.textContent || pre.innerText;
-                const temporarySpan = document.createElement('span');
-                document.body.appendChild(temporarySpan);
+            # Open the screenshot and crop it to the element
+            im = Image.open(BytesIO(png))
+            left = location['x'] * pixel_ratio
+            top = location['y'] * pixel_ratio
+            if directive.target is RenderTarget.TEXT:
+                # getting the width of the text is actually a bit tricky
+                script = """
+                    const pre = arguments[0];
+                    const textContent = pre.textContent || pre.innerText;
+                    const temporarySpan = document.createElement('span');
+                    document.body.appendChild(temporarySpan);
 
-                // Copy styles to match formatting
-                const preStyle = window.getComputedStyle(pre);
-                temporarySpan.style.fontFamily = preStyle.fontFamily;
-                temporarySpan.style.fontSize = preStyle.fontSize;
-                temporarySpan.style.whiteSpace = 'pre';
-                temporarySpan.textContent = textContent;
+                    // Copy styles to match formatting
+                    const preStyle = window.getComputedStyle(pre);
+                    temporarySpan.style.fontFamily = preStyle.fontFamily;
+                    temporarySpan.style.fontSize = preStyle.fontSize;
+                    temporarySpan.style.whiteSpace = 'pre';
+                    temporarySpan.textContent = textContent;
 
-                return temporarySpan.offsetWidth;
-            """
-            width = driver.execute_script(script, element)
-            right = left + width * pixel_ratio
-        else:
-            right = left + size['width'] * pixel_ratio
-        bottom = top + size['height'] * pixel_ratio
-        im = im.crop((left, top, right, bottom))  # Defines crop points
-        im.save(str(png_path))  # Saves the screenshot
+                    return temporarySpan.offsetWidth;
+                """
+                width = driver.execute_script(script, element)
+                right = left + width * pixel_ratio
+            else:
+                right = left + size['width'] * pixel_ratio
+            bottom = top + size['height'] * pixel_ratio
+            im = im.crop((left, top, right, bottom))  # Defines crop points
+            im.save(str(png_path))  # Saves the screenshot
 
 
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:

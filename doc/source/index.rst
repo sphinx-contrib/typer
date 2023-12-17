@@ -13,7 +13,7 @@ but if your goal is to greatly customize the generated documentation
 sphinx-click_ may be more appropriate and will also work for Typer_ commands.
 
 Installation
-============
+------------
 
 Install with pip::
 
@@ -36,7 +36,7 @@ Add ``sphinxcontrib.typer`` to your ``conf.py`` file:
     ]
 
 Usage
-=====
+-----
 
 Say you have a command in the file ``examples/example.py`` that looks like
 this:
@@ -61,6 +61,7 @@ This would generate html that looks like this:
    :prog: example
    :width: 70
    :preferred: html
+   :convert-png: latex
 
 
 You could change ``:preferred:`` to svg, to generate svg instead:
@@ -68,6 +69,7 @@ You could change ``:preferred:`` to svg, to generate svg instead:
 .. typer:: examples.example.app
    :prog: example
    :preferred: svg
+   :convert-png: latex
 
 |
 
@@ -77,6 +79,7 @@ Or to text:
    :prog: example
    :preferred: text
    :width: 93
+   :convert-png: latex
 
 
 The ``typer`` directive has options for generating docs for all subcommands as

@@ -26,6 +26,7 @@ import os
 import re
 import traceback
 import typing as t
+from contextlib import contextmanager
 from enum import Enum
 from html import escape as html_escape
 from importlib import import_module
@@ -129,13 +130,14 @@ class TyperDirective(rst.Directive):
         'make-sections': directives.flag,
         'show-nested': directives.flag,
         'width': directives.nonnegative_int,
-        'svg_kwargs': directives.unchanged,
-        'text_kwargs': directives.unchanged,
-        'html_kwargs': directives.unchanged,
-        'console_kwargs': directives.unchanged,
+        'svg-kwargs': directives.unchanged,
+        'text-kwargs': directives.unchanged,
+        'html-kwargs': directives.unchanged,
+        'console-kwargs': directives.unchanged,
         'preferred': RenderTarget,
         'builders': directives.unchanged,
-        'iframe_height': directives.nonnegative_int,
+        'iframe-height': directives.nonnegative_int,
+        'convert-png': directives.unchanged
     }
 
     # resolved options
@@ -144,6 +146,7 @@ class TyperDirective(rst.Directive):
     make_sections: bool
     width: int
     iframe_height: t.Optional[int] = None
+    convert_png: bool = False
 
     console: Console
 
@@ -287,6 +290,15 @@ class TyperDirective(rst.Directive):
         return resolve_root_command(
             self.import_object(typer_path, accessor=access_command)
         )
+    
+    def get_html(self, **options):
+        return self.console.export_html(**options, clear=False)
+    
+    def get_svg(self, **options):
+        return self.console.export_svg(**options, clear=False)
+    
+    def get_text(self, **options):
+        return self.console.export_text(**options, clear=False)
 
     def generate_nodes(
         self, name: str, command: TyperCommand, parent: t.Optional[TyperContext]
@@ -356,7 +368,7 @@ class TyperDirective(rst.Directive):
                 width=self.width or typer_rich_utils.MAX_WIDTH,
                 stderr=stderr,
                 # overrides any defaults above
-                **resolve_options(self.console_kwargs, 'console_kwargs'),
+                **resolve_options(self.console_kwargs, 'console-kwargs'),
                 record=True,
             )
             return self.console
@@ -371,46 +383,53 @@ class TyperDirective(rst.Directive):
         typer_rich_utils._get_rich_console = orig_getter
         ##############################################################################
 
-        if self.target == RenderTarget.HTML:
-            html_page = self.console.export_html(
-                **resolve_options(self.html_kwargs, 'html_kwargs'), clear=False
+        export_options = resolve_options(
+            getattr(self, f'{self.target}_kwargs', {}),
+            f'{self.target}-kwargs'
+        )
+        
+        rendered = getattr(self, f'get_{self.target}')(
+            **({'title': source_name} if self.target is RenderTarget.SVG else {}),
+            **export_options
+        )
+
+        if self.convert_png:
+            png_path = Path(self.env.app.builder.outdir) / (
+                f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}.png'
             )
+            self.env.app.config.typer_convert_png(self, rendered, png_path)
+            section += nodes.image(
+                uri=os.path.relpath(png_path, Path(self.env.srcdir)),
+                alt=source_name,
+            )
+        elif self.target == RenderTarget.HTML:
             section += nodes.raw(
                 '',
                 self.env.app.config.typer_render_html(
-                    self, normal_cmd, html_page
+                    self,
+                    normal_cmd,
+                    rendered
                 ),
                 format='html',
             )
         elif self.target == RenderTarget.SVG:
-            svg = self.console.export_svg(
-                title=source_name,
-                **resolve_options(self.svg_kwargs, 'svg_kwargs'),
-                clear=False,
-            )
             if 'html' in self.builder:
-                section += nodes.raw('', svg, format='html')
+                section += nodes.raw('', rendered, format='html')
             else:
                 img_name = (
                     f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
                 )
                 out_dir = Path(self.env.app.builder.outdir)
-                (out_dir / f'{img_name}.svg').write_text(svg)
+                (out_dir / f'{img_name}.svg').write_text(rendered)
                 pdf_img = out_dir / f'{img_name}.pdf'
-                self.env.app.config.typer_svg2pdf(self, svg, pdf_img)
+                self.env.app.config.typer_svg2pdf(self, rendered, pdf_img)
                 section += nodes.image(
                     uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
                     alt=source_name,
                 )
 
         elif self.target == RenderTarget.TEXT:
-            section += nodes.literal_block(
-                '',
-                self.console.export_text(
-                    **resolve_options(self.svg_kwargs, 'svg_kwargs'),
-                    clear=False,
-                ),
-            )
+            section += nodes.literal_block('', rendered)
         else:
             raise self.error(f'Invalid typer render target: {self.target}')
 
@@ -435,19 +454,25 @@ class TyperDirective(rst.Directive):
         self.nested = 'show-nested' in self.options
         self.prog_name = self.options.get('prog')
         self.width = self.options.get('width', 80)
-        self.iframe_height = self.options.get('iframe_height', None)
-        self.console_kwargs = (
-            self.import_object(self.options.get('console_kwargs', None)) or {}
-        )
-        self.html_kwargs = (
-            self.import_object(self.options.get('html_kwargs', None)) or {}
-        )
-        self.svg_kwargs = (
-            self.import_object(self.options.get('svg_kwargs', None)) or {}
-        )
-        self.txt_kwargs = (
-            self.import_object(self.options.get('txt_kwargs', None)) or {}
-        )
+        self.iframe_height = self.options.get('iframe-height', None)
+
+        # if no builders supplied but convert-png is set, 
+        # force png for all builders, otherwise require the builder
+        # to be in the list of convert_png builders
+        self.convert_png = 'convert-png' in self.options
+        if self.convert_png:
+            builders = self.options['convert-png'].strip()
+            self.convert_png = self.builder in builders if builders else True
+
+        for trg in ['console', *list(RenderTarget)]:
+            setattr(
+                self,
+                f'{trg}_kwargs',
+                self.import_object(
+                    self.options.get(f'{trg}-kwargs', None)
+                ) or {}
+            )
+
         self.preferred = self.options.get('preferred', None)
 
         builder_targets = {}
@@ -461,7 +486,11 @@ class TyperDirective(rst.Directive):
 
         builder_targets = {**builder_targets, **self.builder_targets}
 
-        if self.builder not in builder_targets:
+        if self.convert_png:
+            self.target = self.preferred or (
+                builder_targets.get(self.builder, []) or [RenderTarget.SVG]
+            )[0]
+        elif self.builder not in builder_targets:
             self.target = self.preferred or RenderTarget.TEXT
             self.logger.debug(
                 'Unable to resolve render target for builder: %s - using: %s',
@@ -473,18 +502,8 @@ class TyperDirective(rst.Directive):
             self.target = (
                 self.preferred if self.preferred in supported else supported[0]
             )
+
         return self.generate_nodes(self.prog_name, command, None)
-
-
-def visit_fixed_text_element_html(self, node):
-    # Get the text of the node
-    text = node.astext()
-
-    # Wrap the text in <pre> tags and create a new raw node
-    raw_node = nodes.raw('', f'<pre>{text}</pre>', format='html')
-
-    # Replace the FixedTextElement node with the raw node
-    node.replace_self(raw_node)
 
 
 def get_iframe_height(
@@ -493,7 +512,7 @@ def get_iframe_height(
     """
     The default iframe height calculation function. The iframe height resolution proceeds as follows:
 
-    1) Return the global iframe_height parameter if one was supplied as a parameter on the directive.
+    1) Return the global iframe-height parameter if one was supplied as a parameter on the directive.
     2) Check for a cached height value using the file at config.typer_iframe_height_cache_path and return
        one if it exists.
     3) Attempt to use Selenium to dynamically determine the height of the iframe. Padding will be added
@@ -521,44 +540,20 @@ def get_iframe_height(
     if cache['iframe_heights'].get(normal_cmd):
         return cache['iframe_heights'][normal_cmd]
 
-    try:
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.chrome.service import Service
-        from webdriver_manager.chrome import ChromeDriverManager
-    except ImportError:
-        directive.logger.warning(
-            f'Unable to dynimcally determine iframe height for {normal_cmd} '
-            f'either supply an iframe_height parameter or see instructions at: '
-            f'https://sphinxcontrib-typer.readthedocs.io. Using a default value '
-            f'of 600.'
+    with directive.env.app.config.typer_get_web_driver(directive) as driver:
+        # use base64 to avoid issues with special characters
+        driver.get(
+            f'data:text/html;base64,'
+            f'{base64.b64encode(html_page.encode("utf-8")).decode()}'
         )
-        return 600
-
-    # Set up headless browser options
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-
-    # Initialize WebDriver
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()), options=options
-    )
-
-    # use base64 to avoid issues with special characters
-    driver.get(
-        f'data:text/html;base64,'
-        f'{base64.b64encode(html_page.encode("utf-8")).decode()}'
-    )
-    height = (
-        int(
-            driver.execute_script(
-                'return document.documentElement.getBoundingClientRect().height'
+        height = (
+            int(
+                driver.execute_script(
+                    'return document.documentElement.getBoundingClientRect().height'
+                )
             )
+            + directive.env.app.config.typer_iframe_height_padding
         )
-        + directive.env.app.config.typer_iframe_height_padding
-    )
     cache['iframe_heights'][normal_cmd] = height
     if cache_path:
         cache_path.write_text(json.dumps(cache, indent=4))
@@ -597,20 +592,128 @@ def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
     """
     try:
         import cairosvg
-
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
     except ImportError:
         directive.error(f'cairosvg must be installed to render SVG in pdfs')
 
 
+@contextmanager
+def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
+    """
+    The default get_web_driver function. This function returns a selenium web driver
+    instance. It requires selenium to be installed.
+    
+    To override this function with a custom function see the ``typer_get_web_driver``
+    configuration parameter.
+
+    .. note::
+
+        This must be implemented as a context manager that yields the webdriver
+        instance and cleans it up on exit!
+    """
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.chrome.service import Service
+        from webdriver_manager.chrome import ChromeDriverManager
+    except ImportError:
+        directive.error(
+            f'This feature requires selenium and webdriver-manager to be '
+             'installed.'
+        )
+        return 600
+
+    # Set up headless browser options
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    # Initialize WebDriver
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+    yield driver
+    driver.quit()
+
+
+def convert_png(
+    directive: TyperDirective,
+    rendered: str,
+    png_path: t.Union[str, Path]
+):
+    """
+    The default convert_png function. This function writes a png file to the given
+    path by taking a selenium screen shot. It requires selenium to be installed.
+    To override this function with a custom function see the ``typer_convert_png``
+    configuration parameter.
+    """
+    from PIL import Image
+    from io import BytesIO
+    import tempfile
+    from selenium.webdriver.common.by import By
+
+    tag = 'code'
+    with (
+        tempfile.NamedTemporaryFile(suffix='.html') as tmp,
+        directive.env.app.config.typer_get_web_driver(directive) as driver
+    ):
+        if directive.target is RenderTarget.TEXT:
+            tag = 'pre'
+            rendered = f'<html><body><pre>{rendered}</pre></body></html>'
+        elif directive.target is RenderTarget.SVG:
+            tag = 'svg'
+            rendered = f'<html><body>{rendered}</body></html>'
+            
+        tmp.write(rendered.encode('utf-8'))
+        tmp.flush()
+        driver.get(f"file://{tmp.name}")
+        png = driver.get_screenshot_as_png()
+        # Find the element you want a screenshot of
+        element = driver.find_element(By.CSS_SELECTOR, tag)
+        pixel_ratio = driver.execute_script("return window.devicePixelRatio")
+        # Get the element's location and size
+        location = element.location
+        size = element.size
+
+        # Open the screenshot and crop it to the element
+        im = Image.open(BytesIO(png))
+        left = location['x'] * pixel_ratio
+        top = location['y'] * pixel_ratio
+        if directive.target is RenderTarget.TEXT:
+            # getting the width of the text is actually a bit tricky
+            # thanks chatgpt!!
+            script = """
+                const pre = arguments[0];
+                const textContent = pre.textContent || pre.innerText;
+                const temporarySpan = document.createElement('span');
+                document.body.appendChild(temporarySpan);
+
+                // Copy styles to match formatting
+                const preStyle = window.getComputedStyle(pre);
+                temporarySpan.style.fontFamily = preStyle.fontFamily;
+                temporarySpan.style.fontSize = preStyle.fontSize;
+                temporarySpan.style.whiteSpace = 'pre';
+                temporarySpan.textContent = textContent;
+
+                // Measure width
+                const width = temporarySpan.offsetWidth;
+                document.body.removeChild(temporarySpan);
+                return width;
+            """
+            width = driver.execute_script(script, element)
+            right = left + width * pixel_ratio
+        else:
+            right = left + size['width']  * pixel_ratio
+        bottom = top + size['height'] * pixel_ratio
+        im = im.crop((left, top, right, bottom))  # Defines crop points
+        im.save(str(png_path))  # Saves the screenshot
+
+
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive('typer', TyperDirective)
-
-    # todo - why doesn't this already work like this?
-    app.add_node(
-        nodes.FixedTextElement, html=(visit_fixed_text_element_html, None)
-    )
 
     app.add_config_value(
         'typer_render_html', lambda _: render_html_iframe, 'env'
@@ -625,6 +728,9 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
         Path(app.confdir) / 'typer_cache.json',
         'env',
     )
+
+    app.add_config_value('typer_convert_png', lambda _: convert_png, 'env')
+    app.add_config_value('typer_get_web_driver', lambda _: get_selenium_webdriver, 'env')
 
     return {
         'parallel_read_safe': True,

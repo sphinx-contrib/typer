@@ -339,7 +339,13 @@ class TyperDirective(rst.Directive):
         section = (
             nodes.section(
                 '',
-                nodes.title(text=name),
+                nodes.title(
+                    text=(
+                        name
+                        if not getattr(self, 'parent', None) else
+                        f'{self.parent.command_path} {name}'
+                    )
+                ),
                 ids=[nodes.make_id(source_name)],
                 names=[nodes.fully_normalize_name(source_name)],
             )
@@ -474,8 +480,8 @@ class TyperDirective(rst.Directive):
             try:
                 self.prog_name = (
                     command.callback.__module__.split('.')[-1]
-                    if hasattr(command, 'callback')
-                    or not hasattr(self, 'parent')
+                    if hasattr(command, 'callback') 
+                    and not hasattr(self, 'parent')
                     else re.split(r'::|[.:]', self.arguments[0])[-1]
                 )
             except Exception as err:

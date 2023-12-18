@@ -73,25 +73,33 @@ html_static_path = []
 
 todo_include_todos = True
 
-def _typer_render_html(*args, **kwargs):
+###########################################################
+# Test our typer configuration parameter function overrides
+
+def typer_render_html(*args, **kwargs):
     record_callback('typer_render_html')
     return sphinxcontrib_typer.render_html_iframe(*args, **kwargs)
 
-typer_render_html = _typer_render_html
+
+def typer_get_iframe_height(*args, **kwargs):
+    record_callback('typer_get_iframe_height')
+    return sphinxcontrib_typer.get_iframe_height(*args, **kwargs)
 
 
-# app.add_config_value(
-#     'typer_get_iframe_height', lambda _: get_iframe_height, 'env'
-# )
-# app.add_config_value('typer_svg2pdf', lambda _: svg2pdf, 'env')
-# app.add_config_value('typer_iframe_height_padding', 30, 'env')
-# app.add_config_value(
-#     'typer_iframe_height_cache_path',
-#     Path(app.confdir) / 'typer_cache.json',
-#     'env',
-# )
+def typer_svg2pdf(*args, **kwargs):
+    record_callback('typer_svg2pdf')
+    return sphinxcontrib_typer.svg2pdf(*args, **kwargs)
 
-# app.add_config_value('typer_convert_png', lambda _: convert_png, 'env')
-# app.add_config_value(
-#     'typer_get_web_driver', lambda _: get_selenium_webdriver, 'env'
-# )
+
+def typer_convert_png(*args, **kwargs):
+    record_callback('typer_convert_png')
+    return sphinxcontrib_typer.convert_png(*args, **kwargs)
+
+
+def typer_get_web_driver(*args, **kwargs):
+    record_callback('typer_get_web_driver')
+    return sphinxcontrib_typer.get_selenium_webdriver(*args, **kwargs)
+
+
+typer_iframe_height_padding = 40
+typer_iframe_height_cache_path = Path(__file__).parent / 'cache.json'

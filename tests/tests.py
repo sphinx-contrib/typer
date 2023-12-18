@@ -320,14 +320,9 @@ def test_click_latex_build_works():
     assert latex.count('Usage: validation [OPTIONS]') == 1
 
     # get all pdf files from the build directory
-    pdf = bld_dir / 'validation_669c6dad.pdf'
-
-    try:
-        assert (bld_dir / 'validation_669c6dad.svg').is_file()
-    except AssertionError:
-        from pprint import pprint
-        pprint(list(bld_dir.glob('**/*.pdf')))
-        raise
+    pdf = bld_dir / 'validation_2a8082c3.pdf'
+    
+    assert (bld_dir / 'validation_2a8082c3.svg').is_file()
 
     assert len(list(bld_dir.glob('**/*.pdf'))) == 1, 'Should have rendered the help 1 time as pdf'
     assert pdf.name.split('.')[0] in latex
@@ -335,7 +330,7 @@ def test_click_latex_build_works():
     assert similarity(pdf_txt, help_txt) > 0.95
 
     assert len(list(bld_dir.glob('**/*.png'))) == 1, 'Should have rendered the help 1 time as png'
-    html_png = bld_dir / 'validation_0b121597.png'
+    html_png = bld_dir / 'validation_4697b61f.png'
     assert img_similarity(CLICK_EXAMPLES / 'validation' / 'html.png', html_png) < 1000
 
     if bld_dir.exists():

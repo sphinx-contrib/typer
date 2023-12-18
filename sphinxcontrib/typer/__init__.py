@@ -199,6 +199,7 @@ class TyperDirective(rst.Directive):
         # Contextual information
         source = self.state_machine.get_source_and_line()[0]
         line_number = self.state_machine.get_source_and_line()[1]
+        source = os.path.relpath(source, self.env.app.builder.srcdir)
         return hashlib.sha256(
             f"{source}.{line_number}[{normal_cmd}]".encode('utf-8')
         ).hexdigest()[:8]

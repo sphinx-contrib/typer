@@ -18,22 +18,23 @@ extras:
 
     ?> pip install sphinxcontrib-typer[html]
 
-If you wish to convert rendered docs to png images you'll need the png dependency
-set:
+If you wish to convert rendered docs to png images you'll need the png
+dependency set:
 
 .. code-block:: bash
 
     ?> pip install sphinxcontrib-typer[png]
 
-If you wish to convert rendered docs to pdf format you'll need the pdf dependency
-set:
+If you wish to convert rendered docs to pdf format you'll need the pdf
+dependency set:
 
 .. code-block:: bash
 
     ?> pip install sphinxcontrib-typer[pdf]
 
 
-Once installed you need to add ``sphinxcontrib.typer`` to your ``conf.py`` file:
+Once installed you need to add ``sphinxcontrib.typer`` to your
+``conf.py`` file:
 
 .. code-block:: python
 

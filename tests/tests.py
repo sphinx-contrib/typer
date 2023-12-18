@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup as bs
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from skimage import io
+from skimage.transform import resize
 from pypdf import PdfReader
 import numpy as np
 import json
@@ -53,17 +54,27 @@ def pdf_text(pdf_path) -> t.List[str]:
     with open(pdf_path, 'rb') as file:
         return [page.extract_text() for page in PdfReader(file).pages]
 
-def img_similarity(image_path1, image_path2):
+
+def img_similarity(expected, to_compare):
     """
     Calculate the Mean Squared Error between two images.
     MSE is a non-negative value, where 0 indicates perfect similarity.
     Higher values indicate less similarity.
     """
-    img_a = io.imread(image_path1)
-    img_b = io.imread(image_path2)
+    img_a, img_b = resize_image_to_match(expected, to_compare)
+    io.imsave(str(expected.parent / f'resized_{expected.name}'), img_a)
     err = np.sum((img_a.astype("float") - img_b.astype("float")) ** 2)
     err /= float(img_a.shape[0] * img_a.shape[1])
     return err
+
+def resize_image_to_match(source_image_path, target_image_path):
+    target = io.imread(target_image_path)
+    resized = resize(
+        io.imread(source_image_path),
+        target.shape[0:2],
+        anti_aliasing=True
+    )
+    return np.clip(resized * 255, 0, 255).astype(np.uint8), target
 
 
 def test_sphinx_html_build():
@@ -311,7 +322,12 @@ def test_click_latex_build_works():
     # get all pdf files from the build directory
     pdf = bld_dir / 'validation_669c6dad.pdf'
 
-    assert (bld_dir / 'validation_669c6dad.svg').is_file()
+    try:
+        assert (bld_dir / 'validation_669c6dad.svg').is_file()
+    except AssertionError:
+        from pprint import pprint
+        pprint(list(bld_dir.glob('**/*.pdf')))
+        raise
 
     assert len(list(bld_dir.glob('**/*.pdf'))) == 1, 'Should have rendered the help 1 time as pdf'
     assert pdf.name.split('.')[0] in latex

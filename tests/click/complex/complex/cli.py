@@ -58,3 +58,7 @@ def cli(ctx, verbose, home):
     ctx.verbose = verbose
     if home is not None:
         ctx.home = home
+
+
+if __name__ == "__main__":
+    cli()

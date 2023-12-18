@@ -141,3 +141,7 @@ def alias(config, alias_, cmd, config_file):
     config.add_alias(alias_, cmd)
     config.write_config(config_file)
     click.echo(f"Added '{alias_}' as alias for '{cmd}'")
+
+
+if __name__ == "__main__":
+    cli()

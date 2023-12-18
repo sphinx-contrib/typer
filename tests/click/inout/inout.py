@@ -9,17 +9,20 @@ def cli(input, output):
     into a specific file (which could be the standard output as denoted by
     the ``-`` sign).
 
-    \b
     Copy stdin to stdout:
+    ```bash
         inout - -
+    ```
 
-    \b
     Copy foo.txt and bar.txt to stdout:
+    ```bash
         inout foo.txt bar.txt -
-
-    \b
+    ```
+    
     Write stdin into the file foo.txt
+    ```bash
         inout - foo.txt
+    ```
     """
     for f in input:
         while True:
@@ -28,3 +31,7 @@ def cli(input, output):
                 break
             output.write(chunk)
             output.flush()
+
+
+if __name__ == "__main__":
+    cli()

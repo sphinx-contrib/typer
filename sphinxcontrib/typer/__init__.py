@@ -129,6 +129,7 @@ class TyperDirective(rst.Directive):
         'prog': directives.unchanged_required,
         'make-sections': directives.flag,
         'show-nested': directives.flag,
+        'markup-mode': directives.unchanged,
         'width': directives.nonnegative_int,
         'svg-kwargs': directives.unchanged,
         'text-kwargs': directives.unchanged,
@@ -152,6 +153,8 @@ class TyperDirective(rst.Directive):
     parent: click.Context
 
     preferred: t.Optional[RenderTarget] = None
+
+    markup_mode: typer_rich_utils.MarkupMode
 
     # the console_kwargs option can be a dict or a callable that returns a dict, the callable
     # must conform to the RenderOptions signature
@@ -407,7 +410,9 @@ class TyperDirective(rst.Directive):
         orig_getter = typer_rich_utils._get_rich_console
         orig_format_help = command.format_help
         command.rich_markup_mode = getattr(
-            command, 'rich_markup_mode', 'markdown'
+            self,
+            'markup_mode',
+            getattr(command, 'rich_markup_mode', None)
         )
         command.format_help = TyperGroup.format_help.__get__(
             command, command.__class__
@@ -487,6 +492,9 @@ class TyperDirective(rst.Directive):
         self.make_sections = 'make-sections' in self.options
         self.nested = 'show-nested' in self.options
         self.prog_name = self.options.get('prog', None)
+        if 'markup-mode' in self.options:
+            self.markup_mode = self.options['markup-mode']
+
         if not self.prog_name:
             try:
                 self.prog_name = (
@@ -531,7 +539,7 @@ class TyperDirective(rst.Directive):
                     for target in targets.split(',')
                 ]
 
-        builder_targets = {**builder_targets, **self.builder_targets}
+        builder_targets = {**self.builder_targets, **builder_targets}
 
         if self.convert_png:
             self.target = (
@@ -770,6 +778,7 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
     app.add_config_value('typer_svg2pdf', lambda _: svg2pdf, 'env')
     app.add_config_value('typer_iframe_height_padding', 30, 'env')
+    app.add_config_value('typer_markup_mode', None, 'env')
     app.add_config_value(
         'typer_iframe_height_cache_path',
         Path(app.confdir) / 'typer_cache.json',

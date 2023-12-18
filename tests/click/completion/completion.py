@@ -54,3 +54,7 @@ def select_user(user):
 
 
 cli.add_command(group)
+
+
+if __name__ == "__main__":
+    cli()

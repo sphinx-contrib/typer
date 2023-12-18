@@ -164,3 +164,4 @@ doc/source/typer_cache.json
 poetry.lock
 tests/**/build
 tests/click/callback_record.json
+tests/click/cache.json

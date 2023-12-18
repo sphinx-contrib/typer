@@ -286,3 +286,7 @@ def paste_cmd(images, left, right):
     yield image
 
     yield from imageiter
+
+
+if __name__ == "__main__":
+    cli()

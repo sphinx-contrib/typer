@@ -380,6 +380,144 @@ def test_click_ex_naval():
         shutil.rmtree(bld_dir.parent)
 
 
+def test_click_ex_inout():
+    """
+    tests :make-sections: and :show-nested: options for multi level hierarchies
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('inout', 'html')
+
+    help_txt = get_click_ex_help('inout')
+    # verifies :show-nested:
+    check_html(html, help_txt)
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
+def test_click_ex_complex():
+    """
+    tests :make-sections: and :show-nested: options for multi level hierarchies
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('complex', 'html')
+
+    check_text(html, """ Usage: complex [OPTIONS] COMMAND [ARGS]...                      
+                                                                 
+ A complex command line interface.                               
+                                                                 
+╭─ Options ─────────────────────────────────────────────────────╮
+│ --home             DIRECTORY  Changes the folder to operate   │
+│                               on.                             │
+│ --verbose  -v                 Enables verbose mode.           │
+│ --help                        Show this message and exit.     │
+╰───────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────╮
+│ init             Initializes a repo.                          │
+│ status           Shows file changes.                          │
+╰───────────────────────────────────────────────────────────────╯""")
+    
+    check_text(html, """ Usage: complex init [OPTIONS] [PATH]                            
+                                                                 
+ Initializes a repository.                                       
+                                                                 
+╭─ Arguments ───────────────────────────────────────────────────╮
+│   path      [PATH]                                            │
+╰───────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                   │
+╰───────────────────────────────────────────────────────────────╯""", 1)
+    check_text(html, """ Usage: complex status [OPTIONS]                                 
+                                                                 
+ Shows file changes in the current working directory.            
+                                                                 
+╭─ Options ─────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                   │
+╰───────────────────────────────────────────────────────────────╯""", 2)
+
+    soup = bs(html, 'html.parser')
+    assert soup.find('section').find('h1').text.startswith('complex')
+
+    for idx, cmd in enumerate(['init', 'status']):
+        assert soup.find_all('section')[idx+1].find('h2').text.startswith(cmd)
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
+def test_click_ex_completion():
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('completion', 'html')
+
+    subcommands = ['group', 'group select-user', 'ls', 'show-env']
+    helps = [
+        get_click_ex_help('completion'),
+        *[get_click_ex_help('completion', *cmd.split()) for cmd in subcommands]
+    ]
+
+    for idx, help in enumerate(helps):
+        check_text(html, help, idx, threshold=0.82)
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+def test_click_ex_aliases():
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('aliases', 'html')
+
+    subcommands = ['alias', 'clone', 'commit', 'pull', 'push', 'status']
+    helps = [
+        get_click_ex_help('aliases'),
+        *[get_click_ex_help('aliases', *cmd.split()) for cmd in subcommands]
+    ]
+
+    for idx, help in enumerate(helps):
+        check_text(html, help, idx, threshold=0.82)
+
+    # if bld_dir.exists():
+    #     shutil.rmtree(bld_dir.parent)
+
+
+def test_click_ex_imagepipe():
+    """
+    tests a chained command
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('imagepipe', 'html')
+
+    subcommands = [
+        'blur', 'crop', 'display', 'emboss', 'open', 'paste',
+        'resize', 'save', 'sharpen', 'smoothen', 'transpose'
+    ]
+    helps = [
+        get_click_ex_help('imagepipe'),
+        *[get_click_ex_help('imagepipe', cmd) for cmd in subcommands]
+    ]
+
+    for idx, help in enumerate(helps):
+        check_text(html, help, idx, threshold=0.87)
+
+    check_svg(html, helps[-3], threshold=0.7)
+
+    soup = bs(html, 'html.parser')
+    assert len(soup.find_all('section')) == 13, 'Should have rendered 13 sections'
+
+    assert soup.find('section').find('h1').text.startswith('imagepipe')
+
+    for idx, cmd in enumerate(subcommands):
+        assert soup.find_all('section')[idx+1].find('h2').text.startswith(cmd)
+
+    assert soup.find_all('section')[len(subcommands)+1].find('h1').text.startswith('imagepipe sharpen')
+
+    # if bld_dir.exists():
+    #     shutil.rmtree(bld_dir.parent)
+
+
 def test_click_text_build_works():
 
     bld_dir, text = build_click_example('validation', 'text')

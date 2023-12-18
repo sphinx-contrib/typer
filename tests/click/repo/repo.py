@@ -164,3 +164,7 @@ def copy(repo, src, dst, force):
     """
     for fn in src:
         click.echo(f"Copy from {fn} -> {dst}")
+
+
+if __name__ == "__main__":
+    cli()

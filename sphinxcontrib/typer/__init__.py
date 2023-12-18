@@ -287,7 +287,17 @@ class TyperDirective(rst.Directive):
             except Exception:
                 self.parent = TyperContext(
                     resolve_root_command(obj),
-                    info_name=imprt_path.split('.')[-1],
+                    # we can't trust the name attribute for the first
+                    # command - but it is probably the best bet for
+                    # subsequent commands - so if this is a nested
+                    # import pull out the name attribute if it exists
+                    # otherwise we use the last successful import path
+                    # part because it is probably the module with main
+                    info_name=(
+                        (getattr(obj, 'name', '')
+                         if getattr(self, 'parent', None) else '')
+                         or imprt_path.split('.')[-1]
+                    ),
                     parent=getattr(self, 'parent', None),
                 )
                 cmds = _filter_commands(self.parent, [attr])

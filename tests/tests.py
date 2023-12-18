@@ -183,7 +183,7 @@ def build_click_example(name, builder):
 
 
 def get_click_ex_help(name, *subcommands):
-    return subprocess.run(
+    ret = subprocess.run(
         [
             'poetry',
             'run',
@@ -193,7 +193,8 @@ def get_click_ex_help(name, *subcommands):
             '--help'
         ],
         capture_output=True
-    ).stdout.decode()
+    )
+    return ret.stdout.decode() or ret.stderr.decode()
 
 
 def check_html(html, help_txt, iframe_number=0, threshold=0.85):
@@ -242,6 +243,9 @@ def test_click_ex_validation():
 
 
 def test_click_ex_termui():
+    """
+    tests :make-sections: and :show-nested: options
+    """
     clear_callbacks()
 
     bld_dir, html = build_click_example('termui', 'html')
@@ -295,6 +299,87 @@ def test_click_ex_termui():
         shutil.rmtree(bld_dir.parent)
 
 
+def test_click_ex_repo():
+    """
+    tests :make-sections: and :show-nested: options
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('repo', 'html')
+
+    help_txt = get_click_ex_help('repo')
+    clone_help = get_click_ex_help('repo', 'clone')
+    commit_help = get_click_ex_help('repo', 'commit')
+    copy_help = get_click_ex_help('repo', 'copy')
+    delete_help = get_click_ex_help('repo', 'delete')
+    setuser_help = get_click_ex_help('repo', 'setuser')
+
+    # verifies :show-nested:
+    check_html(html, help_txt)
+    check_html(html, clone_help, 1)
+    check_html(html, commit_help, 2)
+    check_html(html, copy_help, 3)
+    check_html(html, delete_help, 4)
+    check_html(html, setuser_help, 5)
+
+    # verify :make-sections:
+    soup = bs(html, 'html.parser')
+    assert len(soup.find_all('section')) == 0, 'Should not have rendered any sections'
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
+def test_click_ex_naval():
+    """
+    tests :make-sections: and :show-nested: options for multi level hierarchies
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_click_example('naval', 'html')
+
+    help_txt = get_click_ex_help('naval')
+    mine_help = get_click_ex_help('naval', 'mine')
+    mine_remove_help = get_click_ex_help('naval', 'mine', 'remove')
+    mine_set_help = get_click_ex_help('naval', 'mine', 'set')
+    ship_help = get_click_ex_help('naval', 'ship')
+    ship_move_help = get_click_ex_help('naval', 'ship', 'move')
+    ship_new_help = get_click_ex_help('naval', 'ship', 'new')
+    ship_shoot_help = get_click_ex_help('naval', 'ship', 'shoot')
+
+    # verifies :show-nested:
+    check_svg(html, help_txt)
+    check_svg(html, mine_help, 1)
+    check_svg(html, mine_remove_help, 2, threshold=0.65)
+    check_svg(html, mine_set_help, 3, threshold=0.62)
+    check_svg(html, ship_help, 4)
+    check_svg(html, ship_move_help, 5, threshold=0.56)
+    check_svg(html, ship_new_help, 6)
+    check_svg(html, ship_shoot_help, 7, threshold=0.62)
+
+
+    check_svg(html, ship_new_help, 8)
+
+    # verify :make-sections:
+    soup = bs(html, 'html.parser')
+    assert len(soup.find_all('section')) == 9, 'Should have rendered 8 sections'
+
+    soup = bs(html, 'html.parser')
+    assert soup.find('section').find('h1').text.startswith('naval')
+    assert soup.find_all('section')[1].find('h2').text.startswith('mine')
+    assert soup.find_all('section')[2].find('h3').text.startswith('remove')
+    assert soup.find_all('section')[3].find('h3').text.startswith('set')
+    assert soup.find_all('section')[4].find('h2').text.startswith('ship')
+    assert soup.find_all('section')[5].find('h3').text.startswith('move')
+    assert soup.find_all('section')[6].find('h3').text.startswith('new')
+    assert soup.find_all('section')[7].find('h3').text.startswith('shoot')
+
+    assert soup.find_all('section')[8].find('h1').text.startswith('naval ship new')
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
 def test_click_text_build_works():
 
     bld_dir, text = build_click_example('validation', 'text')
@@ -307,7 +392,7 @@ def test_click_text_build_works():
 
 def test_click_latex_build_works():
     """
-    also tests the convert-png option
+    also tests the convert-png option and typer_svg2pdf and typer_convert_png callbacks.
     """
 
     bld_dir, latex = build_click_example('validation', 'latex')

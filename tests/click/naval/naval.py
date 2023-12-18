@@ -70,3 +70,7 @@ def mine_set(x, y, ty):
 def mine_remove(x, y):
     """Removes a mine at a specific coordinate."""
     click.echo(f"Removed mine at {x},{y}")
+
+
+if __name__ == "__main__":
+    cli()

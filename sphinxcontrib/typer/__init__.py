@@ -297,9 +297,12 @@ class TyperDirective(rst.Directive):
                     # otherwise we use the last successful import path
                     # part because it is probably the module with main
                     info_name=(
-                        (getattr(obj, 'name', '')
-                         if getattr(self, 'parent', None) else '')
-                         or imprt_path.split('.')[-1]
+                        (
+                            getattr(obj, 'name', '')
+                            if getattr(self, 'parent', None)
+                            else ''
+                        )
+                        or imprt_path.split('.')[-1]
                     ),
                     parent=getattr(self, 'parent', None),
                 )
@@ -410,9 +413,7 @@ class TyperDirective(rst.Directive):
         orig_getter = typer_rich_utils._get_rich_console
         orig_format_help = command.format_help
         command.rich_markup_mode = getattr(
-            self,
-            'markup_mode',
-            getattr(command, 'rich_markup_mode', None)
+            self, 'markup_mode', getattr(command, 'rich_markup_mode', None)
         )
         command.format_help = TyperGroup.format_help.__get__(
             command, command.__class__

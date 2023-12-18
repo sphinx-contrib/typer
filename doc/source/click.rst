@@ -54,3 +54,32 @@ Which results in:
     :make-sections:
     :show-nested:
     :convert-png: latex
+
+
+Chained Commands
+----------------
+
+Collections of commands also work:
+
+.. literalinclude:: ../examples/click/chained.py
+   :language: python
+   :linenos:
+
+
+We could generate the docs for this app with the following command:
+
+.. code-block:: rst
+
+    .. typer:: examples.click.chained:cli
+        :prog: chained
+        :show-nested:
+        :make-sections:
+
+
+Which results in:
+
+.. typer:: examples.click.imagepipe:cli
+    :prog: imagepipe
+    :show-nested:
+    :make-sections:
+    :convert-png: latex

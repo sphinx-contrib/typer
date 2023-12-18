@@ -46,7 +46,21 @@ black = "^23.12.0"
 mypy = "^1.7.1"
 readme-renderer = {extras = ["md"], version = "^42.0"}
 aiohttp = "^3.9.1"
-
+numpy = [
+    { version = ">=1.26", markers = "python_version > '3.8'" },
+    { version = "<=1.24", markers = "python_version <= '3.8'" },
+]
+scipy = [
+    { version = ">=1.11", markers = "python_version > '3.8'" },
+    { version = "<=1.10", markers = "python_version <= '3.8'" },
+]
+scikit-image = [
+    { version = ">=0.22", markers = "python_version > '3.8'" },
+    { version = "<=0.21", markers = "python_version <= '3.8'" },
+]
+scikit-learn = "^1.3.2"
+beautifulsoup4 = "^4.12.2"
+pypdf = "^3.17.3"
 
 [tool.poetry.group.html.dependencies]
 selenium = "^4.16.0"

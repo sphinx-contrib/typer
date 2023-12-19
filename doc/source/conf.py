@@ -1,6 +1,7 @@
 from datetime import datetime
 import sys
 from pathlib import Path
+from contextlib import contextmanager
 from sphinxcontrib import typer as sphinxcontrib_typer
 
 # Configuration file for the Sphinx documentation builder.
@@ -61,3 +62,27 @@ html_js_files = []
 todo_include_todos = True
 
 latex_engine = 'xelatex'
+
+
+@contextmanager
+def typer_get_web_driver(directive):
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.chrome.service import Service as ChromiumService
+    from webdriver_manager.chrome import ChromeDriverManager
+    from webdriver_manager.core.os_manager import ChromeType
+
+    # Set up headless browser options
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    # Initialize WebDriver
+    driver = webdriver.Chrome(
+        service=ChromiumService(
+            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+        )
+    )
+    yield driver
+    driver.quit()

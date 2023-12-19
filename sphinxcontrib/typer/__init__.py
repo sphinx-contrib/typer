@@ -748,11 +748,10 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         from selenium.webdriver.chrome.service import Service
         from webdriver_manager.chrome import ChromeDriverManager
     except ImportError:
-        directive.error(
+        raise directive.error(
             f'This feature requires selenium and webdriver-manager to be '
             'installed.'
         )
-        return 600
 
     # Set up headless browser options
     options = Options()

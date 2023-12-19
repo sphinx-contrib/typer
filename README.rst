@@ -134,15 +134,15 @@ Or to text::
                                                                                                 
     This is the callback function.                                                              
                                                                                                 
-    ╭─ Options ─────────────────────────────────────────────────────────────────────────────────╮
-    │ --flag1    --no-flag1      Flag 1. [default: no-flag1]                                    │
-    │ --flag2    --no-flag2      Flag 2. [default: no-flag2]                                    │
-    │ --help                     Show this message and exit.                                    │
-    ╰───────────────────────────────────────────────────────────────────────────────────────────╯
-    ╭─ Commands ────────────────────────────────────────────────────────────────────────────────╮
-    │ bar           This is the bar command.                                                    │
-    │ foo           This is the foo command.                                                    │
-    ╰───────────────────────────────────────────────────────────────────────────────────────────╯
+    ╭─ Options ──────────────────────────────────────────────────────────────────────────────╮
+    │ --flag1    --no-flag1      Flag 1. [default: no-flag1]                                 │
+    │ --flag2    --no-flag2      Flag 2. [default: no-flag2]                                 │
+    │ --help                     Show this message and exit.                                 │
+    ╰────────────────────────────────────────────────────────────────────────────────────────╯
+    ╭─ Commands ─────────────────────────────────────────────────────────────────────────────╮
+    │ bar           This is the bar command.                                                 │
+    │ foo           This is the foo command.                                                 │
+    ╰────────────────────────────────────────────────────────────────────────────────────────╯
 
 
 The ``typer`` directive has options for generating docs for all subcommands as well

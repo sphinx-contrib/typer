@@ -36,6 +36,7 @@ import click
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
+from rich import terminal_theme as rich_theme
 from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
@@ -95,6 +96,36 @@ class RenderTarget(str, Enum):
         return None
 
 
+class RenderTheme(str, Enum):
+    LIGHT = 'light'
+    MONOKAI = 'monokai'
+    DIMMED_MONOKAI = 'dimmed_monokai'
+    NIGHT_OWLISH = 'night_owlish'
+    DARK = 'dark'
+
+    def __str__(self) -> str:
+        return self.value
+
+    @classmethod
+    def __missing__(cls, argument) -> str:
+        if argument:
+            raise ValueError(
+                f'"{argument}" is not a valid RenderTheme: '
+                f'{[str(target) for target in cls]}'
+            )
+        return None
+
+    @property
+    def terminal_theme(self) -> rich_theme.TerminalTheme:
+        return {
+            RenderTheme.LIGHT: rich_theme.DEFAULT_TERMINAL_THEME,
+            RenderTheme.MONOKAI: rich_theme.MONOKAI,
+            RenderTheme.DIMMED_MONOKAI: rich_theme.DIMMED_MONOKAI,
+            RenderTheme.NIGHT_OWLISH: rich_theme.NIGHT_OWLISH,
+            RenderTheme.DARK: rich_theme.SVG_EXPORT_THEME,
+        }[self]
+
+
 Command = t.Union[click.Command, click.Group]
 
 """
@@ -144,6 +175,7 @@ class TyperDirective(rst.Directive):
         'show-nested': directives.flag,
         'markup-mode': directives.unchanged,
         'width': directives.nonnegative_int,
+        'theme': RenderTheme,
         'svg-kwargs': directives.unchanged,
         'text-kwargs': directives.unchanged,
         'html-kwargs': directives.unchanged,
@@ -165,6 +197,7 @@ class TyperDirective(rst.Directive):
     console: Console
     parent: click.Context
 
+    theme: RenderTheme = RenderTheme.LIGHT
     preferred: t.Optional[RenderTarget] = None
 
     markup_mode: typer_rich_utils.MarkupMode
@@ -172,7 +205,6 @@ class TyperDirective(rst.Directive):
     # the console_kwargs option can be a dict or a callable that returns a dict, the callable
     # must conform to the RenderOptions signature
     console_kwargs: RenderOptions
-
     html_kwargs: RenderOptions
     svg_kwargs: RenderOptions
     text_kwargs: RenderOptions
@@ -329,13 +361,17 @@ class TyperDirective(rst.Directive):
         )
 
     def get_html(self, **options):
-        return self.console.export_html(**options, clear=False)
+        return self.console.export_html(
+            **{'theme': self.theme.terminal_theme, **options, 'clear': False}
+        )
 
     def get_svg(self, **options):
-        return self.console.export_svg(**options, clear=False)
+        return self.console.export_svg(
+            **{'theme': self.theme.terminal_theme, **options, 'clear': False}
+        )
 
     def get_text(self, **options):
-        return self.console.export_text(**options, clear=False)
+        return self.console.export_text(**{**options, 'clear': False})
 
     def generate_nodes(
         self,
@@ -397,25 +433,27 @@ class TyperDirective(rst.Directive):
 
         def get_console(stderr: bool = False) -> Console:
             self.console = Console(
-                theme=Theme(
-                    {
-                        "option": typer_rich_utils.STYLE_OPTION,
-                        "switch": typer_rich_utils.STYLE_SWITCH,
-                        "negative_option": typer_rich_utils.STYLE_NEGATIVE_OPTION,
-                        "negative_switch": typer_rich_utils.STYLE_NEGATIVE_SWITCH,
-                        "metavar": typer_rich_utils.STYLE_METAVAR,
-                        "metavar_sep": typer_rich_utils.STYLE_METAVAR_SEPARATOR,
-                        "usage": typer_rich_utils.STYLE_USAGE,
-                    },
-                ),
-                highlighter=typer_rich_utils.highlighter,
-                color_system=typer_rich_utils.COLOR_SYSTEM,
-                force_terminal=typer_rich_utils.FORCE_TERMINAL,
-                width=self.width or typer_rich_utils.MAX_WIDTH,
-                stderr=stderr,
-                # overrides any defaults above
-                **resolve_options(self.console_kwargs, 'console-kwargs'),
-                record=True,
+                **{
+                    'theme': Theme(
+                        {
+                            "option": typer_rich_utils.STYLE_OPTION,
+                            "switch": typer_rich_utils.STYLE_SWITCH,
+                            "negative_option": typer_rich_utils.STYLE_NEGATIVE_OPTION,
+                            "negative_switch": typer_rich_utils.STYLE_NEGATIVE_SWITCH,
+                            "metavar": typer_rich_utils.STYLE_METAVAR,
+                            "metavar_sep": typer_rich_utils.STYLE_METAVAR_SEPARATOR,
+                            "usage": typer_rich_utils.STYLE_USAGE,
+                        },
+                    ),
+                    'highlighter': typer_rich_utils.highlighter,
+                    'color_system': typer_rich_utils.COLOR_SYSTEM,
+                    'force_terminal': typer_rich_utils.FORCE_TERMINAL,
+                    'width': self.width or typer_rich_utils.MAX_WIDTH,
+                    'stderr': stderr,
+                    # overrides any defaults above
+                    **resolve_options(self.console_kwargs, 'console-kwargs'),
+                    'record': True,
+                }
             )
             return self.console
 
@@ -545,6 +583,7 @@ class TyperDirective(rst.Directive):
             )
 
         self.preferred = self.options.get('preferred', None)
+        self.theme = self.options.get('theme', self.theme)
 
         builder_targets = {}
         for builder_target in self.options.get('builders', '').split(':'):
@@ -586,16 +625,18 @@ def typer_get_iframe_height(
     directive: TyperDirective, normal_cmd: str, html_page: str
 ) -> int:
     """
-    The default iframe height calculation function. The iframe height resolution proceeds as follows:
+    The default iframe height calculation function. The iframe height resolution proceeds as
+    follows:
 
-    1) Return the global iframe-height parameter if one was supplied as a parameter on the directive.
-    2) Check for a cached height value using the file at config.typer_iframe_height_cache_path and return
-       one if it exists.
-    3) Attempt to use Selenium to dynamically determine the height of the iframe. Padding will be added
-       from the config.typer_iframe_height_padding configuration value. The resulting height is then
-       cached back to config.typer_iframe_height_cache_path if that path is not None. If the attempt
-       to use Selenium fails (it is not installed) a warning is issued and a default height of 600 is
-       returned.
+    1) Return the global iframe-height parameter if one was supplied as a parameter on the
+       directive.
+    2) Check for a cached height value using the file at config.typer_iframe_height_cache_path
+       and return one if it exists.
+    3) Attempt to use Selenium to dynamically determine the height of the iframe. Padding will
+       be added from the config.typer_iframe_height_padding configuration value. The resulting
+       height is then cached back to config.typer_iframe_height_cache_path if that path is not
+       None. If the attempt to use Selenium fails (it is not installed) a warning is issued and
+       a default height of 600 is returned.
 
     :param directive: The TyperDirective instance
     :param normal_cmd: The normalized name of the command.

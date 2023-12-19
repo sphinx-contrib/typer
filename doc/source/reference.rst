@@ -18,6 +18,7 @@ Directive Options
         :builders: html=html,svg,text:latex=svg,text:text=text
         :iframe-height: 600
         :convert-png: html|latex
+        :theme: light
         :console-kwargs: import.path.to.console_kwargs
         :svg-kwargs: import.path.to.svg_kwargs
         :html-kwargs: import.path.to.html_kwargs
@@ -71,11 +72,11 @@ package called `mypackage`:
        the html and latex builders is *svg*.
    * - **builders**
      - ``string``
-     - Override the default builder priority render format lists. For example the preset is 
+     - Override the default builder priority render format lists. For example the preset is
        equivalent to::
-        
+
         html=html,svg,text:latex=svg,text:text=text
-      
+
        This parameter can be helpful if you're rendering your docs with multiple builders and
        do not want the preset formats.
    * - **iframe-height**
@@ -88,15 +89,25 @@ package called `mypackage`:
      - ``string``
      - Convert the rendered help to a png file for this delimited list of builders. The delimiter can
        be any character. For example:
-       
+
         .. code-block:: rst
-          
+
           .. typer:: import.path.to.module:main
             :convert-png: html|latex
 
        All formats, *html*, *text* and *svg* can be converted to png. For some builders, namely
        pdf the *html* and *svg* formats may require non standard fonts to be installed or
        otherwise render unpredictably. The png format is a good alternative for these builders.
+   * - **theme**
+     - ``string``
+     - A named rich terminal theme to use when rendering the help in either html or svg formats:
+
+        * light
+        * dark
+        * monokai
+        * dimmed_monokai
+        * night_owlish
+
    * - **console-kwargs**
      - ``string``
      - A python import path to a dictionary or callable returning a dictionary containing parameters to
@@ -105,17 +116,17 @@ package called `mypackage`:
    * - **svg-kwargs**
      - ``string``
      - A python import path to a dictionary or callable returning a dictionary containing parameters to
-       pass to the rich console export_svg function. 
+       pass to the rich console export_svg function.
        See `rich.console.export_svg <https://rich.readthedocs.io/en/latest/reference/console.html#rich.console.Console.export_svg>`_.
    * - **html-kwargs**
      - ``string``
      - A python import path to a dictionary or callable returning a dictionary containing parameters to
-       pass to the rich console export_html function. 
+       pass to the rich console export_html function.
        See `rich.console.export_html <https://rich.readthedocs.io/en/latest/reference/console.html#rich.console.Console.export_html>`_.
    * - **text-kwargs**
      - ``string``
      - A python import path to a dictionary or callable returning a dictionary containing parameters to
-       pass to the rich console export_text function. 
+       pass to the rich console export_text function.
        See `rich.console.export_text <https://rich.readthedocs.io/en/latest/reference/console.html#rich.console.Console.export_text>`_.
 
 
@@ -134,10 +145,10 @@ function our `conf.py` might look like:
     extensions = [
         'sphinxcontrib.typer',
     ]
-    
+
     # change the default iframe padding
     typer_iframe_height_padding = 20
-    
+
     # redfine the default render_html function
     def typer_render_html(
         directive: TyperDirective,

@@ -14,7 +14,11 @@ See the github_ repository for issue tracking and source code and install from
 PyPI_ with ``pip install sphinxcontrib-typer``.
 
 For example, commands and subcommands are renderable separately in three
-different formats svg, html and text:
+different formats:
+
+* svg
+* html
+* text
 
 .. typer:: examples.example.app
    :convert-png: latex
@@ -46,5 +50,6 @@ functions. See table of contents for more information.
 
    installation
    howto
+   themes
    reference
    changelog

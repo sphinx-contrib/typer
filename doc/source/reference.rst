@@ -13,7 +13,7 @@ Directive Options
         :make-sections:
         :show-nested:
         :markup-mode: markdown
-        :width: 80
+        :width: 65
         :preferred: html
         :builders: html=html,svg,text:latex=svg,text:text=text
         :iframe-height: 600
@@ -61,7 +61,7 @@ package called `mypackage`:
        or 'rich'. See the `Typer docs <https://typer.tiangolo.com/tutorial/commands/help/#rich-markdown-and-markup>`_.
    * - **width**
      - ``int``
-     - The width of the terminal window to use when rendering the help through rich. Default: 80.
+     - The width of the terminal window to use when rendering the help through rich. Default: 65.
        65 is a good value for text or html renderings on the read the docs theme.
    * - **preferred**
      - ``string``

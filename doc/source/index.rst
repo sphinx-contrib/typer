@@ -19,13 +19,17 @@ different formats svg, html and text:
 .. typer:: examples.example.app
    :convert-png: latex
 
+|
+
 .. typer:: examples.example.app:foo
    :width: 70
    :preferred: html
    :convert-png: latex
 
+|
+
 .. typer:: examples.example.app:bar
-   :width: 93
+   :width: 92
    :preferred: text
    :convert-png: latex
 
@@ -41,8 +45,6 @@ functions. See table of contents for more information.
    :caption: Contents:
 
    installation
-   usage
-   builders
-   click
+   howto
    reference
    changelog

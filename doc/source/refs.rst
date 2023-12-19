@@ -6,3 +6,5 @@
 .. _PyPI: https://pypi.org/project/sphinxcontrib-typer/
 .. _sphinxcontrib-typer: https://pypi.org/project/sphinxcontrib-typer/
 .. _selenium: https://pypi.org/project/selenium/
+.. _rich: https://rich.readthedocs.io/en/latest/
+.. _read_the_docs: https://sphinx-rtd-theme.readthedocs.io/en/stable/

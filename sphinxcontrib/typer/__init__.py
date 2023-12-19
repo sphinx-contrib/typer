@@ -523,7 +523,7 @@ class TyperDirective(rst.Directive):
                     ':prog:'
                 ) from err
 
-        self.width = self.options.get('width', 80)
+        self.width = self.options.get('width', 65)
         self.iframe_height = self.options.get('iframe-height', None)
 
         # if no builders supplied but convert-png is set,

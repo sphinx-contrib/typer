@@ -79,6 +79,11 @@ pillow = "^10.1.0"
 selenium = "^4.16.0"
 webdriver-manager = "^4.0.1"
 
+[tool.poetry.extras]
+html = ["selenium", "webdriver-manager"]
+pdf = ["cairosvg", "lxml", "tinycss2", "cssselect2"]
+png = ["selenium", "webdriver-manager", "pillow"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -129,7 +134,3 @@ line_length = 79
 [tool.doc8]
 max-line-length = 100
 
-[tool.poetry.extras]
-html = ["selenium", "webdriver-manager"]
-pdf = ["cairosvg", "lxml", "tinycss2", "cssselect2"]
-html = ["selenium", "webdriver-manager", "pillow"]

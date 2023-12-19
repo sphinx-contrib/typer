@@ -8,7 +8,6 @@ version: 2
 # Set the OS, Python version and other tools you might need
 build:
   os: ubuntu-22.04
-  image: latest
   tools:
     python: "3.12"
   jobs:

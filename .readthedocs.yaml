@@ -11,7 +11,7 @@ build:
   tools:
     python: "3.12"
   apt_packages:
-    - google-chrome-stable
+    - chromium-browser
   jobs:
     post_create_environment:
       # Install poetry

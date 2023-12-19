@@ -21,6 +21,8 @@ build:
       # Install dependencies with 'docs' dependency group
       # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
       - poetry install -E html -E pdf -E png
+      - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      - sudo apt install ./google-chrome-stable_current_amd64.deb
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:

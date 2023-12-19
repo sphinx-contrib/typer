@@ -1,6 +1,7 @@
 from datetime import datetime
 import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 from sphinxcontrib import typer as sphinxcontrib_typer
 
 # Configuration file for the Sphinx documentation builder.

@@ -81,7 +81,7 @@ def typer_get_web_driver(directive):
     # Initialize WebDriver
     driver = webdriver.Chrome(
         service=ChromiumService(
-            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM)
         )
     )
     yield driver

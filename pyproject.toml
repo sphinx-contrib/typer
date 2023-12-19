@@ -33,6 +33,13 @@ python = "^3.8"
 typer = "^0.9.0"
 sphinx = "^7.0.0"
 rich = "^13.7.0"
+pillow = "^10.1.0"
+selenium = "^4.16.0"
+webdriver-manager = "^4.0.1"
+cairosvg = "^2.7.1"
+lxml = "^4.9.3"
+tinycss2 = "^1.2.1"
+cssselect2 = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
 sphinx-rtd-theme = "^2.0.0"
@@ -62,22 +69,6 @@ scikit-learn = "^1.3.2"
 beautifulsoup4 = "^4.12.2"
 pypdf = "^3.17.3"
 
-[tool.poetry.group.html.dependencies]
-selenium = "^4.16.0"
-webdriver-manager = "^4.0.1"
-
-
-[tool.poetry.group.pdf.dependencies]
-cairosvg = "^2.7.1"
-lxml = "^4.9.3"
-tinycss2 = "^1.2.1"
-cssselect2 = "^0.7.0"
-
-
-[tool.poetry.group.png.dependencies]
-pillow = "^10.1.0"
-selenium = "^4.16.0"
-webdriver-manager = "^4.0.1"
 
 [tool.poetry.extras]
 html = ["selenium", "webdriver-manager"]

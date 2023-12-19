@@ -78,27 +78,27 @@ todo_include_todos = True
 
 def typer_render_html(*args, **kwargs):
     record_callback('typer_render_html')
-    return sphinxcontrib_typer.render_html_iframe(*args, **kwargs)
+    return sphinxcontrib_typer.typer_render_html(*args, **kwargs)
 
 
 def typer_get_iframe_height(*args, **kwargs):
     record_callback('typer_get_iframe_height')
-    return sphinxcontrib_typer.get_iframe_height(*args, **kwargs)
+    return sphinxcontrib_typer.typer_get_iframe_height(*args, **kwargs)
 
 
 def typer_svg2pdf(*args, **kwargs):
     record_callback('typer_svg2pdf')
-    return sphinxcontrib_typer.svg2pdf(*args, **kwargs)
+    return sphinxcontrib_typer.typer_svg2pdf(*args, **kwargs)
 
 
 def typer_convert_png(*args, **kwargs):
     record_callback('typer_convert_png')
-    return sphinxcontrib_typer.convert_png(*args, **kwargs)
+    return sphinxcontrib_typer.typer_convert_png(*args, **kwargs)
 
 
 def typer_get_web_driver(*args, **kwargs):
     record_callback('typer_get_web_driver')
-    return sphinxcontrib_typer.get_selenium_webdriver(*args, **kwargs)
+    return sphinxcontrib_typer.typer_get_web_driver(*args, **kwargs)
 
 
 typer_iframe_height_padding = 40

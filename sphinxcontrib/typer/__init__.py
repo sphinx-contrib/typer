@@ -121,6 +121,19 @@ RenderOptions = t.Union[t.Dict[str, t.Any], RenderCallback]
 
 
 class TyperDirective(rst.Directive):
+    """
+    A directive that renders a Typer app or Click command help text as either
+    an html, text literal or svg image node depending on the builder and
+    configuraton.
+
+    Ex usage.
+
+    .. code-block:: rst
+
+        .. typer:: import.path.to.typer.app:subcommand
+            :prog: script_name
+    """
+
     logger = logging.getLogger('sphinxcontrib.typer')
 
     has_content = False
@@ -147,7 +160,7 @@ class TyperDirective(rst.Directive):
     make_sections: bool
     width: int
     iframe_height: t.Optional[int] = None
-    convert_png: bool = False
+    typer_convert_png: bool = False
 
     console: Console
     parent: click.Context
@@ -438,7 +451,7 @@ class TyperDirective(rst.Directive):
             **export_options,
         )
 
-        if self.convert_png:
+        if self.typer_convert_png:
             png_path = Path(self.env.app.builder.outdir) / (
                 f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}.png'
             )
@@ -515,11 +528,13 @@ class TyperDirective(rst.Directive):
 
         # if no builders supplied but convert-png is set,
         # force png for all builders, otherwise require the builder
-        # to be in the list of convert_png builders
-        self.convert_png = 'convert-png' in self.options
-        if self.convert_png:
+        # to be in the list of typer_convert_png builders
+        self.typer_convert_png = 'convert-png' in self.options
+        if self.typer_convert_png:
             builders = self.options['convert-png'].strip()
-            self.convert_png = self.builder in builders if builders else True
+            self.typer_convert_png = (
+                self.builder in builders if builders else True
+            )
 
         for trg in ['console', *list(RenderTarget)]:
             setattr(
@@ -542,7 +557,7 @@ class TyperDirective(rst.Directive):
 
         builder_targets = {**self.builder_targets, **builder_targets}
 
-        if self.convert_png:
+        if self.typer_convert_png:
             self.target = (
                 self.preferred
                 or (
@@ -567,7 +582,7 @@ class TyperDirective(rst.Directive):
         )
 
 
-def get_iframe_height(
+def typer_get_iframe_height(
     directive: TyperDirective, normal_cmd: str, html_page: str
 ) -> int:
     """
@@ -582,7 +597,9 @@ def get_iframe_height(
        to use Selenium fails (it is not installed) a warning is issued and a default height of 600 is
        returned.
 
-    :param config: The SphinxConfig instance
+    :param directive: The TyperDirective instance
+    :param normal_cmd: The normalized name of the command.
+        (Subcommands are delimited by :)
     :param html_page: The full html document that will be rendered in the iframe
     """
     if directive.iframe_height is not None:
@@ -621,13 +638,18 @@ def get_iframe_height(
     return height
 
 
-def render_html_iframe(
+def typer_render_html(
     directive: TyperDirective, normal_cmd: str, html_page: str
 ) -> str:
     """
     The default html rendering function. This function returns the html console
     output wrapped in an iframe. The height of the iframe is dynamically determined
     by calling the configured typer_get_iframe_height function.
+
+    :param directive: The TyperDirective instance
+    :param normal_cmd: The normalized name of the command.
+        (Subcommands are delimited by :)
+    :param html_page: The html page rendered by console.export_html
     """
 
     height = directive.env.app.config.typer_get_iframe_height(
@@ -640,9 +662,9 @@ def render_html_iframe(
     )
 
 
-def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
+def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
     """
-    The default svg2pdf function. This function uses the cairosvg package to
+    The default typer_svg2pdf function. This function uses the cairosvg package to
     convert svg to pdf.
 
     .. note::
@@ -650,6 +672,10 @@ def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
         You will likely need to install fonts locally on your machine for the output
         of these conversions to look correct. The default font used by the svg
         export from rich is `FiraCode <https://github.com/tonsky/FiraCode/wiki/Installing>`_.
+
+    :param directive: The TyperDirective instance
+    :param svg_contents: The svg contents to convert to pdf
+    :param pdf_path: The path to write the pdf to
     """
     try:
         import cairosvg
@@ -660,9 +686,9 @@ def svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 
 
 @contextmanager
-def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
+def typer_get_web_driver(directive: TyperDirective) -> t.Any:
     """
-    The default get_web_driver function. This function returns a selenium web driver
+    The default get_web_driver function. This function yields a selenium web driver
     instance. It requires selenium to be installed.
 
     To override this function with a custom function see the ``typer_get_web_driver``
@@ -672,6 +698,8 @@ def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
 
         This must be implemented as a context manager that yields the webdriver
         instance and cleans it up on exit!
+
+    :param directive: The TyperDirective instance
     """
     try:
         from selenium import webdriver
@@ -699,14 +727,18 @@ def get_selenium_webdriver(directive: TyperDirective) -> t.Any:
     driver.quit()
 
 
-def convert_png(
+def typer_convert_png(
     directive: TyperDirective, rendered: str, png_path: t.Union[str, Path]
 ):
     """
-    The default convert_png function. This function writes a png file to the given
+    The default typer_convert_png function. This function writes a png file to the given
     path by taking a selenium screen shot. It requires selenium to be installed.
     To override this function with a custom function see the ``typer_convert_png``
     configuration parameter.
+
+    :param directive: The TyperDirective instance
+    :param rendered: The rendered command help. May be html, svg, or text.
+    :param png_path: The path to write the png to
     """
     import tempfile
     from io import BytesIO
@@ -772,23 +804,24 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     app.add_directive('typer', TyperDirective)
 
     app.add_config_value(
-        'typer_render_html', lambda _: render_html_iframe, 'env'
+        'typer_render_html', lambda _: typer_render_html, 'env'
     )
     app.add_config_value(
-        'typer_get_iframe_height', lambda _: get_iframe_height, 'env'
+        'typer_get_iframe_height', lambda _: typer_get_iframe_height, 'env'
     )
-    app.add_config_value('typer_svg2pdf', lambda _: svg2pdf, 'env')
+    app.add_config_value('typer_svg2pdf', lambda _: typer_svg2pdf, 'env')
     app.add_config_value('typer_iframe_height_padding', 30, 'env')
-    app.add_config_value('typer_markup_mode', None, 'env')
     app.add_config_value(
         'typer_iframe_height_cache_path',
         Path(app.confdir) / 'typer_cache.json',
         'env',
     )
 
-    app.add_config_value('typer_convert_png', lambda _: convert_png, 'env')
     app.add_config_value(
-        'typer_get_web_driver', lambda _: get_selenium_webdriver, 'env'
+        'typer_convert_png', lambda _: typer_convert_png, 'env'
+    )
+    app.add_config_value(
+        'typer_get_web_driver', lambda _: typer_get_web_driver, 'env'
     )
 
     return {

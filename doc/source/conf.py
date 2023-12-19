@@ -31,6 +31,7 @@ release = sphinxcontrib_typer.__version__
 # ones.
 extensions = [
     'sphinx_rtd_theme',
+    'sphinx.ext.autodoc',
     'sphinxcontrib.typer'
 ]
 
@@ -53,6 +54,9 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ['_static']
+html_css_files = ['style.css']
+html_js_files = []
 
 todo_include_todos = True
+

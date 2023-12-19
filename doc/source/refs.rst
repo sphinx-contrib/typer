@@ -5,3 +5,4 @@
 .. _documentation: https://sphinxcontrib-typer.readthedocs.io/en/latest/
 .. _PyPI: https://pypi.org/project/sphinxcontrib-typer/
 .. _sphinxcontrib-typer: https://pypi.org/project/sphinxcontrib-typer/
+.. _selenium: https://pypi.org/project/selenium/

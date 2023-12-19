@@ -27,7 +27,7 @@ jobs:
         run: |
           poetry config virtualenvs.in-project true
           poetry run pip install --upgrade pip
-          poetry install --with html --with pdf
+          poetry install -E all
       - name: Run Static Analysis
         run: |
           poetry run isort sphinxcontrib/typer
@@ -67,7 +67,7 @@ jobs:
       run: |
         poetry config virtualenvs.in-project true
         poetry run pip install --upgrade pip
-        poetry install --with html --with pdf
+        poetry install -E all
         poetry run pip install -U "${{ matrix.sphinx-version }}"
     - name: Run Unit Tests
       run: |

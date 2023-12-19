@@ -115,14 +115,14 @@ like so:
 
 This would generate html that looks like this:
 
-.. image:: ./example.html.png
+.. image:: https://github.com/bckohan/sphinxcontrib-typer/blob/main/example.html.png
    :width: 100%
    :align: center
 
 
 You could change ``:preferred:`` to svg, to generate svg instead:
 
-.. image:: ./example.svg
+.. image:: https://github.com/bckohan/sphinxcontrib-typer/blob/main/example.svg
    :width: 100%
    :align: center
 

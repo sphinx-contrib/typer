@@ -105,6 +105,7 @@ addopts = [
     "--doctest-modules",
     "--cov=sphinxcontrib.typer",
     "--cov-report=html",
+    "--cov-report=xml",
     "--cov-fail-under=80",
     "--cov-report=term-missing:skip-covered",
     "--no-cov-on-fail",

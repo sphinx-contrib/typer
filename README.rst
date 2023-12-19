@@ -115,14 +115,14 @@ like so:
 
 This would generate html that looks like this:
 
-.. image:: https://github.com/bckohan/sphinxcontrib-typer/blob/main/example.html.png
+.. image:: https://raw.githubusercontent.com/bckohan/sphinxcontrib-typer/main/example.html.png
    :width: 100%
    :align: center
 
 
 You could change ``:preferred:`` to svg, to generate svg instead:
 
-.. image:: https://github.com/bckohan/sphinxcontrib-typer/blob/main/example.svg
+.. image:: https://raw.githubusercontent.com/bckohan/sphinxcontrib-typer/main/example.svg
    :width: 100%
    :align: center
 
@@ -134,15 +134,15 @@ Or to text::
                                                                                                 
     This is the callback function.                                                              
                                                                                                 
-    ╭─ Options ──────────────────────────────────────────────────────────────────────────────╮
-    │ --flag1    --no-flag1      Flag 1. [default: no-flag1]                                 │
-    │ --flag2    --no-flag2      Flag 2. [default: no-flag2]                                 │
-    │ --help                     Show this message and exit.                                 │
-    ╰────────────────────────────────────────────────────────────────────────────────────────╯
-    ╭─ Commands ─────────────────────────────────────────────────────────────────────────────╮
-    │ bar           This is the bar command.                                                 │
-    │ foo           This is the foo command.                                                 │
-    ╰────────────────────────────────────────────────────────────────────────────────────────╯
+    ╭─ Options ──────────────────────────────────────────────────────────╮
+    │ --flag1    --no-flag1      Flag 1. [default: no-flag1]             │
+    │ --flag2    --no-flag2      Flag 2. [default: no-flag2]             │
+    │ --help                     Show this message and exit.             │
+    ╰────────────────────────────────────────────────────────────────────╯
+    ╭─ Commands ─────────────────────────────────────────────────────────╮
+    │ bar           This is the bar command.                             │
+    │ foo           This is the foo command.                             │
+    ╰────────────────────────────────────────────────────────────────────╯
 
 
 The ``typer`` directive has options for generating docs for all subcommands as well

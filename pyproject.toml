@@ -128,3 +128,8 @@ line_length = 79
 
 [tool.doc8]
 max-line-length = 100
+
+[tool.poetry.extras]
+html = ["selenium", "webdriver-manager"]
+pdf = ["cairosvg", "lxml", "tinycss2", "cssselect2"]
+html = ["selenium", "webdriver-manager", "pillow"]

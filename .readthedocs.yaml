@@ -10,12 +10,13 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-  apt_packages:
-    - snapd
-    - chromium-browser
+  # apt_packages:
+  #   - snapd
+  #   - chromium-browser
   jobs:
     post_create_environment:
-      - snap install chromium
+      - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      - dpkg -i google-chrome-stable_current_amd64.deb
       # Install poetry
       # https://python-poetry.org/docs/#installing-manually
       - pip install poetry

@@ -26,7 +26,7 @@ build:
     #   - poetry install -E html -E pdf -E png
   commands:
     - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - sudo dpkg -i google-chrome-stable_current_amd64.deb
+    - dpkg -i google-chrome-stable_current_amd64.deb --force-not-root --root=$HOME
     - pip install poetry
     - poetry install -E html -E pdf -E png
 

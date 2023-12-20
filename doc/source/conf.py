@@ -70,13 +70,7 @@ def typer_get_web_driver(directive):
     from pathlib import Path
     import os
 
-    print('#######################')
-    print(f'{os.environ['HOME']}')
-    print(os.getcwd())
-    print(os.listdir(os.environ['HOME']))
-    print('#######################')
-
-    if not Path('~/.rtd.build').is_file():
+    if not Path('~/.rtd.build').expanduser().is_file():
         with sphinxcontrib_typer.typer_get_web_driver(directive) as driver:
             yield driver
         return

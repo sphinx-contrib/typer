@@ -15,6 +15,7 @@ build:
     - chromium-browser
   jobs:
     post_create_environment:
+      - snap install chromium
       # Install poetry
       # https://python-poetry.org/docs/#installing-manually
       - pip install poetry

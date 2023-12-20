@@ -67,9 +67,9 @@ latex_engine = 'xelatex'
 
 @contextmanager
 def typer_get_web_driver(directive):
-    import os
+    from pathlib import Path
     
-    if not os.environ.get('READTHEDOCS_BUILD', None):
+    if not Path('~/.rtd.build').is_file():
         with sphinxcontrib_typer.typer_get_web_driver(directive) as driver:
             yield driver
         return

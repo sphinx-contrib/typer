@@ -63,4 +63,3 @@ html_js_files = []
 todo_include_todos = True
 
 latex_engine = 'xelatex'
-

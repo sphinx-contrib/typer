@@ -743,6 +743,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
     :param directive: The TyperDirective instance
     """
     import platform
+
     try:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -760,25 +761,25 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920x1080")
         return options
-    
+
     def chrome():
         from selenium.webdriver.chrome.service import Service
         from webdriver_manager.chrome import ChromeDriverManager
 
         return webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=opts()
+            service=Service(ChromeDriverManager().install()), options=opts()
         )
 
     def chromium():
         from selenium.webdriver.chrome.service import Service as ChromiumService
         from webdriver_manager.chrome import ChromeDriverManager
         from webdriver_manager.core.os_manager import ChromeType
+
         return webdriver.Chrome(
             service=ChromiumService(
                 ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
             ),
-            options=opts()
+            options=opts(),
         )
 
     def firefox():
@@ -786,35 +787,39 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         from selenium import webdriver
         from selenium.webdriver.firefox.service import Service as FirefoxService
         from webdriver_manager.firefox import GeckoDriverManager
+
         return webdriver.Firefox(
             service=FirefoxService(GeckoDriverManager().install()),
-            options=opts(Options())
+            options=opts(Options()),
         )
 
     def edge():
         from selenium.webdriver.edge.options import Options
         from selenium.webdriver.edge.service import Service as EdgeService
         from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
         options = Options()
         options.use_chromium = True
         return webdriver.Edge(
             service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=opts(options)
+            options=opts(options),
         )
 
     services = [
         chrome,
         edge if platform.system().lower() == 'windows' else chromium,
-        firefox
+        firefox,
     ]
-    
+
     driver = None
     for service in services:
         try:
             driver = service()
             break  # use the first one that works!
         except Exception as err:
-            directive.debug(f'Unable to initialize webdriver {service.__name__}: {err}')
+            directive.debug(
+                f'Unable to initialize webdriver {service.__name__}: {err}'
+            )
 
     if driver:
         yield driver

@@ -12,6 +12,7 @@ build:
     python: "3.12"
   apt_packages:
     - chromium-browser
+    - libasound2
   jobs:
     post_create_environment:
       - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

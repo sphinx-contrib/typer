@@ -17,7 +17,7 @@ build:
     post_create_environment:
       - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
       - dpkg -x google-chrome-stable_current_amd64.deb $HOME/chrome
-      - export PATH=$PATH:$HOME/chrome/opt/google/chrome/
+      - export READTHEDOCS_BUILD=1
       # Install poetry
       # https://python-poetry.org/docs/#installing-manually
       - pip install poetry

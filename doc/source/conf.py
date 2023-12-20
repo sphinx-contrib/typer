@@ -63,3 +63,34 @@ html_js_files = []
 todo_include_todos = True
 
 latex_engine = 'xelatex'
+
+
+@contextmanager
+def typer_get_web_driver(directive):
+    import os
+    
+    if not os.environ.get('READTHEDOCS_BUILD', None):
+        with sphinxcontrib_typer.typer_get_web_driver(directive) as driver:
+            yield driver
+        return
+    
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.chrome.service import Service
+    from webdriver_manager.chrome import ChromeDriverManager
+
+    # Set up headless browser options
+    options=Options()
+    options.binary_location = os.path.expanduser("~/chrome/opt/google/chrome/google-chrome")
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920x1080")
+
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+    yield driver
+    driver.quit()

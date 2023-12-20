@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.3
+======
+
+* Fixed repository location in package meta data.
+
 v0.1.2
 ======
 

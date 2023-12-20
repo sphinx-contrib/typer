@@ -5,7 +5,7 @@ description = "Auto generate docs for typer commands."
 authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
-repository = "https://github.com/bckohan/django-enum"
+repository = "https://github.com/bckohan/sphinxcontrib-typer"
 homepage = "https://sphinxcontrib-typer.readthedocs.io"
 classifiers = [
     "Development Status :: 5 - Production/Stable",

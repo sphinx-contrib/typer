@@ -13,7 +13,7 @@ build:
   # apt_packages:
   #   - snapd
   #   - chromium-browser
-  jobs:
+  #jobs:
     # post_create_environment:
     #   # Install poetry
     #   # https://python-poetry.org/docs/#installing-manually

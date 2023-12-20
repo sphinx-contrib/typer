@@ -295,7 +295,7 @@ class TyperDirective(rst.Directive):
                     traceback.format_exc()
                 )
 
-            raise self.error(err_msg)
+            raise self.severe(err_msg)
 
         return obj
 
@@ -427,7 +427,7 @@ class TyperDirective(rst.Directive):
                 options = options(self, name, command, ctx, parent)
             if isinstance(options, dict):
                 return options
-            raise self.error(
+            raise self.severe(
                 f'Invalid {parameter}, must be a dict or callable, got {type(options)}'
             )
 
@@ -525,7 +525,7 @@ class TyperDirective(rst.Directive):
         elif self.target == RenderTarget.TEXT:
             section += nodes.literal_block('', rendered)
         else:
-            raise self.error(f'Invalid typer render target: {self.target}')
+            raise self.severe(f'Invalid typer render target: {self.target}')
 
         # recurse through subcommands if we should
         if self.nested and isinstance(command, click.MultiCommand):
@@ -556,7 +556,7 @@ class TyperDirective(rst.Directive):
                     else re.split(r'::|[.:]', self.arguments[0])[-1]
                 )
             except Exception as err:
-                raise self.error(
+                raise self.severe(
                     'Unable to determine program name, please specify using '
                     ':prog:'
                 ) from err
@@ -723,7 +723,7 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
     except ImportError:
-        directive.error(f'cairosvg must be installed to render SVG in pdfs')
+        directive.severe(f'cairosvg must be installed to render SVG in pdfs')
 
 
 @contextmanager
@@ -748,7 +748,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
     except ImportError:
-        raise directive.error(
+        raise directive.severe(
             f'This feature requires selenium and webdriver-manager to be '
             'installed.'
         )
@@ -825,7 +825,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         yield driver
         driver.quit()
     else:
-        raise directive.error(f'Unable to initialize any webdriver.')
+        raise directive.severe(f'Unable to initialize any webdriver.')
 
 
 def typer_convert_png(

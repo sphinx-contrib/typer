@@ -82,6 +82,7 @@ def typer_get_web_driver(directive):
 
     # Set up headless browser options
     options=Options()
+    os.environ['PATH'] += os.pathsep + os.path.expanduser("~/chrome/opt/google/chrome")
     options.binary_location = os.path.expanduser("~/chrome/opt/google/chrome/google-chrome")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")

@@ -47,17 +47,14 @@ the features added. To build the docs run:
 Static Analysis
 ---------------
 
-`sphinxcontrib-typer` uses Pylint_ for python linting and mypy_ for static type
-checking. Header imports are also standardized using isort_. Before any PR is
-accepted the following must be run, and static analysis tools should not
-produce any errors or warnings. Disabling certain errors or warnings where
-justified is acceptable:
+Before any PR is accepted the following must be run, and static analysis
+tools should not produce any errors or warnings. Disabling certain errors
+or warnings where justified is acceptable:
 
 .. code-block:: bash
 
     poetry run isort sphinxcontrib/typer
     poetry run black sphinxcontrib/typer
-    poetry run pytest
     poetry run doc8 -q doc
     poetry check
     poetry run pip check

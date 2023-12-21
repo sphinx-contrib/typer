@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.4
+======
+
+* Meta data updated reflecting repository move into the sphinx-contrib organization .
+
 v0.1.3
 ======
 

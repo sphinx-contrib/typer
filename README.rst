@@ -19,8 +19,8 @@
 .. |Code Cov| image:: https://codecov.io/gh/bckohan/sphinxcontrib-typer/branch/main/graph/badge.svg?token=0IZOKN2DYL
    :target: https://codecov.io/gh/bckohan/sphinxcontrib-typer
 
-.. |Test Status| image:: https://github.com/bckohan/sphinxcontrib-typer/workflows/test/badge.svg
-   :target: https://github.com/bckohan/sphinxcontrib-typer/actions
+.. |Test Status| image:: https://github.com/sphinx-contrib/typer/workflows/test/badge.svg
+   :target: https://github.com/sphinx-contrib/typer/actions
 
 
 ===================
@@ -115,14 +115,14 @@ like so:
 
 This would generate html that looks like this:
 
-.. image:: https://raw.githubusercontent.com/bckohan/sphinxcontrib-typer/main/example.html.png
+.. image:: https://raw.githubusercontent.com/sphinx-contrib/typer/main/example.html.png
    :width: 100%
    :align: center
 
 
 You could change ``:preferred:`` to svg, to generate svg instead:
 
-.. image:: https://raw.githubusercontent.com/bckohan/sphinxcontrib-typer/main/example.svg
+.. image:: https://raw.githubusercontent.com/sphinx-contrib/typer/main/example.svg
    :width: 100%
    :align: center
 

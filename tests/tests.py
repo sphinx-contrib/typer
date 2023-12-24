@@ -558,3 +558,12 @@ def test_click_latex_build_works():
 
     if bld_dir.exists():
         shutil.rmtree(bld_dir.parent)
+
+
+def test_enums():
+    from sphinxcontrib.typer import RenderTarget, RenderTheme
+    for target in RenderTarget:
+        assert target.value == str(target)
+    for theme in RenderTheme:
+        assert theme.value == str(theme)
+

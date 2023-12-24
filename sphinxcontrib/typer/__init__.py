@@ -55,27 +55,26 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Brian Kohan'
 
 
-def _get_lazyload_commands(ctx: click.Context) -> t.Dict[str, click.Command]:
-    commands = {}
-    for command in ctx.command.list_commands(ctx):
-        commands[command] = ctx.command.get_command(ctx, command)
-
-    return commands
-
-
 def _filter_commands(
-    ctx: click.Context,
-    commands: t.Optional[t.List[str]] = None,
-) -> t.List[click.Command]:
-    """Return list of used commands."""
-    lookup = getattr(ctx.command, 'commands', {})
-    if not lookup and isinstance(ctx.command, click.MultiCommand):
-        lookup = _get_lazyload_commands(ctx)
-
-    if commands is None:
-        return sorted(lookup.values(), key=lambda item: item.name)
-
-    return [lookup[command] for command in commands if command in lookup]
+    ctx: click.Context, 
+    cmd_filter: t.Optional[t.List[str]] = None
+):
+    return sorted([
+        cmd for name, cmd in getattr(
+            ctx.command,
+            'commands',
+            {
+                name:
+                ctx.command.get_command(ctx, name)
+                for name in getattr(
+                    ctx.command,
+                    'list_commands',
+                    lambda _: []
+                )(ctx) or cmd_filter
+            }
+        ).items()
+        if not cmd_filter or name in cmd_filter
+    ], key=lambda item: item.name)
 
 
 class RenderTarget(str, Enum):
@@ -85,15 +84,6 @@ class RenderTarget(str, Enum):
 
     def __str__(self) -> str:
         return self.value
-
-    @classmethod
-    def __missing__(cls, argument) -> str:
-        if argument:
-            raise ValueError(
-                f'"{argument}" is not a valid RenderTarget: '
-                f'{[str(target) for target in cls]}'
-            )
-        return None
 
 
 class RenderTheme(str, Enum):
@@ -105,15 +95,6 @@ class RenderTheme(str, Enum):
 
     def __str__(self) -> str:
         return self.value
-
-    @classmethod
-    def __missing__(cls, argument) -> str:
-        if argument:
-            raise ValueError(
-                f'"{argument}" is not a valid RenderTheme: '
-                f'{[str(target) for target in cls]}'
-            )
-        return None
 
     @property
     def terminal_theme(self) -> rich_theme.TerminalTheme:

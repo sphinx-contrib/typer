@@ -69,7 +69,7 @@ def _filter_commands(
                     for name in getattr(
                         ctx.command, 'list_commands', lambda _: []
                     )(ctx)
-                    or cmd_filter
+                    or cmd_filter or []
                 },
             ).items()
             if not cmd_filter or name in cmd_filter

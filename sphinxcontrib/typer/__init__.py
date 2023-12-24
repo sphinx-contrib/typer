@@ -56,25 +56,26 @@ __copyright__ = 'Copyright 2023 Brian Kohan'
 
 
 def _filter_commands(
-    ctx: click.Context, 
-    cmd_filter: t.Optional[t.List[str]] = None
+    ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None
 ):
-    return sorted([
-        cmd for name, cmd in getattr(
-            ctx.command,
-            'commands',
-            {
-                name:
-                ctx.command.get_command(ctx, name)
-                for name in getattr(
-                    ctx.command,
-                    'list_commands',
-                    lambda _: []
-                )(ctx) or cmd_filter
-            }
-        ).items()
-        if not cmd_filter or name in cmd_filter
-    ], key=lambda item: item.name)
+    return sorted(
+        [
+            cmd
+            for name, cmd in getattr(
+                ctx.command,
+                'commands',
+                {
+                    name: ctx.command.get_command(ctx, name)
+                    for name in getattr(
+                        ctx.command, 'list_commands', lambda _: []
+                    )(ctx)
+                    or cmd_filter
+                },
+            ).items()
+            if not cmd_filter or name in cmd_filter
+        ],
+        key=lambda item: item.name,
+    )
 
 
 class RenderTarget(str, Enum):
@@ -752,7 +753,9 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         )
 
     def chromium():
-        from selenium.webdriver.chrome.service import Service as ChromiumService
+        from selenium.webdriver.chrome.service import (
+            Service as ChromiumService,
+        )
         from webdriver_manager.chrome import ChromeDriverManager
         from webdriver_manager.core.os_manager import ChromeType
 
@@ -764,9 +767,11 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         )
 
     def firefox():
-        from selenium.webdriver.firefox.options import Options
         from selenium import webdriver
-        from selenium.webdriver.firefox.service import Service as FirefoxService
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.service import (
+            Service as FirefoxService,
+        )
         from webdriver_manager.firefox import GeckoDriverManager
 
         return webdriver.Firefox(

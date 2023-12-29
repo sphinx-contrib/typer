@@ -16,8 +16,8 @@
 .. |Documentation Status| image:: https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest
    :target: http://sphinxcontrib-typer.readthedocs.io/?badge=latest/
 
-.. |Code Cov| image:: https://codecov.io/gh/bckohan/sphinxcontrib-typer/branch/main/graph/badge.svg?token=0IZOKN2DYL
-   :target: https://codecov.io/gh/bckohan/sphinxcontrib-typer
+.. |Code Cov| image:: https://codecov.io/gh/sphinx-contrib/typer/branch/main/graph/badge.svg?token=0IZOKN2DYL
+   :target: https://app.codecov.io/gh/sphinx-contrib/typer
 
 .. |Test Status| image:: https://github.com/sphinx-contrib/typer/workflows/test/badge.svg
    :target: https://github.com/sphinx-contrib/typer/actions

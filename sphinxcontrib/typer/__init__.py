@@ -17,6 +17,7 @@ r"""
                            |___/|_|                                               
 
 """
+
 import base64
 import contextlib
 import hashlib
@@ -754,9 +755,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         )
 
     def chromium():
-        from selenium.webdriver.chrome.service import (
-            Service as ChromiumService,
-        )
+        from selenium.webdriver.chrome.service import Service as ChromiumService
         from webdriver_manager.chrome import ChromeDriverManager
         from webdriver_manager.core.os_manager import ChromeType
 
@@ -770,9 +769,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
     def firefox():
         from selenium import webdriver
         from selenium.webdriver.firefox.options import Options
-        from selenium.webdriver.firefox.service import (
-            Service as FirefoxService,
-        )
+        from selenium.webdriver.firefox.service import Service as FirefoxService
         from webdriver_manager.firefox import GeckoDriverManager
 
         return webdriver.Firefox(

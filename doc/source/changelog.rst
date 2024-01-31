@@ -2,10 +2,15 @@
 Change Log
 ==========
 
+v0.1.5
+======
+
+* Fixed `When the sphinx app is an attribute on a class the import fails. <https://github.com/sphinx-contrib/typer/issues/10>`_
+
 v0.1.4
 ======
 
-* Meta data updated reflecting repository move into the sphinx-contrib organization .
+* Meta data updated reflecting repository move into the sphinx-contrib organization.
 
 v0.1.3
 ======

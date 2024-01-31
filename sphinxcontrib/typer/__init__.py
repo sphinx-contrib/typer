@@ -47,7 +47,7 @@ from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 1, 4)
+VERSION = (0, 1, 5)
 
 __title__ = 'SphinxContrib Typer'
 __version__ = '.'.join(str(i) for i in VERSION)
@@ -315,7 +315,9 @@ class TyperDirective(rst.Directive):
             obj, attr, imprt_path
         ) -> t.Union[click.Command, click.Group]:
             try:
-                return resolve_root_command(getattr(obj, attr))
+                return resolve_root_command(getattr(obj, attr)) or getattr(
+                    obj, attr
+                )
             except Exception:
                 self.parent = TyperContext(
                     resolve_root_command(obj),

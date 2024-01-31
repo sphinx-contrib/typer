@@ -47,7 +47,7 @@ from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 1, 6)
+VERSION = (0, 1, 7)
 
 __title__ = 'SphinxContrib Typer'
 __version__ = '.'.join(str(i) for i in VERSION)
@@ -341,7 +341,7 @@ class TyperDirective(rst.Directive):
                     cmds = _filter_commands(self.parent, [attr])
                     if cmds:
                         return cmds[0]
-                except IndexError:
+                except (IndexError, rst.DirectiveError):
                     if attr_obj:
                         return attr_obj
                 raise

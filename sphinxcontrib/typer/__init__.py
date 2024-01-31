@@ -47,7 +47,7 @@ from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 1, 5)
+VERSION = (0, 1, 6)
 
 __title__ = 'SphinxContrib Typer'
 __version__ = '.'.join(str(i) for i in VERSION)
@@ -314,32 +314,36 @@ class TyperDirective(rst.Directive):
         def access_command(
             obj, attr, imprt_path
         ) -> t.Union[click.Command, click.Group]:
+            attr_obj = None
             try:
-                return resolve_root_command(getattr(obj, attr)) or getattr(
-                    obj, attr
-                )
+                attr_obj = getattr(obj, attr)
+                return resolve_root_command(attr_obj)
             except Exception:
-                self.parent = TyperContext(
-                    resolve_root_command(obj),
-                    # we can't trust the name attribute for the first
-                    # command - but it is probably the best bet for
-                    # subsequent commands - so if this is a nested
-                    # import pull out the name attribute if it exists
-                    # otherwise we use the last successful import path
-                    # part because it is probably the module with main
-                    info_name=(
-                        (
-                            getattr(obj, 'name', '')
-                            if getattr(self, 'parent', None)
-                            else ''
-                        )
-                        or imprt_path.split('.')[-1]
-                    ),
-                    parent=getattr(self, 'parent', None),
-                )
-                cmds = _filter_commands(self.parent, [attr])
-                if cmds:
-                    return cmds[0]
+                try:
+                    self.parent = TyperContext(
+                        resolve_root_command(obj),
+                        # we can't trust the name attribute for the first
+                        # command - but it is probably the best bet for
+                        # subsequent commands - so if this is a nested
+                        # import pull out the name attribute if it exists
+                        # otherwise we use the last successful import path
+                        # part because it is probably the module with main
+                        info_name=(
+                            (
+                                getattr(obj, 'name', '')
+                                if getattr(self, 'parent', None)
+                                else ''
+                            )
+                            or imprt_path.split('.')[-1]
+                        ),
+                        parent=getattr(self, 'parent', None),
+                    )
+                    cmds = _filter_commands(self.parent, [attr])
+                    if cmds:
+                        return cmds[0]
+                except IndexError:
+                    if attr_obj:
+                        return attr_obj
                 raise
 
         return resolve_root_command(

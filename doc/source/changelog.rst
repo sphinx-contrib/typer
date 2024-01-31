@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+v0.1.6
+======
+
+* Fixed `nested class attribute import paths for typer apps are broken. <https://github.com/sphinx-contrib/typer/issues/11>`_
+
+
 v0.1.5
 ======
 

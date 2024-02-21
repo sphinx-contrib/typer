@@ -47,7 +47,7 @@ from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 1, 7)
+VERSION = (0, 1, 8)
 
 __title__ = 'SphinxContrib Typer'
 __version__ = '.'.join(str(i) for i in VERSION)
@@ -55,6 +55,9 @@ __author__ = 'Brian Kohan'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023 Brian Kohan'
 
+
+SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
+SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
 
 def _filter_commands(
     ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None
@@ -717,7 +720,11 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 
 
 @contextmanager
-def typer_get_web_driver(directive: TyperDirective) -> t.Any:
+def typer_get_web_driver(
+    directive: TyperDirective,
+    width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
+    height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT
+) -> t.Any:
     """
     The default get_web_driver function. This function yields a selenium web driver
     instance. It requires selenium to be installed.
@@ -749,7 +756,7 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920x1080")
+        options.add_argument(f"--window-size={width}x{height}")
         return options
 
     def chrome():
@@ -819,7 +826,11 @@ def typer_get_web_driver(directive: TyperDirective) -> t.Any:
 
 
 def typer_convert_png(
-    directive: TyperDirective, rendered: str, png_path: t.Union[str, Path]
+    directive: TyperDirective,
+    rendered: str,
+    png_path: t.Union[str, Path],
+    selenium_width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
+    selenium_height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT
 ):
     """
     The default typer_convert_png function. This function writes a png file to the given
@@ -830,6 +841,10 @@ def typer_convert_png(
     :param directive: The TyperDirective instance
     :param rendered: The rendered command help. May be html, svg, or text.
     :param png_path: The path to write the png to
+    :param selenium_width: The width of the selenium window - must be larger than the png
+        to avoid cropping, default auto determine
+    :param selenium_height: The height of the selenium window - must be larger than the png
+        to avoid cropping, default auto determine
     """
     import tempfile
     from io import BytesIO
@@ -859,7 +874,17 @@ def typer_convert_png(
             # Get the element's location and size
             location = element.location
             size = element.size
-
+            
+            if size['width'] > selenium_width or size['height'] > selenium_height:
+                # if our window is too small, resize it with some padding and try again
+                return typer_convert_png(
+                    directive,
+                    rendered,
+                    png_path,
+                    size['width']+100,
+                    size['height']+100
+                )
+            
             # Open the screenshot and crop it to the element
             im = Image.open(BytesIO(png))
             left = location['x'] * pixel_ratio

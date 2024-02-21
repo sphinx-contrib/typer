@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.8
+======
+
+* Fixed `When using convert-png sometimes the pngs images are cutoff too short. <https://github.com/sphinx-contrib/typer/issues/12>`_
+
 v0.1.7
 ======
 

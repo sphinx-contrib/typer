@@ -59,6 +59,7 @@ __copyright__ = 'Copyright 2023 Brian Kohan'
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
 SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
 
+
 def _filter_commands(
     ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None
 ):
@@ -723,7 +724,7 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 def typer_get_web_driver(
     directive: TyperDirective,
     width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
-    height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT
+    height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT,
 ) -> t.Any:
     """
     The default get_web_driver function. This function yields a selenium web driver
@@ -830,7 +831,7 @@ def typer_convert_png(
     rendered: str,
     png_path: t.Union[str, Path],
     selenium_width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
-    selenium_height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT
+    selenium_height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT,
 ):
     """
     The default typer_convert_png function. This function writes a png file to the given
@@ -874,17 +875,20 @@ def typer_convert_png(
             # Get the element's location and size
             location = element.location
             size = element.size
-            
-            if size['width'] > selenium_width or size['height'] > selenium_height:
+
+            if (
+                size['width'] > selenium_width
+                or size['height'] > selenium_height
+            ):
                 # if our window is too small, resize it with some padding and try again
                 return typer_convert_png(
                     directive,
                     rendered,
                     png_path,
-                    size['width']+100,
-                    size['height']+100
+                    size['width'] + 100,
+                    size['height'] + 100,
                 )
-            
+
             # Open the screenshot and crop it to the element
             im = Image.open(BytesIO(png))
             left = location['x'] * pixel_ratio

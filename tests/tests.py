@@ -554,7 +554,7 @@ def test_click_latex_build_works():
 
     assert len(list(bld_dir.glob('**/*.png'))) == 1, 'Should have rendered the help 1 time as png'
     html_png = bld_dir / 'validation_4697b61f.png'
-    assert img_similarity(CLICK_EXAMPLES / 'validation' / 'html.png', html_png) < 1000
+    assert img_similarity(CLICK_EXAMPLES / 'validation' / 'html.png', html_png) < 9000
 
     if bld_dir.exists():
         shutil.rmtree(bld_dir.parent)

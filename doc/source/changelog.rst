@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.9
+======
+
+* Fixed `Some dependencies have unnecessarily recent version requirements. <https://github.com/sphinx-contrib/typer/issues/13>`_
+
 v0.1.8
 ======
 

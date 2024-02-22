@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.10
+======
+
+* Fixed `Pillow version not specified for png optional dependency. <https://github.com/sphinx-contrib/typer/issues/14>`_
+
 v0.1.9
 ======
 

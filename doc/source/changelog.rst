@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.11
+=======
+
+* Fixed `Typer dependency erroneously downgraded. <https://github.com/sphinx-contrib/typer/issues/15>`_
+
 v0.1.10
 =======
 

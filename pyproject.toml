@@ -50,7 +50,7 @@ pytest-cov = "^4.1.0"
 doc8 = ">0.1"
 black = ">=23.12,<25.0"
 mypy = "^1.7.1"
-readme-renderer = {extras = ["md"], version = "^42.0"}
+readme-renderer = {extras = ["md"], version = ">=42,<44"}
 aiohttp = "^3.9.1"
 numpy = [
     { version = ">=1.26", markers = "python_version > '3.8'" },

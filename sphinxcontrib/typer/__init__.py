@@ -923,13 +923,29 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive('typer', TyperDirective)
 
+    def get_default_render_html(_):
+        return typer_render_html
+    
+    def get_default_get_iframe_height(_):
+        return typer_get_iframe_height
+
+    def get_default_svg2pdf(_):
+        return typer_svg2pdf
+
+    def get_default_convert_png(_):
+        return typer_convert_png
+
+    def get_default_web_driver(_):
+        return typer_get_web_driver
+
     app.add_config_value(
-        'typer_render_html', lambda _: typer_render_html, 'env'
+        'typer_render_html', get_default_render_html, 'env'
     )
+
     app.add_config_value(
-        'typer_get_iframe_height', lambda _: typer_get_iframe_height, 'env'
+        'typer_get_iframe_height', get_default_get_iframe_height, 'env'
     )
-    app.add_config_value('typer_svg2pdf', lambda _: typer_svg2pdf, 'env')
+    app.add_config_value('typer_svg2pdf', get_default_svg2pdf, 'env')
     app.add_config_value('typer_iframe_height_padding', 30, 'env')
     app.add_config_value(
         'typer_iframe_height_cache_path',
@@ -938,10 +954,10 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
 
     app.add_config_value(
-        'typer_convert_png', lambda _: typer_convert_png, 'env'
+        'typer_convert_png', get_default_convert_png, 'env'
     )
     app.add_config_value(
-        'typer_get_web_driver', lambda _: typer_get_web_driver, 'env'
+        'typer_get_web_driver', get_default_web_driver, 'env'
     )
 
     return {

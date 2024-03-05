@@ -13,15 +13,17 @@ sphinx-click_ may be more appropriate and will also work for Typer_ commands.
 See the github_ repository for issue tracking and source code and install from
 PyPI_ with ``pip install sphinxcontrib-typer``.
 
-For example, commands and subcommands are renderable separately in three
+For example, commands and subcommands are renderable separately in four
 different formats:
 
 * svg
 * html
 * text
+* png
 
 .. typer:: examples.example.app
    :convert-png: latex
+   :preferred: html
 
 |
 

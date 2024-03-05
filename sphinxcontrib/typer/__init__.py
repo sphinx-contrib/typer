@@ -925,7 +925,7 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
 
     def get_default_render_html(_):
         return typer_render_html
-    
+
     def get_default_get_iframe_height(_):
         return typer_get_iframe_height
 
@@ -938,9 +938,7 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     def get_default_web_driver(_):
         return typer_get_web_driver
 
-    app.add_config_value(
-        'typer_render_html', get_default_render_html, 'env'
-    )
+    app.add_config_value('typer_render_html', get_default_render_html, 'env')
 
     app.add_config_value(
         'typer_get_iframe_height', get_default_get_iframe_height, 'env'
@@ -953,12 +951,8 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
         'env',
     )
 
-    app.add_config_value(
-        'typer_convert_png', get_default_convert_png, 'env'
-    )
-    app.add_config_value(
-        'typer_get_web_driver', get_default_web_driver, 'env'
-    )
+    app.add_config_value('typer_convert_png', get_default_convert_png, 'env')
+    app.add_config_value('typer_get_web_driver', get_default_web_driver, 'env')
 
     return {
         'parallel_read_safe': True,

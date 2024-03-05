@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.1.12
+=======
+
+* Fixed `Typer with sphinx-autobuild going on infinite loop <https://github.com/sphinx-contrib/typer/issues/17>`_
+
 v0.1.11
 =======
 

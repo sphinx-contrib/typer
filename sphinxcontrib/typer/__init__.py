@@ -42,12 +42,13 @@ from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
 from sphinx.util import logging
+
 from typer import rich_utils as typer_rich_utils
 from typer.main import Typer, TyperGroup
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 1, 12)
+VERSION = (0, 2, 0)
 
 __title__ = 'SphinxContrib Typer'
 __version__ = '.'.join(str(i) for i in VERSION)

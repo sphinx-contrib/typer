@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.2.0
+======
+
+* Fixed typer 0.12.0 package split breaks upgrades. <https://github.com/sphinx-contrib/typer/issues/18>`_
+
 v0.1.12
 =======
 

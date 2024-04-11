@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.2.1
+======
+
+* Fixed `typer-slim[all] no longer works to bring in rich <https://github.com/sphinx-contrib/typer/issues/19>`_
+
 v0.2.0
 ======
 

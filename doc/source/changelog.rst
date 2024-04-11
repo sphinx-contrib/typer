@@ -5,6 +5,7 @@ Change Log
 v0.2.1
 ======
 
+* Implemented `Convert README and CONTRIBUTING to markdown. <https://github.com/sphinx-contrib/typer/issues/20>`_
 * Fixed `typer-slim[all] no longer works to bring in rich <https://github.com/sphinx-contrib/typer/issues/19>`_
 
 v0.2.0

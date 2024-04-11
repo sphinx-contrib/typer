@@ -37,7 +37,7 @@ extensions = [
     ...
     'sphinxcontrib.typer',
     ...
-    ]
+]
 ```
 
 ## Usage

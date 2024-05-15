@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+v0.2.2
+======
+
+* Fixed `Move to ruff for tooling <https://github.com/sphinx-contrib/typer/issues/22>`_
+* Fixed `Fix WARNING: cannot cache unpickable configuration value <https://github.com/sphinx-contrib/typer/issues/21>`_
+
 v0.2.1
 ======
 

@@ -31,24 +31,23 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 sphinx = ">=4.0.0"
+
 selenium = "^4.0.0"
 webdriver-manager = ">=3.0.0,<5.0.0"
 cairosvg = "^2.4.0"
 lxml = ">=4.2.0,<6.0.0"
 typer-slim = {extras = ["standard"], version = ">=0.12.0,<1.0.0"}
 pillow = ">=8.0.0"
+ruff = "^0.4.4"
 
 [tool.poetry.group.dev.dependencies]
 sphinx-rtd-theme = ">=1.0.0"
 ipdb = "^0.13.13"
 pytest = ">=7.4.3,<9.0.0"
-isort = "^5.13.2"
-pylint = "^3.0.3"
 pytest-cov = "^4.1.0"
 doc8 = ">0.1"
-black = ">=23.12,<25.0"
 mypy = "^1.7.1"
 readme-renderer = {extras = ["md"], version = ">=42,<44"}
 aiohttp = "^3.9.1"
@@ -83,23 +82,17 @@ png = ["selenium", "webdriver-manager", "pillow"]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 80
-target-version = ['py38']
-skip-string-normalization = true
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.tox
-    | \.venv
-    | build
-    | dist
-    | doc
-  )
-)
-'''
+[tool.ruff]
+line-length = 88
+exclude = [
+    "doc",
+    "dist"
+]
+
+[tool.ruff.lint]
+exclude = [
+    "tests/**/*"
+]
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -118,9 +111,5 @@ addopts = [
     #"--flake8",
 ]
 
-[tool.isort]
-profile = "black"
-
 [tool.doc8]
 max-line-length = 100
-

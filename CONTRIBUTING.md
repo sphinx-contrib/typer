@@ -38,13 +38,14 @@ Before any PR is accepted the following must be run, and static analysis
 tools should not produce any errors or warnings. Disabling certain errors
 or warnings where justified is acceptable:
 
+
 ```bash
-poetry run isort sphinxcontrib/typer
-poetry run black sphinxcontrib/typer
-poetry run doc8 -q doc
+poetry run ruff format sphinxcontrib/typer
+poetry run ruff check --fix --select I sphinxcontrib/typer
+poetry run ruff check sphinxcontrib/typer
 poetry check
 poetry run pip check
-poetry run python -m readme_renderer ./README.rst
+poetry run python -m readme_renderer ./README.md
 ```
 
 

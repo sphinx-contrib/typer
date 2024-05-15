@@ -41,12 +41,12 @@ jobs:
           poetry install -E html -E png -E pdf
       - name: Run Static Analysis
         run: |
-          poetry run isort sphinxcontrib/typer
-          poetry run black sphinxcontrib/typer --check
-          poetry run doc8 -q doc
+          poetry run ruff format sphinxcontrib/typer
+          poetry run ruff check --fix --select I sphinxcontrib/typer
+          poetry run ruff check sphinxcontrib/typer
           poetry check
           poetry run pip check
-          poetry run python -m readme_renderer ./README.md -o /tmp/README.html
+          poetry run python -m readme_renderer ./README.md
 
   build:
     runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
       with:
         detached: true
       timeout-minutes: 60
-      
+
     - name: Run Unit Tests
       run: |
         poetry run pytest

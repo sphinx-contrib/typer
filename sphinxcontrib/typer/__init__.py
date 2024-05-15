@@ -50,31 +50,27 @@ from typer.models import Context as TyperContext
 
 VERSION = (0, 2, 1)
 
-__title__ = 'SphinxContrib Typer'
-__version__ = '.'.join(str(i) for i in VERSION)
-__author__ = 'Brian Kohan'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2023 Brian Kohan'
+__title__ = "SphinxContrib Typer"
+__version__ = ".".join(str(i) for i in VERSION)
+__author__ = "Brian Kohan"
+__license__ = "MIT"
+__copyright__ = "Copyright 2023 Brian Kohan"
 
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
 SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
 
 
-def _filter_commands(
-    ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None
-):
+def _filter_commands(ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None):
     return sorted(
         [
             cmd
             for name, cmd in getattr(
                 ctx.command,
-                'commands',
+                "commands",
                 {
                     name: ctx.command.get_command(ctx, name)
-                    for name in getattr(
-                        ctx.command, 'list_commands', lambda _: []
-                    )(ctx)
+                    for name in getattr(ctx.command, "list_commands", lambda _: [])(ctx)
                     or cmd_filter
                     or []
                 },
@@ -86,20 +82,20 @@ def _filter_commands(
 
 
 class RenderTarget(str, Enum):
-    HTML = 'html'
-    SVG = 'svg'
-    TEXT = 'text'
+    HTML = "html"
+    SVG = "svg"
+    TEXT = "text"
 
     def __str__(self) -> str:
         return self.value
 
 
 class RenderTheme(str, Enum):
-    LIGHT = 'light'
-    MONOKAI = 'monokai'
-    DIMMED_MONOKAI = 'dimmed_monokai'
-    NIGHT_OWLISH = 'night_owlish'
-    DARK = 'dark'
+    LIGHT = "light"
+    MONOKAI = "monokai"
+    DIMMED_MONOKAI = "dimmed_monokai"
+    NIGHT_OWLISH = "night_owlish"
+    DARK = "dark"
 
     def __str__(self) -> str:
         return self.value
@@ -123,7 +119,7 @@ must all have the RenderCallback function signature:
 """
 RenderCallback = t.Callable[
     [
-        'TyperDirective',  # directive - the TyperDirective instance
+        "TyperDirective",  # directive - the TyperDirective instance
         str,  # name - the name of the command
         Command,  # command - the command instance
         click.Context,  # ctx - the click.Context instance
@@ -154,25 +150,25 @@ class TyperDirective(rst.Directive):
             :prog: script_name
     """
 
-    logger = logging.getLogger('sphinxcontrib.typer')
+    logger = logging.getLogger("sphinxcontrib.typer")
 
     has_content = False
     required_arguments = 1
     option_spec = {
-        'prog': directives.unchanged_required,
-        'make-sections': directives.flag,
-        'show-nested': directives.flag,
-        'markup-mode': directives.unchanged,
-        'width': directives.nonnegative_int,
-        'theme': RenderTheme,
-        'svg-kwargs': directives.unchanged,
-        'text-kwargs': directives.unchanged,
-        'html-kwargs': directives.unchanged,
-        'console-kwargs': directives.unchanged,
-        'preferred': RenderTarget,
-        'builders': directives.unchanged,
-        'iframe-height': directives.nonnegative_int,
-        'convert-png': directives.unchanged,
+        "prog": directives.unchanged_required,
+        "make-sections": directives.flag,
+        "show-nested": directives.flag,
+        "markup-mode": directives.unchanged,
+        "width": directives.nonnegative_int,
+        "theme": RenderTheme,
+        "svg-kwargs": directives.unchanged,
+        "text-kwargs": directives.unchanged,
+        "html-kwargs": directives.unchanged,
+        "console-kwargs": directives.unchanged,
+        "preferred": RenderTarget,
+        "builders": directives.unchanged,
+        "iframe-height": directives.nonnegative_int,
+        "convert-png": directives.unchanged,
     }
 
     # resolved options
@@ -204,20 +200,20 @@ class TyperDirective(rst.Directive):
         **{
             builder: [RenderTarget.SVG, RenderTarget.HTML, RenderTarget.TEXT]
             for builder in [
-                'html',
-                'dirhtml',
-                'singlehtml',
-                'htmlhelp',
-                'qthelp',
-                'devhelp',
+                "html",
+                "dirhtml",
+                "singlehtml",
+                "htmlhelp",
+                "qthelp",
+                "devhelp",
             ]
         },
-        'epub': [RenderTarget.HTML, RenderTarget.SVG, RenderTarget.TEXT],
+        "epub": [RenderTarget.HTML, RenderTarget.SVG, RenderTarget.TEXT],
         **{
             builder: [RenderTarget.SVG, RenderTarget.TEXT]
-            for builder in ['latex', 'latexpdf', 'texinfo']
+            for builder in ["latex", "latexpdf", "texinfo"]
         },
-        **{builder: [RenderTarget.TEXT] for builder in ['text', 'gettext']},
+        **{builder: [RenderTarget.TEXT] for builder in ["text", "gettext"]},
     }
 
     @property
@@ -238,15 +234,15 @@ class TyperDirective(rst.Directive):
         line_number = self.state_machine.get_source_and_line()[1]
         source = os.path.relpath(source, self.env.app.builder.srcdir)
         return hashlib.sha256(
-            f"{source}.{line_number}[{normal_cmd}]".encode('utf-8')
+            f"{source}.{line_number}[{normal_cmd}]".encode("utf-8")
         ).hexdigest()[:8]
 
     def import_object(
         self,
         obj_path: t.Optional[str],
-        accessor: t.Callable[
-            [t.Any, str], t.Any
-        ] = lambda obj, attr, _: getattr(obj, attr),
+        accessor: t.Callable[[t.Any, str, t.Any], t.Any] = lambda obj, attr, _: getattr(
+            obj, attr
+        ),
     ) -> t.Any:
         """
         Imports an arbitrary object from a python string path.
@@ -256,7 +252,7 @@ class TyperDirective(rst.Directive):
         """
         if not obj_path:
             return None
-        parts = re.split(r'::|[.:]', obj_path)
+        parts = re.split(r"::|[.:]", obj_path)
         tries = 1
         try:
             while True:
@@ -266,7 +262,7 @@ class TyperDirective(rst.Directive):
                 # attributes
                 try:
                     tries += 1
-                    try_path = '.'.join(parts[0 : -(tries - 1)])
+                    try_path = ".".join(parts[0 : -(tries - 1)])
                     obj = import_module(try_path)
                     for attr in parts[-(tries - 1) :]:
                         obj = accessor(obj, attr, try_path)
@@ -278,9 +274,9 @@ class TyperDirective(rst.Directive):
         except (Exception, SystemExit) as exc:
             err_msg = f'Failed to import "{obj_path}"'
             if isinstance(exc, SystemExit):
-                err_msg += 'The module appeared to call sys.exit().'
+                err_msg += "The module appeared to call sys.exit()."
             else:
-                err_msg += 'The following exception was raised:\n{}'.format(
+                err_msg += "The following exception was raised:\n{}".format(
                     traceback.format_exc()
                 )
 
@@ -288,9 +284,7 @@ class TyperDirective(rst.Directive):
 
         return obj
 
-    def load_root_command(
-        self, typer_path: str
-    ) -> t.Union[click.Command, click.Group]:
+    def load_root_command(self, typer_path: str) -> t.Union[click.Command, click.Group]:
         """
         Load the module.
 
@@ -313,7 +307,7 @@ class TyperDirective(rst.Directive):
 
             raise self.error(
                 f'"{typer_path}" of type {type(obj)} is not Typer, click.Command or '
-                'click.Group.'
+                "click.Group."
             )
 
         def access_command(
@@ -335,13 +329,13 @@ class TyperDirective(rst.Directive):
                         # part because it is probably the module with main
                         info_name=(
                             (
-                                getattr(obj, 'name', '')
-                                if getattr(self, 'parent', None)
-                                else ''
+                                getattr(obj, "name", "")
+                                if getattr(self, "parent", None)
+                                else ""
                             )
-                            or imprt_path.split('.')[-1]
+                            or imprt_path.split(".")[-1]
                         ),
-                        parent=getattr(self, 'parent', None),
+                        parent=getattr(self, "parent", None),
                     )
                     cmds = _filter_commands(self.parent, [attr])
                     if cmds:
@@ -357,16 +351,16 @@ class TyperDirective(rst.Directive):
 
     def get_html(self, **options):
         return self.console.export_html(
-            **{'theme': self.theme.terminal_theme, **options, 'clear': False}
+            **{"theme": self.theme.terminal_theme, **options, "clear": False}
         )
 
     def get_svg(self, **options):
         return self.console.export_svg(
-            **{'theme': self.theme.terminal_theme, **options, 'clear': False}
+            **{"theme": self.theme.terminal_theme, **options, "clear": False}
         )
 
     def get_text(self, **options):
-        return self.console.export_text(**{**options, 'clear': False})
+        return self.console.export_text(**{**options, "clear": False})
 
     def generate_nodes(
         self,
@@ -395,16 +389,16 @@ class TyperDirective(rst.Directive):
             return []
 
         source_name = ctx.command_path
-        normal_cmd = ':'.join(source_name.split(' '))
+        normal_cmd = ":".join(source_name.split(" "))
 
         section = (
             nodes.section(
-                '',
+                "",
                 nodes.title(
                     text=(
                         name
-                        if not getattr(self, 'parent', None)
-                        else f'{self.parent.command_path} {name}'
+                        if not getattr(self, "parent", None)
+                        else f"{self.parent.command_path} {name}"
                     )
                 ),
                 ids=[nodes.make_id(source_name)],
@@ -423,13 +417,13 @@ class TyperDirective(rst.Directive):
             if isinstance(options, dict):
                 return options
             raise self.severe(
-                f'Invalid {parameter}, must be a dict or callable, got {type(options)}'
+                f"Invalid {parameter}, must be a dict or callable, got {type(options)}"
             )
 
         def get_console(stderr: bool = False) -> Console:
             self.console = Console(
                 **{
-                    'theme': Theme(
+                    "theme": Theme(
                         {
                             "option": typer_rich_utils.STYLE_OPTION,
                             "switch": typer_rich_utils.STYLE_SWITCH,
@@ -440,14 +434,14 @@ class TyperDirective(rst.Directive):
                             "usage": typer_rich_utils.STYLE_USAGE,
                         },
                     ),
-                    'highlighter': typer_rich_utils.highlighter,
-                    'color_system': typer_rich_utils.COLOR_SYSTEM,
-                    'force_terminal': typer_rich_utils.FORCE_TERMINAL,
-                    'width': self.width or typer_rich_utils.MAX_WIDTH,
-                    'stderr': stderr,
+                    "highlighter": typer_rich_utils.highlighter,
+                    "color_system": typer_rich_utils.COLOR_SYSTEM,
+                    "force_terminal": typer_rich_utils.FORCE_TERMINAL,
+                    "width": self.width or typer_rich_utils.MAX_WIDTH,
+                    "stderr": stderr,
                     # overrides any defaults above
-                    **resolve_options(self.console_kwargs, 'console-kwargs'),
-                    'record': True,
+                    **resolve_options(self.console_kwargs, "console-kwargs"),
+                    "record": True,
                 }
             )
             return self.console
@@ -459,11 +453,9 @@ class TyperDirective(rst.Directive):
         orig_getter = typer_rich_utils._get_rich_console
         orig_format_help = command.format_help
         command.rich_markup_mode = getattr(
-            self, 'markup_mode', getattr(command, 'rich_markup_mode', None)
+            self, "markup_mode", getattr(command, "rich_markup_mode", None)
         )
-        command.format_help = TyperGroup.format_help.__get__(
-            command, command.__class__
-        )
+        command.format_help = TyperGroup.format_help.__get__(command, command.__class__)
         typer_rich_utils._get_rich_console = get_console
         with contextlib.redirect_stdout(io.StringIO()):
             command.get_help(ctx)
@@ -472,15 +464,11 @@ class TyperDirective(rst.Directive):
         ##############################################################################
 
         export_options = resolve_options(
-            getattr(self, f'{self.target}_kwargs', {}), f'{self.target}-kwargs'
+            getattr(self, f"{self.target}_kwargs", {}), f"{self.target}-kwargs"
         )
 
-        rendered = getattr(self, f'get_{self.target}')(
-            **(
-                {'title': source_name}
-                if self.target is RenderTarget.SVG
-                else {}
-            ),
+        rendered = getattr(self, f"get_{self.target}")(
+            **({"title": source_name} if self.target is RenderTarget.SVG else {}),
             **export_options,
         )
 
@@ -495,22 +483,18 @@ class TyperDirective(rst.Directive):
             )
         elif self.target == RenderTarget.HTML:
             section += nodes.raw(
-                '',
-                self.env.app.config.typer_render_html(
-                    self, normal_cmd, rendered
-                ),
-                format='html',
+                "",
+                self.env.app.config.typer_render_html(self, normal_cmd, rendered),
+                format="html",
             )
         elif self.target == RenderTarget.SVG:
-            if 'html' in self.builder:
-                section += nodes.raw('', rendered, format='html')
+            if "html" in self.builder:
+                section += nodes.raw("", rendered, format="html")
             else:
-                img_name = (
-                    f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
-                )
+                img_name = f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
                 out_dir = Path(self.env.app.builder.outdir)
-                (out_dir / f'{img_name}.svg').write_text(rendered)
-                pdf_img = out_dir / f'{img_name}.pdf'
+                (out_dir / f"{img_name}.svg").write_text(rendered)
+                pdf_img = out_dir / f"{img_name}.pdf"
                 self.env.app.config.typer_svg2pdf(self, rendered, pdf_img)
                 section += nodes.image(
                     uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
@@ -518,17 +502,15 @@ class TyperDirective(rst.Directive):
                 )
 
         elif self.target == RenderTarget.TEXT:
-            section += nodes.literal_block('', rendered)
+            section += nodes.literal_block("", rendered)
         else:
-            raise self.severe(f'Invalid typer render target: {self.target}')
+            raise self.severe(f"Invalid typer render target: {self.target}")
 
         # recurse through subcommands if we should
         if self.nested and isinstance(command, click.MultiCommand):
             commands = _filter_commands(ctx, command.list_commands(ctx))
             for command in commands:
-                section.extend(
-                    self.generate_nodes(command.name, command, parent=ctx)
-                )
+                section.extend(self.generate_nodes(command.name, command, parent=ctx))
         return [section]
 
     def run(self) -> t.Iterable[nodes.section]:
@@ -536,57 +518,51 @@ class TyperDirective(rst.Directive):
 
         command = self.load_root_command(self.arguments[0])
 
-        self.make_sections = 'make-sections' in self.options
-        self.nested = 'show-nested' in self.options
-        self.prog_name = self.options.get('prog', None)
-        if 'markup-mode' in self.options:
-            self.markup_mode = self.options['markup-mode']
+        self.make_sections = "make-sections" in self.options
+        self.nested = "show-nested" in self.options
+        self.prog_name = self.options.get("prog", None)
+        if "markup-mode" in self.options:
+            self.markup_mode = self.options["markup-mode"]
 
         if not self.prog_name:
             try:
                 self.prog_name = (
-                    command.callback.__module__.split('.')[-1]
-                    if hasattr(command, 'callback')
-                    and not hasattr(self, 'parent')
-                    else re.split(r'::|[.:]', self.arguments[0])[-1]
+                    command.callback.__module__.split(".")[-1]
+                    if hasattr(command, "callback") and not hasattr(self, "parent")
+                    else re.split(r"::|[.:]", self.arguments[0])[-1]
                 )
             except Exception as err:
                 raise self.severe(
-                    'Unable to determine program name, please specify using '
-                    ':prog:'
+                    "Unable to determine program name, please specify using " ":prog:"
                 ) from err
 
-        self.width = self.options.get('width', 65)
-        self.iframe_height = self.options.get('iframe-height', None)
+        self.width = self.options.get("width", 65)
+        self.iframe_height = self.options.get("iframe-height", None)
 
         # if no builders supplied but convert-png is set,
         # force png for all builders, otherwise require the builder
         # to be in the list of typer_convert_png builders
-        self.typer_convert_png = 'convert-png' in self.options
+        self.typer_convert_png = "convert-png" in self.options
         if self.typer_convert_png:
-            builders = self.options['convert-png'].strip()
-            self.typer_convert_png = (
-                self.builder in builders if builders else True
-            )
+            builders = self.options["convert-png"].strip()
+            self.typer_convert_png = self.builder in builders if builders else True
 
-        for trg in ['console', *list(RenderTarget)]:
+        for trg in ["console", *list(RenderTarget)]:
             setattr(
                 self,
-                f'{trg}_kwargs',
-                self.import_object(self.options.get(f'{trg}-kwargs', None))
-                or {},
+                f"{trg}_kwargs",
+                self.import_object(self.options.get(f"{trg}-kwargs", None)) or {},
             )
 
-        self.preferred = self.options.get('preferred', None)
-        self.theme = self.options.get('theme', self.theme)
+        self.preferred = self.options.get("preferred", None)
+        self.theme = self.options.get("theme", self.theme)
 
         builder_targets = {}
-        for builder_target in self.options.get('builders', '').split(':'):
+        for builder_target in self.options.get("builders", "").split(":"):
             if builder_target.strip():
-                builder, targets = builder_target.split('=')[0:2]
+                builder, targets = builder_target.split("=")[0:2]
                 builder_targets[builder.strip()] = [
-                    RenderTarget(target.strip())
-                    for target in targets.split(',')
+                    RenderTarget(target.strip()) for target in targets.split(",")
                 ]
 
         builder_targets = {**self.builder_targets, **builder_targets}
@@ -594,14 +570,12 @@ class TyperDirective(rst.Directive):
         if self.typer_convert_png:
             self.target = (
                 self.preferred
-                or (
-                    builder_targets.get(self.builder, []) or [RenderTarget.SVG]
-                )[0]
+                or (builder_targets.get(self.builder, []) or [RenderTarget.SVG])[0]
             )
         elif self.builder not in builder_targets:
             self.target = self.preferred or RenderTarget.TEXT
             self.logger.debug(
-                'Unable to resolve render target for builder: %s - using: %s',
+                "Unable to resolve render target for builder: %s - using: %s",
                 self.builder,
                 self.target,
             )
@@ -612,7 +586,7 @@ class TyperDirective(rst.Directive):
             )
 
         return self.generate_nodes(
-            self.prog_name, command, getattr(self, 'parent', None)
+            self.prog_name, command, getattr(self, "parent", None)
         )
 
 
@@ -641,7 +615,7 @@ def typer_get_iframe_height(
     if directive.iframe_height is not None:
         return directive.iframe_height
 
-    cache = {'iframe_heights': {}}
+    cache = {"iframe_heights": {}}
     cache_path = (
         None
         if not directive.env.app.config.typer_iframe_height_cache_path
@@ -649,10 +623,10 @@ def typer_get_iframe_height(
     )
     if cache_path and cache_path.is_file():
         cache = json.loads(cache_path.read_text())
-        cache.setdefault('iframe_heights', {})
+        cache.setdefault("iframe_heights", {})
 
-    if cache['iframe_heights'].get(normal_cmd):
-        return cache['iframe_heights'][normal_cmd]
+    if cache["iframe_heights"].get(normal_cmd):
+        return cache["iframe_heights"][normal_cmd]
 
     with directive.env.app.config.typer_get_web_driver(directive) as driver:
         # use base64 to avoid issues with special characters
@@ -663,12 +637,12 @@ def typer_get_iframe_height(
         height = (
             int(
                 driver.execute_script(
-                    'return document.documentElement.getBoundingClientRect().height'
+                    "return document.documentElement.getBoundingClientRect().height"
                 )
             )
             + directive.env.app.config.typer_iframe_height_padding
         )
-    cache['iframe_heights'][normal_cmd] = height
+    cache["iframe_heights"][normal_cmd] = height
     if cache_path:
         cache_path.write_text(json.dumps(cache, indent=4))
     return height
@@ -718,7 +692,7 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
     except ImportError:
-        directive.severe(f'cairosvg must be installed to render SVG in pdfs')
+        directive.severe("cairosvg must be installed to render SVG in pdfs")
 
 
 @contextmanager
@@ -748,8 +722,7 @@ def typer_get_web_driver(
         from selenium.webdriver.chrome.options import Options as ChromeOptions
     except ImportError:
         raise directive.severe(
-            f'This feature requires selenium and webdriver-manager to be '
-            'installed.'
+            "This feature requires selenium and webdriver-manager to be " "installed."
         )
 
     # Set up headless browser options
@@ -806,7 +779,7 @@ def typer_get_web_driver(
 
     services = [
         chrome,
-        edge if platform.system().lower() == 'windows' else chromium,
+        edge if platform.system().lower() == "windows" else chromium,
         firefox,
     ]
 
@@ -816,15 +789,13 @@ def typer_get_web_driver(
             driver = service()
             break  # use the first one that works!
         except Exception as err:
-            directive.debug(
-                f'Unable to initialize webdriver {service.__name__}: {err}'
-            )
+            directive.debug(f"Unable to initialize webdriver {service.__name__}: {err}")
 
     if driver:
         yield driver
         driver.quit()
     else:
-        raise directive.severe(f'Unable to initialize any webdriver.')
+        raise directive.severe("Unable to initialize any webdriver.")
 
 
 def typer_convert_png(
@@ -854,46 +825,41 @@ def typer_convert_png(
     from PIL import Image
     from selenium.webdriver.common.by import By
 
-    tag = 'code'
+    tag = "code"
     with directive.env.app.config.typer_get_web_driver(directive) as driver:
-        with tempfile.NamedTemporaryFile(suffix='.html') as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".html") as tmp:
             if directive.target is RenderTarget.TEXT:
-                tag = 'pre'
-                rendered = f'<html><body><pre>{rendered}</pre></body></html>'
+                tag = "pre"
+                rendered = f"<html><body><pre>{rendered}</pre></body></html>"
             elif directive.target is RenderTarget.SVG:
-                tag = 'svg'
-                rendered = f'<html><body>{rendered}</body></html>'
+                tag = "svg"
+                rendered = f"<html><body>{rendered}</body></html>"
 
-            tmp.write(rendered.encode('utf-8'))
+            tmp.write(rendered.encode("utf-8"))
             tmp.flush()
             driver.get(f"file://{tmp.name}")
             png = driver.get_screenshot_as_png()
             # Find the element you want a screenshot of
             element = driver.find_element(By.CSS_SELECTOR, tag)
-            pixel_ratio = driver.execute_script(
-                "return window.devicePixelRatio"
-            )
+            pixel_ratio = driver.execute_script("return window.devicePixelRatio")
             # Get the element's location and size
             location = element.location
             size = element.size
 
-            if (
-                size['width'] > selenium_width
-                or size['height'] > selenium_height
-            ):
+            if size["width"] > selenium_width or size["height"] > selenium_height:
                 # if our window is too small, resize it with some padding and try again
                 return typer_convert_png(
                     directive,
                     rendered,
                     png_path,
-                    size['width'] + 100,
-                    size['height'] + 100,
+                    size["width"] + 100,
+                    size["height"] + 100,
                 )
 
             # Open the screenshot and crop it to the element
             im = Image.open(BytesIO(png))
-            left = location['x'] * pixel_ratio
-            top = location['y'] * pixel_ratio
+            left = location["x"] * pixel_ratio
+            top = location["y"] * pixel_ratio
             if directive.target is RenderTarget.TEXT:
                 # getting the width of the text is actually a bit tricky
                 script = """
@@ -914,15 +880,15 @@ def typer_convert_png(
                 width = driver.execute_script(script, element)
                 right = left + width * pixel_ratio
             else:
-                right = left + size['width'] * pixel_ratio
-            bottom = top + size['height'] * pixel_ratio
+                right = left + size["width"] * pixel_ratio
+            bottom = top + size["height"] * pixel_ratio
             im = im.crop((left, top, right, bottom))  # Defines crop points
             im.save(str(png_path))  # Saves the screenshot
 
 
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
-    app.add_directive('typer', TyperDirective)
+    app.add_directive("typer", TyperDirective)
 
     def get_default_render_html(_):
         return typer_render_html
@@ -939,23 +905,21 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     def get_default_web_driver(_):
         return typer_get_web_driver
 
-    app.add_config_value('typer_render_html', get_default_render_html, 'env')
+    app.add_config_value("typer_render_html", get_default_render_html, "")
 
+    app.add_config_value("typer_get_iframe_height", get_default_get_iframe_height, "")
+    app.add_config_value("typer_svg2pdf", get_default_svg2pdf, "")
+    app.add_config_value("typer_iframe_height_padding", 30, "env")
     app.add_config_value(
-        'typer_get_iframe_height', get_default_get_iframe_height, 'env'
-    )
-    app.add_config_value('typer_svg2pdf', get_default_svg2pdf, 'env')
-    app.add_config_value('typer_iframe_height_padding', 30, 'env')
-    app.add_config_value(
-        'typer_iframe_height_cache_path',
-        Path(app.confdir) / 'typer_cache.json',
-        'env',
+        "typer_iframe_height_cache_path",
+        Path(app.confdir) / "typer_cache.json",
+        "env",
     )
 
-    app.add_config_value('typer_convert_png', get_default_convert_png, 'env')
-    app.add_config_value('typer_get_web_driver', get_default_web_driver, 'env')
+    app.add_config_value("typer_convert_png", get_default_convert_png, "")
+    app.add_config_value("typer_get_web_driver", get_default_web_driver, "")
 
     return {
-        'parallel_read_safe': True,
-        'parallel_write_safe': True,
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
     }

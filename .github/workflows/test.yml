@@ -1,6 +1,17 @@
 name: test
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Set to on, to open ssh debug session.'
+        required: true
+        default: 'off'
+  schedule:
+    - cron: '0 13 * * *'  # Runs at 6 am pacific every day
+  
 
 jobs:
 
@@ -69,6 +80,18 @@ jobs:
         poetry run pip install --upgrade pip
         poetry install -E html -E png -E pdf
         poetry run pip install -U "${{ matrix.sphinx-version }}"
+
+    - name: Install Emacs
+      if: ${{ github.event.inputs.debug == 'on' }}
+      run: |
+        sudo apt install emacs
+    - name: Setup tmate session
+      if: ${{ github.event.inputs.debug == 'on' }}
+      uses: mxschmitt/action-tmate@v3
+      with:
+        detached: true
+      timeout-minutes: 60
+      
     - name: Run Unit Tests
       run: |
         poetry run pytest

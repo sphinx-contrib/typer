@@ -56,11 +56,14 @@ jobs:
         sphinx-version:
           - 'Sphinx~=7.0.0'
           - 'Sphinx~=7.2.0'
+          - 'Sphinx~=7.3.0'
         exclude:
           - python-version: '3.12'
             sphinx-version: 'Sphinx~=7.0.0'
           - python-version: '3.8'
             sphinx-version: 'Sphinx~=7.2.0'
+          - python-version: '3.8'
+            sphinx-version: 'Sphinx~=7.3.0'
 
     steps:
     - uses: actions/checkout@v4

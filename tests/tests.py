@@ -72,17 +72,20 @@ def img_similarity(expected, to_compare):
 
 def resize_image_to_match(source_image_path, target_image_path):
     target = io.imread(target_image_path)
+    source = io.imread(source_image_path)
+
+    for img in [target, source]:
+        if img.shape[2] == 4:
+            # Convert RGBA to RGB by discarding the alpha channel
+            img = img[:, :, :3]
+
     resized = resize(
-        io.imread(source_image_path),
+        source,
         target.shape[0:2],
         anti_aliasing=True
     )
 
-    altered = np.clip(resized * 255, 0, 255).astype(np.uint8)
-    
-    # reshape source to match expected - fix spurious failures on github actions
-    altered = altered.reshape(target.shape[0], target.shape[1], target.shape[2])
-    return altered, target
+    return np.clip(resized * 255, 0, 255).astype(np.uint8), target
 
 
 def test_sphinx_html_build():

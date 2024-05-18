@@ -66,8 +66,6 @@ def img_similarity(expected, to_compare):
     """
     img_a, img_b = resize_image_to_match(expected, to_compare)
     io.imsave(str(expected.parent / f'resized_{expected.name}'), img_a)
-    # reshape img_a to match img_b - fix spurious failures on github actions
-    img_b = img_a.reshape(img_b.shape[0], img_b.shape[1], img_b.shape[2])
     err = np.sum((img_a.astype("float") - img_b.astype("float")) ** 2)
     err /= float(img_a.shape[0] * img_a.shape[1])
     return err
@@ -79,7 +77,12 @@ def resize_image_to_match(source_image_path, target_image_path):
         target.shape[0:2],
         anti_aliasing=True
     )
-    return np.clip(resized * 255, 0, 255).astype(np.uint8), target
+
+    altered = np.clip(resized * 255, 0, 255).astype(np.uint8)
+    
+    # reshape source to match expected - fix spurious failures on github actions
+    altered = altered.reshape(target.shape[0], target.shape[1], target.shape[2])
+    return altered, target
 
 
 def test_sphinx_html_build():

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sphinxcontrib-typer"
-version = "0.2.2"
+version = "0.2.3"
 description = "Auto generate docs for typer commands."
 authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"

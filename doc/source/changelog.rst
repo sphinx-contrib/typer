@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.2.3
+======
+
+* Fixed `when :prog: is supplied and a subcommand help is generated the usage string includes incorrect prefix to prog <https://github.com/sphinx-contrib/typer/issues/24>`_
+
 v0.2.2
 ======
 

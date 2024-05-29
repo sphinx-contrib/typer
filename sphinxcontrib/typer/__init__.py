@@ -48,7 +48,7 @@ from typer.main import Typer, TyperGroup, TyperInfo
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 2, 3)
+VERSION = (0, 2, 4)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -295,6 +295,7 @@ class TyperDirective(rst.Directive):
             if isinstance(obj, (click.Command, click.Group)):
                 return obj
 
+            # use lenient duck typing check incase obj is a proxy for a Typer instance
             if isinstance(obj, Typer) or isinstance(getattr(obj, "info", None, TyperInfo)):
                 return get_typer_command(obj)
 

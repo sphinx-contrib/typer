@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.2.4
+======
+
+* Fixed `Support more flexible duck typing for detecting Typer objects <https://github.com/sphinx-contrib/typer/issues/25>`_
+
 v0.2.3
 ======
 

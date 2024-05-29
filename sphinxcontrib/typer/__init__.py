@@ -44,7 +44,7 @@ from sphinx import application
 from sphinx.util import logging
 
 from typer import rich_utils as typer_rich_utils
-from typer.main import Typer, TyperGroup
+from typer.main import Typer, TyperGroup, TyperInfo
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
@@ -295,12 +295,12 @@ class TyperDirective(rst.Directive):
             if isinstance(obj, (click.Command, click.Group)):
                 return obj
 
-            if isinstance(obj, Typer):
+            if isinstance(obj, Typer) or isinstance(getattr(obj, "info", None, TyperInfo)):
                 return get_typer_command(obj)
 
             if callable(obj):
                 ret = obj()
-                if isinstance(ret, Typer):
+                if isinstance(ret, Typer) or isinstance(getattr(obj, "info", None, TyperInfo)):
                     return get_typer_command(obj)
                 if isinstance(ret, (click.Command, click.Group)):
                     return ret

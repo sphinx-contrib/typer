@@ -296,12 +296,16 @@ class TyperDirective(rst.Directive):
                 return obj
 
             # use lenient duck typing check incase obj is a proxy for a Typer instance
-            if isinstance(obj, Typer) or isinstance(getattr(obj, "info", None, TyperInfo)):
+            if isinstance(obj, Typer) or isinstance(
+                getattr(obj, "info", None, TyperInfo)
+            ):
                 return get_typer_command(obj)
 
             if callable(obj):
                 ret = obj()
-                if isinstance(ret, Typer) or isinstance(getattr(obj, "info", None, TyperInfo)):
+                if isinstance(ret, Typer) or isinstance(
+                    getattr(obj, "info", None, TyperInfo)
+                ):
                     return get_typer_command(obj)
                 if isinstance(ret, (click.Command, click.Group)):
                     return ret

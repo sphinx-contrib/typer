@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.2.5
+======
+
+* Fixed `Proxied Typer object check is broken. <https://github.com/sphinx-contrib/typer/issues/26>`_
+
 v0.2.4
 ======
 

@@ -33,8 +33,10 @@ four things
 
         def setup(app):
             import shutil
-            if app.doctreedir.exists():
+            from pathlib import Path
+            if Path(app.doctreedir).exists():
                 shutil.rmtree(app.doctreedir)
+
 
 
 Change the Width

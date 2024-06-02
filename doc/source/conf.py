@@ -67,5 +67,5 @@ latex_engine = 'xelatex'
 typer_get_web_driver = 'web_driver.typer_get_web_driver'
 
 def setup(app):
-    if app.doctreedir.exists():
+    if Path(app.doctreedir).exists():
         shutil.rmtree(app.doctreedir)

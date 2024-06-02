@@ -1,8 +1,6 @@
 from datetime import datetime
 import sys
 from pathlib import Path
-from contextlib import contextmanager
-import platform
 from sphinxcontrib import typer as sphinxcontrib_typer
 
 # Configuration file for the Sphinx documentation builder.
@@ -14,6 +12,7 @@ from sphinxcontrib import typer as sphinxcontrib_typer
 # -- Path setup --------------------------------------------------------------
 
 sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent / 'typer_doc_ext'))
 
 
 # -- Project information -----------------------------------------------------
@@ -64,35 +63,4 @@ todo_include_todos = True
 
 latex_engine = 'xelatex'
 
-
-@contextmanager
-def typer_get_web_driver(directive):
-    from pathlib import Path
-    import os
-
-    if not Path('~/.rtd.build').expanduser().is_file():
-        with sphinxcontrib_typer.typer_get_web_driver(directive) as driver:
-            yield driver
-        return
-    
-    from selenium import webdriver
-    from selenium.webdriver.chrome.options import Options
-    from selenium.webdriver.chrome.service import Service
-    from webdriver_manager.chrome import ChromeDriverManager
-
-    # Set up headless browser options
-    options=Options()
-    os.environ['PATH'] += os.pathsep + os.path.expanduser("~/chrome/opt/google/chrome")
-    options.binary_location = os.path.expanduser("~/chrome/opt/google/chrome/google-chrome")
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920x1080")
-
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
-    yield driver
-    driver.quit()
+typer_get_web_driver = 'web_driver.typer_get_web_driver'

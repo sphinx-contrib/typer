@@ -2,6 +2,13 @@
 Change Log
 ==========
 
+v0.3.0
+======
+
+* Implemented `Allow function hooks to be specified as import strings. <https://github.com/sphinx-contrib/typer/issues/28>`_
+* Fixed `pdf builds are broken. <https://github.com/sphinx-contrib/typer/issues/27>`_
+
+
 v0.2.5
 ======
 

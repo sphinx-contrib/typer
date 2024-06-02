@@ -31,7 +31,8 @@ build:
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
    configuration: doc/source/conf.py
-
+   extra_build_args:
+    - "--fresh-env"
 # Optionally build your docs in additional formats such as PDF and ePub
 formats:
   - pdf

@@ -48,7 +48,7 @@ from typer.main import Typer, TyperGroup, TyperInfo
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 2, 5)
+VERSION = (0, 3, 0)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -59,6 +59,14 @@ __copyright__ = "Copyright 2023 Brian Kohan"
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
 SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
+
+
+def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
+    if callable(function):
+        return function
+    if isinstance(function, str):
+        parts = function.split('.')
+        return getattr(import_module(".".join(parts[0:-1])), parts[-1])
 
 
 def _filter_commands(ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None):
@@ -481,7 +489,7 @@ class TyperDirective(rst.Directive):
             png_path = Path(self.env.app.builder.outdir) / (
                 f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}.png'
             )
-            self.env.app.config.typer_convert_png(self, rendered, png_path)
+            get_function(self.env.app.config.typer_convert_png)(self, rendered, png_path)
             section += nodes.image(
                 uri=os.path.relpath(png_path, Path(self.env.srcdir)),
                 alt=source_name,
@@ -489,7 +497,7 @@ class TyperDirective(rst.Directive):
         elif self.target == RenderTarget.HTML:
             section += nodes.raw(
                 "",
-                self.env.app.config.typer_render_html(self, normal_cmd, rendered),
+                get_function(self.env.app.config.typer_render_html)(self, normal_cmd, rendered),
                 format="html",
             )
         elif self.target == RenderTarget.SVG:
@@ -500,7 +508,7 @@ class TyperDirective(rst.Directive):
                 out_dir = Path(self.env.app.builder.outdir)
                 (out_dir / f"{img_name}.svg").write_text(rendered)
                 pdf_img = out_dir / f"{img_name}.pdf"
-                self.env.app.config.typer_svg2pdf(self, rendered, pdf_img)
+                get_function(self.env.app.config.typer_svg2pdf)(self, rendered, pdf_img)
                 section += nodes.image(
                     uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
                     alt=source_name,
@@ -637,7 +645,7 @@ def typer_get_iframe_height(
     if cache["iframe_heights"].get(normal_cmd):
         return cache["iframe_heights"][normal_cmd]
 
-    with directive.env.app.config.typer_get_web_driver(directive) as driver:
+    with get_function(directive.env.app.config.typer_get_web_driver)(directive) as driver:
         # use base64 to avoid issues with special characters
         driver.get(
             f'data:text/html;base64,'
@@ -671,7 +679,7 @@ def typer_render_html(
     :param html_page: The html page rendered by console.export_html
     """
 
-    height = directive.env.app.config.typer_get_iframe_height(
+    height = get_function(directive.env.app.config.typer_get_iframe_height)(
         directive, normal_cmd, html_page
     )
     return (
@@ -835,7 +843,7 @@ def typer_convert_png(
     from selenium.webdriver.common.by import By
 
     tag = "code"
-    with directive.env.app.config.typer_get_web_driver(directive) as driver:
+    with get_function(directive.env.app.config.typer_get_web_driver)(directive) as driver:
         with tempfile.NamedTemporaryFile(suffix=".html") as tmp:
             if directive.target is RenderTarget.TEXT:
                 tag = "pre"
@@ -899,25 +907,10 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
 
-    def get_default_render_html(_):
-        return typer_render_html
+    app.add_config_value("typer_render_html", "sphinxcontrib.typer.typer_render_html", "env")
 
-    def get_default_get_iframe_height(_):
-        return typer_get_iframe_height
-
-    def get_default_svg2pdf(_):
-        return typer_svg2pdf
-
-    def get_default_convert_png(_):
-        return typer_convert_png
-
-    def get_default_web_driver(_):
-        return typer_get_web_driver
-
-    app.add_config_value("typer_render_html", get_default_render_html, "")
-
-    app.add_config_value("typer_get_iframe_height", get_default_get_iframe_height, "")
-    app.add_config_value("typer_svg2pdf", get_default_svg2pdf, "")
+    app.add_config_value("typer_get_iframe_height", "sphinxcontrib.typer.typer_get_iframe_height", "env")
+    app.add_config_value("typer_svg2pdf", "sphinxcontrib.typer.typer_svg2pdf", "env")
     app.add_config_value("typer_iframe_height_padding", 30, "env")
     app.add_config_value(
         "typer_iframe_height_cache_path",
@@ -925,8 +918,8 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
         "env",
     )
 
-    app.add_config_value("typer_convert_png", get_default_convert_png, "")
-    app.add_config_value("typer_get_web_driver", get_default_web_driver, "")
+    app.add_config_value("typer_convert_png", "sphinxcontrib.typer.typer_convert_png", "env")
+    app.add_config_value("typer_get_web_driver", "sphinxcontrib.typer.typer_get_web_driver", "env")
 
     return {
         "parallel_read_safe": True,

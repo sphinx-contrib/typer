@@ -3,6 +3,8 @@
 Reference
 =========
 
+.. _directive_options:
+
 Directive Options
 -----------------
 
@@ -205,6 +207,12 @@ Function Hooks
 
 These functions may all be redefined in `conf.py` to override default behaviors. Your override
 functions must conform to these function signatures.
+
+.. warning::
+
+  Sphinx will warn that these functions are not pickleable. This messes up sphinx's caching but
+  that wont break the doc build. You can either suppress the warning or specify these configuration
+  values as import strings instead.
 
 .. autofunction:: sphinxcontrib.typer.typer_render_html
 .. autofunction:: sphinxcontrib.typer.typer_get_iframe_height

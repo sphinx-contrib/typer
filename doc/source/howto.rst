@@ -20,23 +20,21 @@ different formats (e.g. html, pdf or text). This causes problems with the way th
 directive dynamically determines which render target to use based on the active builder.
 This can mean that if you run sphinx-build for html and latexpdf at the same time the
 pdf may not render all typer helps as expected. To work around this you can do one of
-three things
+four things
 
 1. Run sphinx-build for each format separately.
 2. Use the `only directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-only>`_
    in combination with :ref:`:preferred: <directive_options>` to specify builder specific content.
 3. Use the `--fresh-env <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-E>`_
    option to force sphinx to rebuild the directive output for each builder.
+4. Add the following code to your conf.py to remove the doctree between builders:
 
-If also building a PDF on `readthedocs <https://readthedocs.org/>`_ you can do 3 by adding the
-following to your readthedocs.yml:
+    .. code-block:: python
 
-.. code-block:: yaml
-
-    sphinx:
-        configuration: path/to/conf.py
-        extra_build_args:
-            - "--fresh-env"
+        def setup(app):
+            import shutil
+            if app.doctreedir.exists():
+                shutil.rmtree(app.doctreedir)
 
 
 Change the Width

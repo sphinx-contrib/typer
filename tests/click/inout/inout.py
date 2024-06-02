@@ -18,7 +18,7 @@ def cli(input, output):
     ```bash
         inout foo.txt bar.txt -
     ```
-    
+
     Write stdin into the file foo.txt
     ```bash
         inout - foo.txt

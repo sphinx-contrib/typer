@@ -12,5 +12,6 @@ def cli(ctx, path):
         path = ctx.home
     ctx.log(f"Initialized the repository in {click.format_filename(path)}")
 
+
 if __name__ == "__main__":
     cli()

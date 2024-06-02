@@ -2,6 +2,7 @@ from datetime import datetime
 import sys
 from pathlib import Path
 from sphinxcontrib import typer as sphinxcontrib_typer
+import shutil
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -64,3 +65,7 @@ todo_include_todos = True
 latex_engine = 'xelatex'
 
 typer_get_web_driver = 'web_driver.typer_get_web_driver'
+
+def setup(app):
+    if app.doctreedir.exists():
+        shutil.rmtree(app.doctreedir)

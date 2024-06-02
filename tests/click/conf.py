@@ -19,9 +19,10 @@ for path in Path(__file__).parent.iterdir():
     if path.is_dir():
         sys.path.append(str(path))
 
-TEST_CALLBACKS = Path(__file__).parent / 'callback_record.json'
+TEST_CALLBACKS = Path(__file__).parent / "callback_record.json"
 
 test_callbacks = {}
+
 
 def record_callback(callback):
     """crude but it works"""
@@ -30,11 +31,12 @@ def record_callback(callback):
     test_callbacks[callback] = True
     TEST_CALLBACKS.write_text(json.dumps(test_callbacks))
 
+
 # -- Project information -----------------------------------------------------
 
-project = 'SphinxContrib Typer Tests'
-copyright = f'2023-{datetime.now().year}, Brian Kohan'
-author = 'Brian Kohan'
+project = "SphinxContrib Typer Tests"
+copyright = f"2023-{datetime.now().year}, Brian Kohan"
+author = "Brian Kohan"
 
 # The full version, including alpha/beta/rc tags
 release = sphinxcontrib_typer.__version__
@@ -45,13 +47,10 @@ release = sphinxcontrib_typer.__version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    'sphinx_rtd_theme',
-    'sphinxcontrib.typer'
-]
+extensions = ["sphinx_rtd_theme", "sphinxcontrib.typer"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -64,7 +63,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -76,30 +75,31 @@ todo_include_todos = True
 ###########################################################
 # Test our typer configuration parameter function overrides
 
+
 def typer_render_html(*args, **kwargs):
-    record_callback('typer_render_html')
+    record_callback("typer_render_html")
     return sphinxcontrib_typer.typer_render_html(*args, **kwargs)
 
 
 def typer_get_iframe_height(*args, **kwargs):
-    record_callback('typer_get_iframe_height')
+    record_callback("typer_get_iframe_height")
     return sphinxcontrib_typer.typer_get_iframe_height(*args, **kwargs)
 
 
 def typer_svg2pdf(*args, **kwargs):
-    record_callback('typer_svg2pdf')
+    record_callback("typer_svg2pdf")
     return sphinxcontrib_typer.typer_svg2pdf(*args, **kwargs)
 
 
 def typer_convert_png(*args, **kwargs):
-    record_callback('typer_convert_png')
+    record_callback("typer_convert_png")
     return sphinxcontrib_typer.typer_convert_png(*args, **kwargs)
 
 
 def typer_get_web_driver(*args, **kwargs):
-    record_callback('typer_get_web_driver')
+    record_callback("typer_get_web_driver")
     return sphinxcontrib_typer.typer_get_web_driver(*args, **kwargs)
 
 
 typer_iframe_height_padding = 40
-typer_iframe_height_cache_path = Path(__file__).parent / 'cache.json'
+typer_iframe_height_cache_path = Path(__file__).parent / "cache.json"

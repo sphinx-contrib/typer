@@ -41,11 +41,7 @@ jobs:
           poetry install -E html -E png -E pdf
       - name: Run Static Analysis
         run: |
-          poetry run ruff format sphinxcontrib/typer
-          poetry run ruff check --fix --select I sphinxcontrib/typer
-          poetry run ruff check sphinxcontrib/typer
-          poetry check
-          poetry run pip check
+          ./check.sh --no-fix
           poetry run python -m readme_renderer ./README.md
 
   build:

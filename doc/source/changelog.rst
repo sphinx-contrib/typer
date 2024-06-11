@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.3.1
+======
+
+* Fixed `ruff dependency should be dev dependency only. <https://github.com/sphinx-contrib/typer/issues/29>`_
+
 v0.3.0
 ======
 

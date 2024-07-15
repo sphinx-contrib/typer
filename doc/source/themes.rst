@@ -96,6 +96,7 @@ Red Sands
     :width: 68
     :convert-png: latex
 
+|
 
 Blue Waves
 ----------

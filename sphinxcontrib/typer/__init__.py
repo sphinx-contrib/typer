@@ -48,7 +48,7 @@ from typer.main import Typer, TyperGroup, TyperInfo
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 3, 2)
+VERSION = (0, 3, 3)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -563,9 +563,7 @@ class TyperDirective(rst.Directive):
     def run(self) -> t.Iterable[nodes.section]:
         self.env = self.state.document.settings.env
 
-        from copy import deepcopy
-
-        command = deepcopy(self.load_root_command(self.arguments[0]))
+        command = self.load_root_command(self.arguments[0])
 
         self.make_sections = "make-sections" in self.options
         self.nested = "show-nested" in self.options

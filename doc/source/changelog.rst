@@ -2,8 +2,13 @@
 Change Log
 ==========
 
-v0.3.2 (15-JUL-2024)
+v0.3.3 (15-JUL-2024)
 ====================
+
+* Removed errant deepcopy introduced in last release.
+
+v0.3.2 (yanked)
+===============
 
 * Implemented `Add blue waves theme. <https://github.com/sphinx-contrib/typer/issues/31>`_
 * Implemented `Add red sands theme. <https://github.com/sphinx-contrib/typer/issues/30>`_

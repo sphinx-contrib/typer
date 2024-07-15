@@ -48,7 +48,7 @@ from typer.main import Typer, TyperGroup, TyperInfo
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 
-VERSION = (0, 3, 1)
+VERSION = (0, 3, 2)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -104,6 +104,8 @@ class RenderTheme(str, Enum):
     DIMMED_MONOKAI = "dimmed_monokai"
     NIGHT_OWLISH = "night_owlish"
     DARK = "dark"
+    RED_SANDS = "red_sands"
+    BLUE_WAVES = "blue_waves"
 
     def __str__(self) -> str:
         return self.value
@@ -116,6 +118,34 @@ class RenderTheme(str, Enum):
             RenderTheme.DIMMED_MONOKAI: rich_theme.DIMMED_MONOKAI,
             RenderTheme.NIGHT_OWLISH: rich_theme.NIGHT_OWLISH,
             RenderTheme.DARK: rich_theme.SVG_EXPORT_THEME,
+            RenderTheme.RED_SANDS: rich_theme.TerminalTheme(
+                (132, 42, 38),  # background
+                (210, 193, 159),  # text
+                [
+                    (210, 193, 159),  #
+                    (0, 0, 0),  # required
+                    (77, 218, 77),  # option on short name
+                    (227, 189, 57),  # Usage/metavar
+                    (210, 193, 159),  #
+                    (0, 18, 140),  # option off
+                    (75, 214, 225),  # option on/command names
+                    (210, 193, 159),  #
+                ],
+            ),
+            RenderTheme.BLUE_WAVES: rich_theme.TerminalTheme(
+                (20, 118, 247),  # background
+                (250, 240, 250),  # text
+                [
+                    (250, 240, 250),  #
+                    (0, 0, 0),  # required
+                    (0, 255, 0),  # option on short name
+                    (227, 189, 57),  # Usage/metavar
+                    (250, 240, 250),  #
+                    (2, 2, 214),  # option off
+                    (146, 226, 252),  # option on/command names
+                    (250, 240, 250),  #
+                ],
+            ),
         }[self]
 
 
@@ -533,7 +563,9 @@ class TyperDirective(rst.Directive):
     def run(self) -> t.Iterable[nodes.section]:
         self.env = self.state.document.settings.env
 
-        command = self.load_root_command(self.arguments[0])
+        from copy import deepcopy
+
+        command = deepcopy(self.load_root_command(self.arguments[0]))
 
         self.make_sections = "make-sections" in self.options
         self.nested = "show-nested" in self.options

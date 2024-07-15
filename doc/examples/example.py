@@ -1,12 +1,24 @@
 import typer
 import typing as t
+from enum import StrEnum
+from typing_extensions import Annotated
 
 app = typer.Typer(add_completion=False)
 
+class Kind(StrEnum):
+
+    ONE = "one"
+    TWO = "two"
+
+
 @app.callback()
 def callback(
-    flag1: bool = typer.Option(False, help="Flag 1."),
-    flag2: bool = typer.Option(False, help="Flag 2.")
+    arg: Annotated[Kind, typer.Argument(help="An argument.")],
+    flag: Annotated[bool, typer.Option(help="Flagged.")] = False,
+    switch: Annotated[
+        bool,
+        typer.Option("--switch", "-s", help="Switch.")
+    ] = False
 ):
     """This is the callback function."""
     pass
@@ -14,7 +26,10 @@ def callback(
 
 @app.command()
 def foo(
-    name: str = typer.Option(..., help="The name of the item to foo.")
+    name: Annotated[
+        str,
+        typer.Option(..., help="The name of the item to foo.")
+    ]
 ):
     """This is the foo command."""
     pass
@@ -22,7 +37,10 @@ def foo(
 
 @app.command()
 def bar(
-    names: t.List[str] = typer.Option(..., help="The names of the items to bar."),
+    names: Annotated[
+        t.List[str],
+        typer.Option(..., help="The names of the items to bar.")
+    ],
 ):
     """This is the bar command."""
     pass

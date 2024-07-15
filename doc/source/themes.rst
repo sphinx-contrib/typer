@@ -23,7 +23,7 @@ Light (default)
 
 .. typer:: examples.example:app
     :theme: light
-    :width: 60
+    :width: 63
     :convert-png: latex
 
 |
@@ -37,7 +37,7 @@ Dark
 
 .. typer:: examples.example:app
     :theme: dark
-    :width: 61
+    :width: 64
     :convert-png: latex
 
 |
@@ -51,7 +51,7 @@ Monokai
 
 .. typer:: examples.example:app
     :theme: monokai
-    :width: 62
+    :width: 65
     :convert-png: latex
 
 |
@@ -65,7 +65,7 @@ Dimmed Monokai
 
 .. typer:: examples.example:app
     :theme: dimmed_monokai
-    :width: 63
+    :width: 66
     :convert-png: latex
 
 |
@@ -79,5 +79,32 @@ Night Owlish
 
 .. typer:: examples.example:app
     :theme: night_owlish
-    :width: 64
+    :width: 67
+    :convert-png: latex
+
+|
+
+Red Sands
+---------
+
+.. code-block:: rst
+
+    :theme: red_sands
+
+.. typer:: examples.example:app
+    :theme: red_sands
+    :width: 68
+    :convert-png: latex
+
+
+Blue Waves
+----------
+
+.. code-block:: rst
+
+    :theme: blue_waves
+
+.. typer:: examples.example:app
+    :theme: blue_waves
+    :width: 69
     :convert-png: latex

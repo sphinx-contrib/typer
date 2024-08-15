@@ -39,6 +39,9 @@ class AliasedGroup(click.Group):
     file and with a bit of magic.
     """
 
+    def list_commands(self, ctx):
+        return reversed(sorted(super().list_commands(ctx)))
+
     def get_command(self, ctx, cmd_name):
         # Step one: bulitin commands as normal
         rv = click.Group.get_command(self, ctx, cmd_name)

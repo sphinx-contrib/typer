@@ -1,7 +1,12 @@
 import click
 
 
-@click.group()
+class AlphOrderedGroup(click.Group):
+    def list_commands(self, ctx):
+        return sorted(super().list_commands(ctx))
+
+
+@click.group(cls=AlphOrderedGroup)
 @click.version_option()
 def cli():
     """Naval Fate.
@@ -12,7 +17,7 @@ def cli():
     """
 
 
-@cli.group()
+@cli.group(cls=AlphOrderedGroup)
 def ship():
     """Manages ships."""
 

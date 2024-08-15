@@ -4,7 +4,12 @@ import click
 from click.shell_completion import CompletionItem
 
 
-@click.group()
+class AlphOrderedGroup(click.Group):
+    def list_commands(self, ctx):
+        return sorted(super().list_commands(ctx))
+
+
+@click.group(cls=AlphOrderedGroup)
 def cli():
     pass
 

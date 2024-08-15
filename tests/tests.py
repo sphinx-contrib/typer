@@ -476,7 +476,8 @@ def test_click_ex_aliases():
 
     bld_dir, html = build_click_example("aliases", "html")
 
-    subcommands = ["alias", "clone", "commit", "pull", "push", "status"]
+    # we test that list_commands order is honored
+    subcommands = reversed(["alias", "clone", "commit", "pull", "push", "status"])
     helps = [
         get_click_ex_help("aliases"),
         *[get_click_ex_help("aliases", *cmd.split()) for cmd in subcommands],

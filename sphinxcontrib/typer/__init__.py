@@ -54,7 +54,7 @@ __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
 __author__ = "Brian Kohan"
 __license__ = "MIT"
-__copyright__ = "Copyright 2023 Brian Kohan"
+__copyright__ = "Copyright 2023-2024 Brian Kohan"
 
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
@@ -69,21 +69,8 @@ def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
         return getattr(import_module(".".join(parts[0:-1])), parts[-1])
 
 
-def _filter_commands(ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None):
-    return [
-        cmd
-        for name, cmd in getattr(
-            ctx.command,
-            "commands",
-            {
-                name: ctx.command.get_command(ctx, name)
-                for name in getattr(ctx.command, "list_commands", lambda _: [])(ctx)
-                or cmd_filter
-                or []
-            },
-        ).items()
-        if not cmd_filter or name in cmd_filter
-    ]
+def _filter_commands(ctx: click.Context, cmd_filter: t.List[str]):
+    return [ctx.command.commands[cmd_name] for cmd_name in cmd_filter]
 
 
 class RenderTarget(str, Enum):

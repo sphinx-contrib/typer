@@ -5,6 +5,11 @@ import sys
 import click
 
 
+class AlphOrderedGroup(click.Group):
+    def list_commands(self, ctx):
+        return sorted(super().list_commands(ctx))
+
+
 class Repo:
     def __init__(self, home):
         self.home = home
@@ -23,7 +28,7 @@ class Repo:
 pass_repo = click.make_pass_decorator(Repo)
 
 
-@click.group()
+@click.group(cls=AlphOrderedGroup)
 @click.option(
     "--repo-home",
     envvar="REPO_HOME",

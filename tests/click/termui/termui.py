@@ -5,7 +5,12 @@ import time
 import click
 
 
-@click.group()
+class AlphOrderedGroup(click.Group):
+    def list_commands(self, ctx):
+        return sorted(super().list_commands(ctx))
+
+
+@click.group(cls=AlphOrderedGroup)
 def cli():
     """This script showcases different terminal UI helpers in Click."""
     pass

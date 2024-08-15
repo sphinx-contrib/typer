@@ -7,7 +7,12 @@ from PIL import ImageFilter
 import click
 
 
-@click.group(chain=True)
+class AlphOrderedGroup(click.Group):
+    def list_commands(self, ctx):
+        return sorted(super().list_commands(ctx))
+
+
+@click.group(cls=AlphOrderedGroup, chain=True)
 def cli():
     """This script processes a bunch of images through pillow in a unix
     pipe.  One commands feeds into the next.

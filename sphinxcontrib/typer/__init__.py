@@ -70,23 +70,20 @@ def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
 
 
 def _filter_commands(ctx: click.Context, cmd_filter: t.Optional[t.List[str]] = None):
-    return sorted(
-        [
-            cmd
-            for name, cmd in getattr(
-                ctx.command,
-                "commands",
-                {
-                    name: ctx.command.get_command(ctx, name)
-                    for name in getattr(ctx.command, "list_commands", lambda _: [])(ctx)
-                    or cmd_filter
-                    or []
-                },
-            ).items()
-            if not cmd_filter or name in cmd_filter
-        ],
-        key=lambda item: item.name,
-    )
+    return [
+        cmd
+        for name, cmd in getattr(
+            ctx.command,
+            "commands",
+            {
+                name: ctx.command.get_command(ctx, name)
+                for name in getattr(ctx.command, "list_commands", lambda _: [])(ctx)
+                or cmd_filter
+                or []
+            },
+        ).items()
+        if not cmd_filter or name in cmd_filter
+    ]
 
 
 class RenderTarget(str, Enum):

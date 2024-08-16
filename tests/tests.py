@@ -24,6 +24,7 @@ SRC_DIR = DOC_DIR / "source"
 BUILD_DIR = DOC_DIR / "build"
 
 CLICK_EXAMPLES = Path(__file__).parent / "click"
+TYPER_EXAMPLES = Path(__file__).parent / "typer"
 TEST_CALLBACKS = CLICK_EXAMPLES / "callback_record.json"
 
 
@@ -135,27 +136,27 @@ def test_sphinx_latex_build():
     assert not app.statuscode, "Sphinx documentation build failed"
 
 
-def build_click_example(name, builder):
+def build_example(name, builder, example_dir=CLICK_EXAMPLES):
     cwd = os.getcwd()
-    ex_dir = CLICK_EXAMPLES / name
+    ex_dir = example_dir / name
     bld_dir = ex_dir / "build"
     if bld_dir.exists():
         shutil.rmtree(bld_dir)
-    if (CLICK_EXAMPLES / "cache.json").exists():
-        os.remove(CLICK_EXAMPLES / "cache.json")
+    if (example_dir / "cache.json").exists():
+        os.remove(example_dir / "cache.json")
 
-    os.chdir(CLICK_EXAMPLES / name)
+    os.chdir(example_dir / name)
 
     app = Sphinx(
         ex_dir,
-        CLICK_EXAMPLES,
+        example_dir,
         bld_dir / builder,
         bld_dir / "doctrees",
         buildername=builder,
     )
 
     assert app.config.typer_iframe_height_padding == 40
-    assert app.config.typer_iframe_height_cache_path == CLICK_EXAMPLES / "cache.json"
+    assert app.config.typer_iframe_height_cache_path == example_dir / "cache.json"
 
     # Build the documentation
     app.build()
@@ -174,19 +175,26 @@ def build_click_example(name, builder):
     return bld_dir / builder, result
 
 
-def get_click_ex_help(name, *subcommands):
+def get_ex_help(name, *subcommands, example_dir, command_file=None):
     ret = subprocess.run(
         [
             "poetry",
             "run",
             "python",
-            CLICK_EXAMPLES / name / f"{name}.py",
+            example_dir / name / f"{command_file or name}.py",
             *subcommands,
             "--help",
         ],
         capture_output=True,
     )
     return ret.stdout.decode() or ret.stderr.decode()
+
+def get_click_ex_help(name, *subcommands):
+    return get_ex_help(name, *subcommands, example_dir=CLICK_EXAMPLES)
+
+
+def get_typer_ex_help(name, *subcommands, command_file=None):
+    return get_ex_help(name, *subcommands, example_dir=TYPER_EXAMPLES, command_file=command_file)
 
 
 def check_html(html, help_txt, iframe_number=0, threshold=0.85):
@@ -217,7 +225,7 @@ def check_text(html, help_txt, txt_number=0, threshold=0.95):
 def test_click_ex_validation():
     clear_callbacks()
 
-    bld_dir, html = build_click_example("validation", "html")
+    bld_dir, html = build_example("validation", "html")
     assert (CLICK_EXAMPLES / "cache.json").is_file()
 
     help_txt = get_click_ex_help("validation")
@@ -241,7 +249,7 @@ def test_click_ex_termui():
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("termui", "html")
+    bld_dir, html = build_example("termui", "html")
 
     help_txt = get_click_ex_help("termui")
     clear_help = get_click_ex_help("termui", "clear")
@@ -300,7 +308,7 @@ def test_click_ex_repo():
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("repo", "html")
+    bld_dir, html = build_example("repo", "html")
 
     help_txt = get_click_ex_help("repo")
     clone_help = get_click_ex_help("repo", "clone")
@@ -331,7 +339,7 @@ def test_click_ex_naval():
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("naval", "html")
+    bld_dir, html = build_example("naval", "html")
 
     help_txt = get_click_ex_help("naval")
     mine_help = get_click_ex_help("naval", "mine")
@@ -380,7 +388,7 @@ def test_click_ex_inout():
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("inout", "html")
+    bld_dir, html = build_example("inout", "html")
 
     help_txt = get_click_ex_help("inout")
     # verifies :show-nested:
@@ -390,14 +398,14 @@ def test_click_ex_inout():
         shutil.rmtree(bld_dir.parent)
 
 
-@pytest.mark.skipif(TYPER_VERISON >= (0, 11, 0), reason="upstream typer bug?")
+#@pytest.mark.skipif(TYPER_VERISON >= (0, 11, 0), reason="upstream typer bug?")
 def test_click_ex_complex():
     """
     tests :make-sections: and :show-nested: options for multi level hierarchies
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("complex", "html")
+    bld_dir, html = build_example("complex", "html")
 
     check_text(
         html,
@@ -456,7 +464,7 @@ def test_click_ex_complex():
 def test_click_ex_completion():
     clear_callbacks()
 
-    bld_dir, html = build_click_example("completion", "html")
+    bld_dir, html = build_example("completion", "html")
 
     subcommands = ["group", "group select-user", "ls", "show-env"]
     helps = [
@@ -474,7 +482,7 @@ def test_click_ex_completion():
 def test_click_ex_aliases():
     clear_callbacks()
 
-    bld_dir, html = build_click_example("aliases", "html")
+    bld_dir, html = build_example("aliases", "html")
 
     # we test that list_commands order is honored
     subcommands = reversed(["alias", "clone", "commit", "pull", "push", "status"])
@@ -496,7 +504,7 @@ def test_click_ex_imagepipe():
     """
     clear_callbacks()
 
-    bld_dir, html = build_click_example("imagepipe", "html")
+    bld_dir, html = build_example("imagepipe", "html")
 
     subcommands = [
         "blur",
@@ -539,8 +547,41 @@ def test_click_ex_imagepipe():
     #     shutil.rmtree(bld_dir.parent)
 
 
+def test_typer_ex_composite():
+    clear_callbacks()
+
+    def test_build():
+        _, html = build_example("composite", "html", example_dir=TYPER_EXAMPLES)
+
+        # we test that list_commands order is honored
+        subcommands = reversed(["repeat", "subgroup", "subgroup echo", "subgroup multiply"])
+        helps = [
+            get_typer_ex_help("composite", command_file="composite/main"),
+            *[get_typer_ex_help("composite", *cmd.split(), command_file="composite/main") for cmd in subcommands],
+        ]
+
+        for idx, help in enumerate(helps):
+            check_text(html, help, idx, threshold=0.82)
+
+    EX_DIR = TYPER_EXAMPLES / "composite/composite"
+    index_html = TYPER_EXAMPLES / "composite/build/html/index.html"
+    test_build()
+    idx_time = index_html.stat().st_mtime
+    test_build()
+    idx_time2 = index_html.stat().st_mtime
+    assert idx_time == idx_time2, "Rebuild was not cached!"
+
+
+    main_py = EX_DIR / "main.py"
+    group_py = EX_DIR / "group.py"
+    echo_py = EX_DIR / "echo.py"
+    multiply_py = EX_DIR / "multiply_py"
+
+    # test that 
+
+
 def test_click_text_build_works():
-    bld_dir, text = build_click_example("validation", "text")
+    bld_dir, text = build_example("validation", "text")
     help_txt = get_click_ex_help("validation")
     assert similarity(text, help_txt) > 0.95
     assert text.count("Usage:") == 3, "Should have rendered the help 3 times as text"
@@ -553,7 +594,7 @@ def test_click_latex_build_works():
     also tests the convert-png option and typer_svg2pdf and typer_convert_png callbacks.
     """
 
-    bld_dir, latex = build_click_example("validation", "latex")
+    bld_dir, latex = build_example("validation", "latex")
     help_txt = get_click_ex_help("validation")
 
     assert check_callback("typer_svg2pdf")

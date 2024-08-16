@@ -70,7 +70,7 @@ def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
 
 
 def _filter_commands(ctx: click.Context, cmd_filter: t.List[str]):
-    return [ctx.command.commands[cmd_name] for cmd_name in cmd_filter]
+    return [ctx.command.get_command(ctx, cmd_name) for cmd_name in cmd_filter]
 
 
 class RenderTarget(str, Enum):

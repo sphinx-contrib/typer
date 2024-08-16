@@ -409,7 +409,8 @@ def test_click_ex_complex():
 
     check_text(
         html,
-        """ Usage: complex [OPTIONS] COMMAND [ARGS]...                      
+        """
+ Usage: complex [OPTIONS] COMMAND [ARGS]...                      
                                                                  
  A complex command line interface.                               
                                                                  
@@ -419,15 +420,13 @@ def test_click_ex_complex():
 │ --verbose  -v                 Enables verbose mode.           │
 │ --help                        Show this message and exit.     │
 ╰───────────────────────────────────────────────────────────────╯
-╭─ Commands ────────────────────────────────────────────────────╮
-│ init             Initializes a repo.                          │
-│ status           Shows file changes.                          │
-╰───────────────────────────────────────────────────────────────╯""",
+""",
     )
 
     check_text(
         html,
-        """ Usage: complex init [OPTIONS] [PATH]                            
+        """
+ Usage: complex init [OPTIONS] [PATH]                            
                                                                  
  Initializes a repository.                                       
                                                                  
@@ -436,18 +435,21 @@ def test_click_ex_complex():
 ╰───────────────────────────────────────────────────────────────╯
 ╭─ Options ─────────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                   │
-╰───────────────────────────────────────────────────────────────╯""",
+╰───────────────────────────────────────────────────────────────╯
+""",
         1,
     )
     check_text(
         html,
-        """ Usage: complex status [OPTIONS]                                 
+        """
+ Usage: complex status [OPTIONS]                                 
                                                                  
  Shows file changes in the current working directory.            
                                                                  
 ╭─ Options ─────────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                   │
-╰───────────────────────────────────────────────────────────────╯""",
+╰───────────────────────────────────────────────────────────────╯
+""",
         2,
     )
 

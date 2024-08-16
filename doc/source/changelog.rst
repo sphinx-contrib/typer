@@ -4,8 +4,8 @@ Change Log
 
 v0.3.4 (15-AUG-2024)
 ====================
-* `list_commands order should be honored when generated nested sections for subcommands. <https://github.com/sphinx-contrib/typer/issues/36>`_
 
+* Fixed `list_commands order should be honored when generated nested sections for subcommands. <https://github.com/sphinx-contrib/typer/issues/36>`_
 
 v0.3.3 (15-JUL-2024)
 ====================

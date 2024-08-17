@@ -12,4 +12,4 @@ class AlphOrder(TyperGroup):
 app = typer.Typer(help="Subcommands are here.", cls=AlphOrder)
 
 app.command(name="echo", help="Echo the string.")(echo)
-app.command(name="multiply", help="Multiply 2 numbers.")(echo)
+app.command(name="multiply", help="Multiply 2 numbers.")(multiply)

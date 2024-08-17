@@ -21,6 +21,7 @@ r"""
 import base64
 import contextlib
 import hashlib
+import inspect
 import io
 import json
 import os
@@ -31,6 +32,7 @@ from contextlib import contextmanager
 from enum import Enum
 from html import escape as html_escape
 from importlib import import_module
+from importlib.util import find_spec
 from pathlib import Path
 
 import click
@@ -286,6 +288,9 @@ class TyperDirective(rst.Directive):
                     tries += 1
                     try_path = ".".join(parts[0 : -(tries - 1)])
                     obj = import_module(try_path)
+                    file_spec = getattr(find_spec(try_path), "origin", None)
+                    if file_spec:
+                        self.env.note_dependency(file_spec)
                     for attr in parts[-(tries - 1) :]:
                         obj = accessor(obj, attr, try_path)
                     break
@@ -411,6 +416,13 @@ class TyperDirective(rst.Directive):
             terminal_width=self.width,
             max_content_width=self.width,
         )
+
+        if command.callback:
+            self.env.note_dependency(
+                inspect.getfile(
+                    getattr(command.callback, "__wrapped__", command.callback)
+                )
+            )
 
         if command.hidden:
             return []

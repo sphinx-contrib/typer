@@ -6,6 +6,7 @@ v0.3.5 (16-AUG-2024)
 ====================
 
 * Fixed `Lazily loaded commands throw an exception. <https://github.com/sphinx-contrib/typer/issues/37>`_
+* Fixed `Changes are not detected across sphinx-build <https://github.com/sphinx-contrib/typer/issues/35>`_
 
 v0.3.4 (15-AUG-2024)
 ====================

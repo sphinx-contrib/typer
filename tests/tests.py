@@ -144,7 +144,9 @@ def test_sphinx_latex_build():
     assert not app.statuscode, "Sphinx documentation build failed"
 
 
-def build_example(name, builder, example_dir=CLICK_EXAMPLES, clean_first=True):
+def build_example(
+    name, builder, example_dir=CLICK_EXAMPLES, clean_first=True, subprocess=False
+):
     cwd = os.getcwd()
     ex_dir = example_dir / name
     bld_dir = ex_dir / "build"
@@ -155,19 +157,24 @@ def build_example(name, builder, example_dir=CLICK_EXAMPLES, clean_first=True):
 
     os.chdir(example_dir / name)
 
-    app = Sphinx(
-        ex_dir,
-        example_dir,
-        bld_dir / builder,
-        bld_dir / "doctrees",
-        buildername=builder,
-    )
+    if not subprocess:
+        app = Sphinx(
+            ex_dir,
+            example_dir,
+            bld_dir / builder,
+            bld_dir / "doctrees",
+            buildername=builder,
+        )
 
-    assert app.config.typer_iframe_height_padding == 40
-    assert app.config.typer_iframe_height_cache_path == example_dir / "cache.json"
+        assert app.config.typer_iframe_height_padding == 40
+        assert app.config.typer_iframe_height_cache_path == example_dir / "cache.json"
 
-    # Build the documentation
-    app.build()
+        # Build the documentation
+        app.build()
+    else:
+        os.system(
+            f"poetry run sphinx-build {ex_dir} {bld_dir / builder} --conf {ex_dir.parent}"
+        )
 
     os.chdir(cwd)
     if builder == "html":
@@ -241,7 +248,12 @@ def check_text(html, help_txt, txt_number=0, threshold=0.95):
     for element in ["<pre>", "<span>", "</span>", "</pre>"]:
         txt = txt.strip(element)
     assert txt is not None
-    assert similarity(txt, help_txt) > threshold
+    try:
+        assert similarity(txt, help_txt) > threshold
+    except AssertionError:
+        import ipdb
+
+        ipdb.set_trace()
     return txt
 
 
@@ -572,84 +584,99 @@ def test_click_ex_imagepipe():
 
 
 def test_typer_ex_composite():
-    clear_callbacks()
+    try:
+        clear_callbacks()
 
-    def test_build():
-        _, html = build_example(
-            "composite", "html", example_dir=TYPER_EXAMPLES, clean_first=False
-        )
+        def test_build(first=False):
+            _, html = build_example(
+                "composite",
+                "html",
+                example_dir=TYPER_EXAMPLES,
+                clean_first=first,
+                subprocess=True,
+            )
 
-        # we test that list_commands order is honored
-        subcommands = ["subgroup", "subgroup multiply", "subgroup echo", "repeat"]
-        helps = [
-            get_typer_ex_help("composite", command_file="composite/cli"),
-            *[
-                get_typer_ex_help(
-                    "composite", *cmd.split(), command_file="composite/cli"
-                )
-                for cmd in subcommands
-            ],
+            # we test that list_commands order is honored
+            subcommands = ["subgroup", "subgroup multiply", "subgroup echo", "repeat"]
+            helps = [
+                get_typer_ex_help("composite", command_file="composite/cli"),
+                *[
+                    get_typer_ex_help(
+                        "composite", *cmd.split(), command_file="composite/cli"
+                    )
+                    for cmd in subcommands
+                ],
+            ]
+
+            doc_helps = []
+            for idx, help in enumerate(helps):
+                doc_helps.append(check_text(html, help, idx, threshold=0.88))
+
+            return doc_helps
+
+        EX_DIR = TYPER_EXAMPLES / "composite/composite"
+        index_html = TYPER_EXAMPLES / "composite/build/html/index.html"
+        composite_html = TYPER_EXAMPLES / "composite/build/html/composite.html"
+        echo_html = TYPER_EXAMPLES / "composite/build/html/echo.html"
+        multiply_html = TYPER_EXAMPLES / "composite/build/html/multiply.html"
+        repeat_html = TYPER_EXAMPLES / "composite/build/html/repeat.html"
+        subgroup_html = TYPER_EXAMPLES / "composite/build/html/subgroup.html"
+        files = [
+            index_html,
+            composite_html,
+            echo_html,
+            multiply_html,
+            repeat_html,
+            subgroup_html,
         ]
 
-        doc_helps = []
-        for idx, help in enumerate(helps):
-            doc_helps.append(check_text(html, help, idx, threshold=0.82))
+        test_build(first=True)
+        times = [pth.stat().st_mtime for pth in files]
+        test_build()
+        times2 = [pth.stat().st_mtime for pth in files]
+        assert times == times2, "Rebuild was not cached!"
 
-        return doc_helps
+        cli_py = EX_DIR / "cli.py"
+        group_py = EX_DIR / "group.py"
+        echo_py = EX_DIR / "echo.py"
 
-    EX_DIR = TYPER_EXAMPLES / "composite/composite"
-    index_html = TYPER_EXAMPLES / "composite/build/html/index.html"
-    composite_html = TYPER_EXAMPLES / "composite/build/html/composite.html"
-    echo_html = TYPER_EXAMPLES / "composite/build/html/echo.html"
-    multiply_html = TYPER_EXAMPLES / "composite/build/html/multiply.html"
-    repeat_html = TYPER_EXAMPLES / "composite/build/html/repeat.html"
-    subgroup_html = TYPER_EXAMPLES / "composite/build/html/subgroup.html"
-    files = [
-        index_html,
-        composite_html,
-        echo_html,
-        multiply_html,
-        repeat_html,
-        subgroup_html,
-    ]
+        # test that
+        replace_in_file(
+            cli_py, "Lets do stuff with strings.", "XX Lets do stuff with strings. XX"
+        )
+        txts = test_build()
+        times3 = [pth.stat().st_mtime for pth in files]
+        for idx, (t3, t2) in enumerate(zip(times3, times2)):
+            assert t3 > t2, f"file {files[idx]} not regenerated."
+        assert "XX Lets do stuff with strings. XX" in txts[0]
 
-    test_build()
-    times = [pth.stat().st_mtime for pth in files]
-    test_build()
-    times2 = [pth.stat().st_mtime for pth in files]
-    assert times == times2, "Rebuild was not cached!"
+        replace_in_file(
+            group_py, "Subcommands are here.", "XX Subcommands are here. XX"
+        )
+        helps = test_build()
+        assert "XX Subcommands are here. XX" in helps[0]
+        assert "XX Subcommands are here. XX" in helps[1]
+        times4 = [pth.stat().st_mtime for pth in files]
+        for idx, (t4, t3) in enumerate(zip(times4, times3)):
+            if files[idx].name in ["echo.html", "multiply.html", "repeat.html"]:
+                continue
+            assert t4 > t3, f"file {files[idx]} not regenerated."
 
-    cli_py = EX_DIR / "cli.py"
-    group_py = EX_DIR / "group.py"
-    echo_py = EX_DIR / "echo.py"
+        replace_in_file(
+            echo_py, "def echo(name: str):", "def echo(name: str, name2: str):"
+        )
+        helps = test_build()
+        assert "name2" in helps[3]
+        times5 = [pth.stat().st_mtime for pth in files]
+        for idx, (t5, t4) in enumerate(zip(times5, times4)):
+            if files[idx].name in ["composite.html", "multiply.html", "repeat.html"]:
+                continue
+            assert t5 > t4, f"file {files[idx]} not regenerated."
 
-    # test that
-    replace_in_file(
-        cli_py, "Lets do stuff with strings.", "**Lets do stuff with strings.**"
-    )
-    assert "**Lets do stuff with strings.**" in test_build()[0]
-    times3 = [pth.stat().st_mtime for pth in files]
-    for t3, t2 in zip(times3, times2):
-        assert t3 > t2
-
-    replace_in_file(group_py, "Subcommands are here.", "**Subcommands are here.**")
-    helps = test_build()
-    assert "**Subcommands are here.**" in helps[0]
-    assert "**Subcommands are here.**" in helps[1]
-    times4 = [pth.stat().st_mtime for pth in files]
-    for t4, t3 in zip(times4, times3):
-        assert t4 > t3
-
-    replace_in_file(echo_py, "def echo(name: str):", "def echo(name: str, name2: str):")
-    helps = test_build()
-    assert "name2" in helps[3]
-    times4 = [pth.stat().st_mtime for pth in files]
-    for t4, t3 in zip(times4, times3):
-        assert t4 > t3
-
-    os.system(f"git checkout {cli_py}")
-    os.system(f"git checkout {group_py}")
-    os.system(f"git checkout {echo_py}")
+    finally:
+        os.system(f"git checkout {cli_py}")
+        os.system(f"git checkout {group_py}")
+        os.system(f"git checkout {echo_py}")
 
 
 def test_click_text_build_works():

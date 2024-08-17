@@ -75,6 +75,13 @@ def _filter_commands(ctx: click.Context, cmd_filter: t.List[str]):
     return [ctx.command.get_command(ctx, cmd_name) for cmd_name in cmd_filter]
 
 
+def _add_dependency(env, command):
+    cb = getattr(command, "callback", None)
+    cb = getattr(cb, "__wrapped__", cb)
+    if cb:
+        env.note_dependency(inspect.getfile(cb))
+
+
 class RenderTarget(str, Enum):
     HTML = "html"
     SVG = "svg"
@@ -417,12 +424,7 @@ class TyperDirective(rst.Directive):
             max_content_width=self.width,
         )
 
-        if command.callback:
-            self.env.note_dependency(
-                inspect.getfile(
-                    getattr(command.callback, "__wrapped__", command.callback)
-                )
-            )
+        _add_dependency(self.env, command)
 
         if command.hidden:
             return []
@@ -550,10 +552,15 @@ class TyperDirective(rst.Directive):
             raise self.severe(f"Invalid typer render target: {self.target}")
 
         # recurse through subcommands if we should
-        if self.nested and isinstance(command, click.MultiCommand):
+        if isinstance(command, click.MultiCommand):
             commands = _filter_commands(ctx, command.list_commands(ctx))
             for command in commands:
-                section.extend(self.generate_nodes(command.name, command, parent=ctx))
+                if self.nested:
+                    section.extend(
+                        self.generate_nodes(command.name, command, parent=ctx)
+                    )
+                else:
+                    _add_dependency(self.env, command)
         return [section]
 
     def run(self) -> t.Iterable[nodes.section]:

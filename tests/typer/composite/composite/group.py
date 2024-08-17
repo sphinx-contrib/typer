@@ -9,7 +9,11 @@ class AlphOrder(TyperGroup):
         return reversed(sorted(super().list_commands(ctx)))
 
 
-app = typer.Typer(help="Subcommands are here.", cls=AlphOrder)
+def subgroup():
+    pass
+
+
+app = typer.Typer(help="Subcommands are here.", cls=AlphOrder, callback=subgroup)
 
 app.command(name="echo", help="Echo the string.")(echo)
 app.command(name="multiply", help="Multiply 2 numbers.")(multiply)

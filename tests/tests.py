@@ -80,6 +80,14 @@ def resize_image_to_match(source_image_path, target_image_path):
     return np.clip(resized * 255, 0, 255).astype(np.uint8), target
 
 
+def replace_in_file(file_path: str, search_string: str, replacement_string: str):
+    with open(file_path, "r") as file:
+        file_contents = file.read()
+
+    with open(file_path, "w") as file:
+        file.write(file_contents.replace(search_string, replacement_string))
+
+
 def test_sphinx_html_build():
     """
     The documentation is extensive and exercises most of the features of the extension so
@@ -136,11 +144,11 @@ def test_sphinx_latex_build():
     assert not app.statuscode, "Sphinx documentation build failed"
 
 
-def build_example(name, builder, example_dir=CLICK_EXAMPLES):
+def build_example(name, builder, example_dir=CLICK_EXAMPLES, clean_first=True):
     cwd = os.getcwd()
     ex_dir = example_dir / name
     bld_dir = ex_dir / "build"
-    if bld_dir.exists():
+    if clean_first and bld_dir.exists():
         shutil.rmtree(bld_dir)
     if (example_dir / "cache.json").exists():
         os.remove(example_dir / "cache.json")
@@ -186,15 +194,23 @@ def get_ex_help(name, *subcommands, example_dir, command_file=None):
             "--help",
         ],
         capture_output=True,
+        env={
+            **os.environ,
+            "PYTHONPATH": f"{os.environ.get("PYTHONPATH", "$PYTHONPATH")}:{example_dir / name}",
+            "TERMINAL_WIDTH": str(os.environ.get("TERMINAL_WIDTH", 80)),
+        },
     )
     return ret.stdout.decode() or ret.stderr.decode()
+
 
 def get_click_ex_help(name, *subcommands):
     return get_ex_help(name, *subcommands, example_dir=CLICK_EXAMPLES)
 
 
 def get_typer_ex_help(name, *subcommands, command_file=None):
-    return get_ex_help(name, *subcommands, example_dir=TYPER_EXAMPLES, command_file=command_file)
+    return get_ex_help(
+        name, *subcommands, example_dir=TYPER_EXAMPLES, command_file=command_file
+    )
 
 
 def check_html(html, help_txt, iframe_number=0, threshold=0.85):
@@ -206,20 +222,27 @@ def check_html(html, help_txt, iframe_number=0, threshold=0.85):
     code = iframe_src.find("code")
     assert code is not None
     assert similarity(code.text, help_txt) > threshold
+    return code.text
 
 
 def check_svg(html, help_txt, svg_number=0, threshold=0.75):
     soup = bs(html, "html.parser")
     svg = soup.find_all("svg")[svg_number]
     assert svg is not None
+    txt = svg.text.strip()
     assert similarity(svg.text.strip(), help_txt) > threshold
+    return txt
 
 
 def check_text(html, help_txt, txt_number=0, threshold=0.95):
     soup = bs(html, "html.parser")
     txt = soup.find_all("pre")[txt_number]
+    txt = txt.text.strip()
+    for element in ["<pre>", "<span>", "</span>", "</pre>"]:
+        txt = txt.strip(element)
     assert txt is not None
-    assert similarity(txt.text.strip(), help_txt) > threshold
+    assert similarity(txt, help_txt) > threshold
+    return txt
 
 
 def test_click_ex_validation():
@@ -398,7 +421,6 @@ def test_click_ex_inout():
         shutil.rmtree(bld_dir.parent)
 
 
-#@pytest.mark.skipif(TYPER_VERISON >= (0, 11, 0), reason="upstream typer bug?")
 def test_click_ex_complex():
     """
     tests :make-sections: and :show-nested: options for multi level hierarchies
@@ -553,33 +575,81 @@ def test_typer_ex_composite():
     clear_callbacks()
 
     def test_build():
-        _, html = build_example("composite", "html", example_dir=TYPER_EXAMPLES)
+        _, html = build_example(
+            "composite", "html", example_dir=TYPER_EXAMPLES, clean_first=False
+        )
 
         # we test that list_commands order is honored
-        subcommands = reversed(["repeat", "subgroup", "subgroup echo", "subgroup multiply"])
+        subcommands = ["subgroup", "subgroup multiply", "subgroup echo", "repeat"]
         helps = [
-            get_typer_ex_help("composite", command_file="composite/main"),
-            *[get_typer_ex_help("composite", *cmd.split(), command_file="composite/main") for cmd in subcommands],
+            get_typer_ex_help("composite", command_file="composite/cli"),
+            *[
+                get_typer_ex_help(
+                    "composite", *cmd.split(), command_file="composite/cli"
+                )
+                for cmd in subcommands
+            ],
         ]
 
+        doc_helps = []
         for idx, help in enumerate(helps):
-            check_text(html, help, idx, threshold=0.82)
+            doc_helps.append(check_text(html, help, idx, threshold=0.82))
+
+        return doc_helps
 
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     index_html = TYPER_EXAMPLES / "composite/build/html/index.html"
-    test_build()
-    idx_time = index_html.stat().st_mtime
-    test_build()
-    idx_time2 = index_html.stat().st_mtime
-    assert idx_time == idx_time2, "Rebuild was not cached!"
+    composite_html = TYPER_EXAMPLES / "composite/build/html/composite.html"
+    echo_html = TYPER_EXAMPLES / "composite/build/html/echo.html"
+    multiply_html = TYPER_EXAMPLES / "composite/build/html/multiply.html"
+    repeat_html = TYPER_EXAMPLES / "composite/build/html/repeat.html"
+    subgroup_html = TYPER_EXAMPLES / "composite/build/html/subgroup.html"
+    files = [
+        index_html,
+        composite_html,
+        echo_html,
+        multiply_html,
+        repeat_html,
+        subgroup_html,
+    ]
 
+    test_build()
+    times = [pth.stat().st_mtime for pth in files]
+    test_build()
+    times2 = [pth.stat().st_mtime for pth in files]
+    assert times == times2, "Rebuild was not cached!"
 
-    main_py = EX_DIR / "main.py"
+    cli_py = EX_DIR / "cli.py"
     group_py = EX_DIR / "group.py"
     echo_py = EX_DIR / "echo.py"
-    multiply_py = EX_DIR / "multiply_py"
 
-    # test that 
+    # test that
+    replace_in_file(
+        cli_py, "Lets do stuff with strings.", "**Lets do stuff with strings.**"
+    )
+    assert "**Lets do stuff with strings.**" in test_build()[0]
+    times3 = [pth.stat().st_mtime for pth in files]
+    for t3, t2 in zip(times3, times2):
+        assert t3 > t2
+
+    replace_in_file(group_py, "Subcommands are here.", "**Subcommands are here.**")
+    helps = test_build()
+    assert "**Subcommands are here.**" in helps[0]
+    assert "**Subcommands are here.**" in helps[1]
+    times4 = [pth.stat().st_mtime for pth in files]
+    for t4, t3 in zip(times4, times3):
+        assert t4 > t3
+
+    replace_in_file(echo_py, "def echo(name: str):", "def echo(name: str, name2: str):")
+    helps = test_build()
+    assert "name2" in helps[3]
+    times4 = [pth.stat().st_mtime for pth in files]
+    for t4, t3 in zip(times4, times3):
+        assert t4 > t3
+
+    os.system(f"git checkout {cli_py}")
+    os.system(f"git checkout {group_py}")
+    os.system(f"git checkout {echo_py}")
 
 
 def test_click_text_build_works():

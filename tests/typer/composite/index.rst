@@ -1,10 +1,17 @@
-.. typer:: composite.main.app
+.. typer:: composite.cli.app
     :prog: composite
+    :preferred: text
     :width: 65
     :make-sections:
     :show-nested:
 
-.. .. typer:: main.app:subgroup
-..     :width: 65
-..     :convert-png: latex
-..     :make-sections:
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   composite
+   repeat
+   subgroup
+   echo
+   multiply

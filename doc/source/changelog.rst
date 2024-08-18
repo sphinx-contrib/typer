@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-v0.3.5 (16-AUG-2024)
+v0.3.5 (18-AUG-2024)
 ====================
 
 * Fixed `Lazily loaded commands throw an exception. <https://github.com/sphinx-contrib/typer/issues/37>`_

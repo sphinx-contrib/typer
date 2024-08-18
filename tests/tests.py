@@ -173,7 +173,7 @@ def build_example(
         app.build()
     else:
         os.system(
-            f"poetry run sphinx-build {ex_dir} {bld_dir / builder} --conf {ex_dir.parent}"
+            f"poetry run sphinx-build {ex_dir} {bld_dir / builder} -c {ex_dir.parent}"
         )
 
     os.chdir(cwd)

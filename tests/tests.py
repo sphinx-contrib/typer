@@ -205,6 +205,7 @@ def get_ex_help(name, *subcommands, example_dir, command_file=None):
             **os.environ,
             "PYTHONPATH": f"{os.environ.get('PYTHONPATH', '$PYTHONPATH')}:{example_dir / name}",
             "TERMINAL_WIDTH": str(os.environ.get("TERMINAL_WIDTH", 80)),
+            "NO_COLOR": "1",
         },
     )
     return ret.stdout.decode() or ret.stderr.decode()

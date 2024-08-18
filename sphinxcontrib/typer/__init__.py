@@ -476,7 +476,9 @@ class TyperDirective(rst.Directive):
                         },
                     ),
                     "highlighter": typer_rich_utils.highlighter,
-                    "color_system": typer_rich_utils.COLOR_SYSTEM,
+                    "color_system": None
+                    if self.target is RenderTarget.TEXT
+                    else typer_rich_utils.COLOR_SYSTEM,
                     "force_terminal": typer_rich_utils.FORCE_TERMINAL,
                     "width": self.width or typer_rich_utils.MAX_WIDTH,
                     "stderr": stderr,

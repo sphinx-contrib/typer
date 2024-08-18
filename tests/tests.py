@@ -203,7 +203,7 @@ def get_ex_help(name, *subcommands, example_dir, command_file=None):
         capture_output=True,
         env={
             **os.environ,
-            "PYTHONPATH": f"{os.environ.get("PYTHONPATH", "$PYTHONPATH")}:{example_dir / name}",
+            "PYTHONPATH": f"{os.environ.get('PYTHONPATH', '$PYTHONPATH')}:{example_dir / name}",
             "TERMINAL_WIDTH": str(os.environ.get("TERMINAL_WIDTH", 80)),
         },
     )

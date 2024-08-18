@@ -248,7 +248,8 @@ def check_text(html, help_txt, txt_number=0, threshold=0.95):
     for element in ["<pre>", "<span>", "</span>", "</pre>"]:
         txt = txt.strip(element)
     assert txt is not None
-    assert similarity(txt, help_txt) > threshold
+    sim = similarity(txt, help_txt)
+    assert sim > threshold, f"{sim} is below threshold {threshold}"
     return txt
 
 
@@ -579,6 +580,11 @@ def test_click_ex_imagepipe():
 
 
 def test_typer_ex_composite():
+    EX_DIR = TYPER_EXAMPLES / "composite/composite"
+    cli_py = EX_DIR / "cli.py"
+    group_py = EX_DIR / "group.py"
+    echo_py = EX_DIR / "echo.py"
+
     try:
         clear_callbacks()
 
@@ -609,7 +615,6 @@ def test_typer_ex_composite():
 
             return doc_helps
 
-        EX_DIR = TYPER_EXAMPLES / "composite/composite"
         index_html = TYPER_EXAMPLES / "composite/build/html/index.html"
         composite_html = TYPER_EXAMPLES / "composite/build/html/composite.html"
         echo_html = TYPER_EXAMPLES / "composite/build/html/echo.html"
@@ -630,10 +635,6 @@ def test_typer_ex_composite():
         test_build()
         times2 = [pth.stat().st_mtime for pth in files]
         assert times == times2, "Rebuild was not cached!"
-
-        cli_py = EX_DIR / "cli.py"
-        group_py = EX_DIR / "group.py"
-        echo_py = EX_DIR / "echo.py"
 
         # test that
         replace_in_file(

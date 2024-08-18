@@ -1,4 +1,5 @@
 import pytest
+import re
 from sphinx.application import Sphinx
 from typer import __version__ as typer_version
 import typing as t
@@ -190,6 +191,13 @@ def build_example(
     return bld_dir / builder, result
 
 
+def scrub(output: str) -> str:
+    """Scrub control code characters and ansi escape sequences for terminal colors from output"""
+    return re.sub(r"[\x00-\x1F\x7F]|\x1B\[[0-?]*[ -/]*[@-~]", "", output).replace(
+        "\t", ""
+    )
+
+
 def get_ex_help(name, *subcommands, example_dir, command_file=None):
     ret = subprocess.run(
         [
@@ -205,7 +213,6 @@ def get_ex_help(name, *subcommands, example_dir, command_file=None):
             **os.environ,
             "PYTHONPATH": f"{os.environ.get('PYTHONPATH', '$PYTHONPATH')}:{example_dir / name}",
             "TERMINAL_WIDTH": str(os.environ.get("TERMINAL_WIDTH", 80)),
-            "NO_COLOR": "1",
         },
     )
     return ret.stdout.decode() or ret.stderr.decode()
@@ -216,8 +223,10 @@ def get_click_ex_help(name, *subcommands):
 
 
 def get_typer_ex_help(name, *subcommands, command_file=None):
-    return get_ex_help(
-        name, *subcommands, example_dir=TYPER_EXAMPLES, command_file=command_file
+    return scrub(
+        get_ex_help(
+            name, *subcommands, example_dir=TYPER_EXAMPLES, command_file=command_file
+        )
     )
 
 

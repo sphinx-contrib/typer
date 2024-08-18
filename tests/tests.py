@@ -248,12 +248,7 @@ def check_text(html, help_txt, txt_number=0, threshold=0.95):
     for element in ["<pre>", "<span>", "</span>", "</pre>"]:
         txt = txt.strip(element)
     assert txt is not None
-    try:
-        assert similarity(txt, help_txt) > threshold
-    except AssertionError:
-        import ipdb
-
-        ipdb.set_trace()
+    assert similarity(txt, help_txt) > threshold
     return txt
 
 

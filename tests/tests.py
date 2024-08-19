@@ -193,9 +193,7 @@ def build_example(
 
 def scrub(output: str) -> str:
     """Scrub control code characters and ansi escape sequences for terminal colors from output"""
-    return re.sub(r"[\x00-\x1F\x7F]|\x1B\[[0-?]*[ -/]*[@-~]", "", output).replace(
-        "\t", ""
-    )
+    return re.sub(r"\[\d+(?:;\d+)*m", "", output).replace("\t", "")
 
 
 def get_ex_help(name, *subcommands, example_dir, command_file=None):

@@ -52,7 +52,7 @@ exclude_patterns = []
 #
 html_theme = 'furo'
 html_theme_options = {
-    "source_repository": "https://github.com/sphinxcontrib/typer/",
+    "source_repository": "https://github.com/sphinx-contrib/typer/",
     "source_branch": "main",
     "source_directory": "doc/source",
 }

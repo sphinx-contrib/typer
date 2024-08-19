@@ -95,8 +95,6 @@ def test_sphinx_html_build():
     we just check to see that our documentation builds!
     """
     shutil.rmtree(BUILD_DIR / "html", ignore_errors=True)
-    if (SRC_DIR / "typer_cache.json").exists():
-        os.remove(SRC_DIR / "typer_cache.json")
 
     # Create a Sphinx application instance
     app = Sphinx(
@@ -104,7 +102,6 @@ def test_sphinx_html_build():
     )
 
     assert app.config.typer_iframe_height_padding == 30
-    assert app.config.typer_iframe_height_cache_path == SRC_DIR / "typer_cache.json"
 
     # Build the documentation
     app.build()
@@ -153,8 +150,6 @@ def build_example(
     bld_dir = ex_dir / "build"
     if clean_first and bld_dir.exists():
         shutil.rmtree(bld_dir)
-    if (example_dir / "cache.json").exists():
-        os.remove(example_dir / "cache.json")
 
     os.chdir(example_dir / name)
 
@@ -168,7 +163,6 @@ def build_example(
         )
 
         assert app.config.typer_iframe_height_padding == 40
-        assert app.config.typer_iframe_height_cache_path == example_dir / "cache.json"
 
         # Build the documentation
         app.build()
@@ -265,7 +259,6 @@ def test_click_ex_validation():
     clear_callbacks()
 
     bld_dir, html = build_example("validation", "html")
-    assert (CLICK_EXAMPLES / "cache.json").is_file()
 
     help_txt = get_click_ex_help("validation")
 
@@ -273,7 +266,7 @@ def test_click_ex_validation():
 
     assert check_callback("typer_render_html")
     assert check_callback("typer_get_iframe_height")
-    assert check_callback("typer_get_web_driver")
+    assert not check_callback("typer_get_web_driver")
 
     check_svg(html, help_txt)
     check_text(html, help_txt)

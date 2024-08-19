@@ -19,18 +19,6 @@ for path in Path(__file__).parent.iterdir():
     if path.is_dir():
         sys.path.append(str(path))
 
-TEST_CALLBACKS = Path(__file__).parent / "callback_record.json"
-
-test_callbacks = {}
-
-
-def record_callback(callback):
-    """crude but it works"""
-    if TEST_CALLBACKS.is_file():
-        os.remove(TEST_CALLBACKS)
-    test_callbacks[callback] = True
-    TEST_CALLBACKS.write_text(json.dumps(test_callbacks))
-
 
 # -- Project information -----------------------------------------------------
 
@@ -75,31 +63,20 @@ todo_include_todos = True
 ###########################################################
 # Test our typer configuration parameter function overrides
 
-
-def typer_render_html(*args, **kwargs):
-    record_callback("typer_render_html")
-    return sphinxcontrib_typer.typer_render_html(*args, **kwargs)
-
-
-def typer_get_iframe_height(*args, **kwargs):
-    record_callback("typer_get_iframe_height")
-    return sphinxcontrib_typer.typer_get_iframe_height(*args, **kwargs)
-
-
-def typer_svg2pdf(*args, **kwargs):
-    record_callback("typer_svg2pdf")
-    return sphinxcontrib_typer.typer_svg2pdf(*args, **kwargs)
-
-
-def typer_convert_png(*args, **kwargs):
-    record_callback("typer_convert_png")
-    return sphinxcontrib_typer.typer_convert_png(*args, **kwargs)
-
-
-def typer_get_web_driver(*args, **kwargs):
-    record_callback("typer_get_web_driver")
-    return sphinxcontrib_typer.typer_get_web_driver(*args, **kwargs)
-
+typer_render_html = "callbacks.typer_render_html"
+typer_get_iframe_height = "callbacks.typer_get_iframe_height"
+typer_svg2pdf = "callbacks.typer_svg2pdf"
+typer_convert_png = "callbacks.typer_convert_png"
+typer_get_web_driver = "callbacks.typer_get_web_driver"
 
 typer_iframe_height_padding = 40
-typer_iframe_height_cache_path = Path(__file__).parent / "cache.json"
+
+
+def setup(app):
+    app.connect("builder-inited", iframe_cache)
+
+
+def iframe_cache(app):
+    if not hasattr(app.env, "iframe_heights"):
+        app.env.iframe_heights = {}
+    app.env.iframe_heights["validation"] = 347

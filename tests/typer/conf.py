@@ -73,4 +73,3 @@ html_static_path = []
 todo_include_todos = True
 
 typer_iframe_height_padding = 40
-typer_iframe_height_cache_path = Path(__file__).parent / "cache.json"

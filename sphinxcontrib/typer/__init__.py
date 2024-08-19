@@ -23,7 +23,6 @@ import contextlib
 import hashlib
 import inspect
 import io
-import json
 import os
 import re
 import traceback
@@ -655,13 +654,11 @@ def typer_get_iframe_height(
 
     1) Return the global iframe-height parameter if one was supplied as a parameter on the
        directive.
-    2) Check for a cached height value using the file at config.typer_iframe_height_cache_path
-       and return one if it exists.
+    2) Check for a cached height value.
     3) Attempt to use Selenium to dynamically determine the height of the iframe. Padding will
        be added from the config.typer_iframe_height_padding configuration value. The resulting
-       height is then cached back to config.typer_iframe_height_cache_path if that path is not
-       None. If the attempt to use Selenium fails (it is not installed) a warning is issued and
-       a default height of 600 is returned.
+       height is then cached if that path is not None. If the attempt to use Selenium fails
+       (it is not installed) a warning is issued and a default height of 600 is returned.
 
     :param directive: The TyperDirective instance
     :param normal_cmd: The normalized name of the command.
@@ -671,18 +668,11 @@ def typer_get_iframe_height(
     if directive.iframe_height is not None:
         return directive.iframe_height
 
-    cache = {"iframe_heights": {}}
-    cache_path = (
-        None
-        if not directive.env.app.config.typer_iframe_height_cache_path
-        else Path(directive.env.app.config.typer_iframe_height_cache_path)
-    )
-    if cache_path and cache_path.is_file():
-        cache = json.loads(cache_path.read_text())
-        cache.setdefault("iframe_heights", {})
+    if not hasattr(directive.env, "iframe_heights"):
+        directive.env.iframe_heights = {}
 
-    if cache["iframe_heights"].get(normal_cmd):
-        return cache["iframe_heights"][normal_cmd]
+    if height := directive.env.iframe_heights.get(normal_cmd, None):
+        return height
 
     with get_function(directive.env.app.config.typer_get_web_driver)(
         directive
@@ -700,9 +690,7 @@ def typer_get_iframe_height(
             )
             + directive.env.app.config.typer_iframe_height_padding
         )
-    cache["iframe_heights"][normal_cmd] = height
-    if cache_path:
-        cache_path.write_text(json.dumps(cache, indent=4))
+    directive.env.iframe_heights[normal_cmd] = height
     return height
 
 
@@ -959,11 +947,6 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
     app.add_config_value("typer_svg2pdf", "sphinxcontrib.typer.typer_svg2pdf", "env")
     app.add_config_value("typer_iframe_height_padding", 30, "env")
-    app.add_config_value(
-        "typer_iframe_height_cache_path",
-        Path(app.confdir) / "typer_cache.json",
-        "env",
-    )
 
     app.add_config_value(
         "typer_convert_png", "sphinxcontrib.typer.typer_convert_png", "env"

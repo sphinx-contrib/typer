@@ -170,10 +170,6 @@ function our `conf.py` might look like:
    * - **typer_iframe_height_padding**
      - ``int``
      - A number of pixels to use for padding html iframes. Default: 30
-   * - **typer_iframe_height_cache_path**
-     - ``path``
-     - A path to a file to use to cache dynamically determined iframe heights.
-       Default: ``<conf dir>/typer_cache.json``
    * - **typer_render_html**
      - ``callable``
      - A callable function that returns the html to embed in an html page. Only used

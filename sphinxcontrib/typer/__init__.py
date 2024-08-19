@@ -953,7 +953,7 @@ def typer_convert_png(
 def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env
     target_id = nodes.make_id(text)
-    if target_id in env.domaindata["std"]["typer"]:
+    if target_id in env.domaindata["std"].get("typer", {}):
         docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
         refnode = make_refnode(
             env.app.builder,

@@ -65,6 +65,8 @@ works well:
 
 |
 
+.. _render_structure:
+
 Render Subcommand Structure
 ---------------------------
 
@@ -83,6 +85,10 @@ subcommands as sections.
     :show-nested:
     :make-sections:
     :convert-png: latex
+
+.. tip::
+
+    See :ref:`cross_references` for information on how to cross reference sections.
 
 |
 
@@ -222,3 +228,20 @@ output. For example, to render a console that looks like Red Sands on OSX we can
 
 The preset Console parameters can also be overridden using the `:console-kwargs:` option. Refer to
 the Rich_ documentation for more information on the available options.
+
+
+.. _cross_references:
+
+Cross-Reference with :make-sections:
+------------------------------------
+
+When using the `:make-sections:` option, a section will be generated for each subcommand. You can
+cross reference these sections using the ``:typer:`` role. For example, to reference the
+:typer:`example-bar` subcommand from the :ref:`render_structure` section above:
+
+.. code-block:: rst
+
+    :typer:`example-bar`
+
+
+The format for the reference is ``prog(-subcommand)``

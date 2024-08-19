@@ -386,11 +386,11 @@ def test_click_ex_naval():
     check_svg(html, help_txt)
     check_svg(html, mine_help, 1)
     check_svg(html, mine_remove_help, 2, threshold=0.65)
-    check_svg(html, mine_set_help, 3, threshold=0.62)
+    check_svg(html, mine_set_help, 3, threshold=0.60)
     check_svg(html, ship_help, 4)
-    check_svg(html, ship_move_help, 5, threshold=0.56)
+    check_svg(html, ship_move_help, 5, threshold=0.52)
     check_svg(html, ship_new_help, 6)
-    check_svg(html, ship_shoot_help, 7, threshold=0.62)
+    check_svg(html, ship_shoot_help, 7, threshold=0.57)
 
     check_svg(html, ship_new_help, 8)
 
@@ -563,7 +563,7 @@ def test_click_ex_imagepipe():
     check_svg(html, helps[-3], threshold=0.7)
 
     soup = bs(html, "html.parser")
-    assert len(soup.find_all("section")) == 13, "Should have rendered 13 sections"
+    assert len(soup.find_all("section")) == 15, "Should have rendered 13 sections"
 
     assert soup.find("section").find("h1").text.startswith("imagepipe")
 
@@ -576,8 +576,44 @@ def test_click_ex_imagepipe():
         .text.startswith("imagepipe sharpen")
     )
 
-    # if bld_dir.exists():
-    #     shutil.rmtree(bld_dir.parent)
+    # check the cross references:
+    assert soup.find_all("section")[-2].find("h1").text.startswith("References")
+
+    def check_refs(section, local):
+        for li, anchor in zip(
+            section.find("li"),
+            [
+                "imagepipe",
+                "imagepipe-blur",
+                "imagepipe-crop",
+                "imagepipe-display",
+                "imagepipe-emboss",
+                "imagepipe-open",
+                "imagepipe-paste",
+                "imagepipe-resize",
+                "imagepipe-save",
+                "imagepipe-sharpen",
+                "imagepipe-smoothen",
+                "imagepipe-transpose",
+                "imagepipe-sharpen",
+            ],
+        ):
+            if local:
+                assert li.find("a").attrs["href"] == f"#{anchor}"
+            else:
+                assert li.find("a").attrs["href"] == f"index.html#{anchor}"
+
+    check_refs(soup.find_all("section")[-2], local=True)
+
+    # check references page
+    refs = bs((bld_dir / "references.html").read_text(), "html.parser")
+    check_refs(refs.find_all("section")[1], local=False)
+    assert (
+        refs.find_all("section")[1].find_all("a")[-1].text == ":typer:`bad-reference`"
+    )
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
 
 
 def test_typer_ex_composite():

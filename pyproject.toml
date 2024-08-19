@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sphinxcontrib-typer"
-version = "0.3.5"
+version = "0.4.0"
 description = "Auto generate docs for typer commands."
 authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"
@@ -42,7 +42,6 @@ pillow = ">=8.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.4"
-sphinx-rtd-theme = ">=1.0.0"
 ipdb = "^0.13.13"
 pytest = ">=7.4.3,<9.0.0"
 pytest-cov = "^4.1.0"
@@ -70,6 +69,8 @@ sphinx-autobuild = [
     { version = ">=2024.2.4", python = ">=3.9"},
     { version = "<2024.2.4", python = "<3.9"},
 ]
+furo = "^2024.8.6"
+sphinx-rtd-theme = "^2.0.0"
 
 
 [tool.poetry.extras]

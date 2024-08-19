@@ -215,3 +215,21 @@ functions must conform to these function signatures.
 .. autofunction:: sphinxcontrib.typer.typer_svg2pdf
 .. autofunction:: sphinxcontrib.typer.typer_convert_png
 .. autofunction:: sphinxcontrib.typer.typer_get_web_driver
+
+
+.. _typer_role:
+
+Roles
+-----
+
+The ``typer`` role allows you to cross reference a Typer command or subcommand in your
+documentation. The syntax is:
+
+.. code-block:: rst
+
+    :typer:`progname-subcommand1-subcomand2`
+
+.. note::
+
+  This is only works when you've made sections for your commands using the ``:make-sections:``
+  option.

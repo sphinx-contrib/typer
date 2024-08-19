@@ -6,12 +6,12 @@
     :show-nested:
 
 
-.. .. toctree::
-..    :maxdepth: 1
-..    :caption: Contents:
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
 
-..    composite
-..    repeat
-..    subgroup
-..    echo
-..    multiply
+   composite
+   repeat
+   subgroup
+   echo
+   multiply

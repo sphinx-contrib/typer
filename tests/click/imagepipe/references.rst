@@ -1,12 +1,5 @@
-.. typer:: imagepipe.cli
-    :builders: latex=text,html,svg:html=text,svg
-    :show-nested:
-    :make-sections:
-    :width: 65
-
-.. typer:: imagepipe.cli:sharpen
-    :make-sections:
-    :preferred: svg
+Typer Role Test References
+==========================
 
 
 References
@@ -29,11 +22,4 @@ Cross references:
     * Check 12: :typer:`imagepipe-sharpen`.
 
 
-Contents
---------
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-   references
+This one is bad: :typer:`bad-reference`

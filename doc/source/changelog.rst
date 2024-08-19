@@ -2,10 +2,11 @@
 Change Log
 ==========
 
-.. v0.4.0 (19-AUG-2024)
-.. ====================
+v0.4.0 (19-AUG-2024)
+====================
 
-.. * Implemented `Use builtin sphinx cache to cache iframe heights instead of custom file. <https://github.com/sphinx-contrib/typer/issues/38>`_
+* Implemented `Use builtin sphinx cache to cache iframe heights instead of custom file. <https://github.com/sphinx-contrib/typer/issues/38>`_
+* Implemented `Allow cross-referencing <https://github.com/sphinx-contrib/typer/issues/34>`_
 
 v0.3.5 (18-AUG-2024)
 ====================

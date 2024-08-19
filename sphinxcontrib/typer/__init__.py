@@ -43,13 +43,16 @@ from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
 from sphinx.util import logging
+from sphinx.util.nodes import make_refnode
 
 from typer import rich_utils as typer_rich_utils
-from typer.main import Typer, TyperGroup, TyperInfo
+from typer.core import TyperGroup
+from typer.main import Typer
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
+from typer.models import TyperInfo
 
-VERSION = (0, 3, 5)
+VERSION = (0, 4, 0)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -79,6 +82,14 @@ def _add_dependency(env, command):
     cb = getattr(cb, "__wrapped__", cb)
     if cb:
         env.note_dependency(inspect.getfile(cb))
+
+
+def _command_path(ctx: t.Optional[click.Context]):
+    parts = []
+    while ctx:
+        parts.append(ctx.info_name)
+        ctx = ctx.parent
+    return ":".join(reversed(parts))
 
 
 class RenderTarget(str, Enum):
@@ -428,24 +439,26 @@ class TyperDirective(rst.Directive):
         if command.hidden:
             return []
 
-        source_name = ctx.command_path
-        normal_cmd = ":".join(source_name.split(" "))
+        normal_cmd = _command_path(ctx)
+        section_title = normal_cmd.replace(":", " ")
+        section_id = nodes.make_id(section_title)
+        if not getattr(self, "parent", None):
+            section_title = section_title.split(" ")[-1]
 
         section = (
             nodes.section(
                 "",
-                nodes.title(
-                    text=(
-                        name
-                        if not getattr(self, "parent", None)
-                        else f"{self.parent.command_path} {name}"
-                    )
-                ),
-                ids=[nodes.make_id(source_name)],
-                names=[nodes.fully_normalize_name(source_name)],
+                nodes.title(text=section_title),
+                ids=[section_id],
+                names=[nodes.fully_normalize_name(section_title)],
             )
             if self.make_sections
             else nodes.container()
+        )
+        self.env.domaindata["std"].setdefault("typer", {})[section_id] = (
+            self.env.docname,
+            section_id,
+            " ".join(section_id.split("-")),
         )
 
         # Summary
@@ -510,7 +523,7 @@ class TyperDirective(rst.Directive):
         )
 
         rendered = getattr(self, f"get_{self.target}")(
-            **({"title": source_name} if self.target is RenderTarget.SVG else {}),
+            **({"title": section_title} if self.target is RenderTarget.SVG else {}),
             **export_options,
         )
 
@@ -523,7 +536,7 @@ class TyperDirective(rst.Directive):
             )
             section += nodes.image(
                 uri=os.path.relpath(png_path, Path(self.env.srcdir)),
-                alt=source_name,
+                alt=section_title,
             )
         elif self.target == RenderTarget.HTML:
             section += nodes.raw(
@@ -544,7 +557,7 @@ class TyperDirective(rst.Directive):
                 get_function(self.env.app.config.typer_svg2pdf)(self, rendered, pdf_img)
                 section += nodes.image(
                     uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
-                    alt=source_name,
+                    alt=section_title,
                 )
 
         elif self.target == RenderTarget.TEXT:
@@ -784,9 +797,12 @@ def typer_get_web_driver(
         from selenium.webdriver.chrome.service import Service
         from webdriver_manager.chrome import ChromeDriverManager
 
-        return webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=opts()
-        )
+        try:
+            return webdriver.Chrome(options=opts())
+        except Exception:
+            return webdriver.Chrome(
+                service=Service(ChromeDriverManager().install()), options=opts()
+            )
 
     def chromium():
         from selenium.webdriver.chrome.service import Service as ChromiumService
@@ -934,9 +950,29 @@ def typer_convert_png(
             im.save(str(png_path))  # Saves the screenshot
 
 
+def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    env = inliner.document.settings.env
+    target_id = nodes.make_id(text)
+    if target_id in env.domaindata["std"]["typer"]:
+        docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
+        refnode = make_refnode(
+            env.app.builder,
+            env.docname,
+            docname,
+            labelid,
+            nodes.Text(sectionname),
+            target_id,
+        )
+        return [refnode], []
+    else:
+        msg = inliner.reporter.error(f'Unknown typer reference: "{text}"', line=lineno)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+
+
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
+    app.add_role("typer", typer_ref_role)
 
     app.add_config_value(
         "typer_render_html", "sphinxcontrib.typer.typer_render_html", "env"

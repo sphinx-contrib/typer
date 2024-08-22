@@ -54,7 +54,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 4, 1)
+VERSION = (0, 4, 2)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -441,8 +441,7 @@ class TyperDirective(rst.Directive):
         if command.hidden:
             return []
 
-        normal_cmd = _command_path(ctx)
-        section_title = normal_cmd.replace(":", " ")
+        normal_cmd = section_title = _command_path(ctx).replace(":", " ")
         section_id = nodes.make_id(section_title)
         if not getattr(self, "parent", None):
             section_title = section_title.split(" ")[-1]
@@ -954,6 +953,13 @@ def typer_convert_png(
             im.save(str(png_path))  # Saves the screenshot
 
 
+_link_regex = re.compile(r"([^<]+)(?:<(.+?)>)?")
+
+
+def _link_and_text(text):
+    return _link_regex.search(text).groups()
+
+
 def resolve_typer_reference(app, env, node, contnode):
     if node["reftype"] != "typer":
         return
@@ -965,7 +971,7 @@ def resolve_typer_reference(app, env, node, contnode):
             node["refdoc"],
             docname,
             labelid,
-            nodes.Text(sectionname.strip()),
+            nodes.Text(node["reftitle"] or sectionname.strip()),
             target_id,
         )
         return refnode
@@ -985,7 +991,11 @@ def resolve_typer_reference(app, env, node, contnode):
 
 def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env
-    target_id = nodes.make_id(text)
+    title, link = _link_and_text(text)
+    title = title.strip()
+    if link:
+        link = link.strip()
+    target_id = nodes.make_id(link or title)
     if target_id in env.domaindata["std"].get("typer", {}):
         docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
         refnode = make_refnode(
@@ -993,7 +1003,7 @@ def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[])
             env.docname,
             docname,
             labelid,
-            nodes.Text(sectionname.strip()),
+            nodes.Text(sectionname.strip() if not link else title),
             target_id,
         )
         return [refnode], []
@@ -1007,7 +1017,7 @@ def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[])
             classname=None,
             refexplicit=True,
             refwarn=True,
-            reftitle=text,
+            reftitle=title if link else None,
             refdoc=env.docname,
         )
         pending += nodes.Text(text)

@@ -16,10 +16,9 @@ Cross references:
     * Check 6: :typer:`imagepipe-paste`.
     * Check 7: :typer:`imagepipe-resize`.
     * Check 8: :typer:`imagepipe-save`.
-    * Check 9: :typer:`imagepipe-sharpen`.
-    * Check 10: :typer:`imagepipe-smoothen`.
-    * Check 11: :typer:`imagepipe-transpose`.
-    * Check 12: :typer:`imagepipe-sharpen`.
+    * Check 9: :typer:`imagepipe-smoothen`.
+    * Check 10: :typer:`imagepipe-transpose`.
+    * Check 11: :typer:`sharpen <imagepipe sharpen>`.
 
 
 This one is bad: :typer:`bad-reference`

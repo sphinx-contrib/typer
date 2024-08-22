@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+v0.4.2 (22-AUG-2024)
+====================
+
+* Fixed `:typer: role default link text has colon where space expected <https://github.com/sphinx-contrib/typer/issues/42>`_
+* Fixed `:typer: role does not allow link text <https://github.com/sphinx-contrib/typer/issues/41>`_
+
 v0.4.1 (22-AUG-2024)
 ====================
 

@@ -527,8 +527,8 @@ def test_click_ex_aliases():
     for idx, help in enumerate(helps):
         check_text(html, help, idx, threshold=0.82)
 
-    # if bld_dir.exists():
-    #     shutil.rmtree(bld_dir.parent)
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
 
 
 def test_click_ex_imagepipe():
@@ -581,7 +581,7 @@ def test_click_ex_imagepipe():
 
     def check_refs(section, local):
         for li, anchor in zip(
-            section.find("li"),
+            section.find_all("li"),
             [
                 "imagepipe",
                 "imagepipe-blur",
@@ -592,7 +592,6 @@ def test_click_ex_imagepipe():
                 "imagepipe-paste",
                 "imagepipe-resize",
                 "imagepipe-save",
-                "imagepipe-sharpen",
                 "imagepipe-smoothen",
                 "imagepipe-transpose",
                 "imagepipe-sharpen",
@@ -602,6 +601,11 @@ def test_click_ex_imagepipe():
                 assert li.find("a").attrs["href"] == f"#{anchor}"
             else:
                 assert li.find("a").attrs["href"] == f"index.html#{anchor}"
+            if "sharpen" not in anchor:
+                assert li.find("a").text == " ".join(anchor.split("-"))
+            else:
+                # test special link text
+                assert li.find("a").text == "sharpen"
 
     check_refs(soup.find_all("section")[-2], local=True)
 
@@ -632,9 +636,15 @@ def test_typer_ex_reference():
     assert "python -m cli-ref.py" in doc_help
 
     index = bs(index_html, "html.parser")
-    for ref in index.find_all("section")[0].find_all("p")[0].find_all("a"):
+    ref1, ref2, ref3 = tuple(
+        index.find_all("section")[0].find_all("p")[0].find_all("a")
+    )
+    for ref in (ref1, ref2):
         assert ref.text == "python -m cli-ref.py"
         assert ref.attrs["href"] == "reference.html#python-m-cli-ref-py"
+
+    assert ref3.text == "command"
+    assert ref3.attrs["href"] == "reference.html#python-m-cli-ref-py"
 
 
 def test_typer_ex_composite():

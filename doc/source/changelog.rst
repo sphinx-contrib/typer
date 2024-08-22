@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-v0.4.1 (21-AUG-2024)
+v0.4.1 (22-AUG-2024)
 ====================
 
 * Fixed `:typer: role does not work if processed before the definition. <https://github.com/sphinx-contrib/typer/issues/40>`_

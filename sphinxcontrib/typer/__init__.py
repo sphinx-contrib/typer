@@ -33,6 +33,7 @@ from html import escape as html_escape
 from importlib import import_module
 from importlib.util import find_spec
 from pathlib import Path
+from pprint import pformat
 
 import click
 from docutils import nodes
@@ -42,6 +43,7 @@ from rich import terminal_theme as rich_theme
 from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
+from sphinx.addnodes import pending_xref
 from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 
@@ -52,7 +54,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 4, 0)
+VERSION = (0, 4, 1)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -458,7 +460,7 @@ class TyperDirective(rst.Directive):
         self.env.domaindata["std"].setdefault("typer", {})[section_id] = (
             self.env.docname,
             section_id,
-            " ".join(section_id.split("-")),
+            normal_cmd,
         )
 
         # Summary
@@ -584,7 +586,7 @@ class TyperDirective(rst.Directive):
 
         self.make_sections = "make-sections" in self.options
         self.nested = "show-nested" in self.options
-        self.prog_name = self.options.get("prog", None)
+        self.prog_name = self.options.get("prog", "")
         if "markup-mode" in self.options:
             self.markup_mode = self.options["markup-mode"]
 
@@ -599,6 +601,8 @@ class TyperDirective(rst.Directive):
                 raise self.severe(
                     "Unable to determine program name, please specify using " ":prog:"
                 ) from err
+
+        self.prog_name = self.prog_name.strip()
 
         self.width = self.options.get("width", 65)
         self.iframe_height = self.options.get("iframe-height", None)
@@ -950,6 +954,33 @@ def typer_convert_png(
             im.save(str(png_path))  # Saves the screenshot
 
 
+def resolve_typer_reference(app, env, node, contnode):
+    target_id = node["reftarget"]
+    if target_id in env.domaindata["std"].get("typer", {}):
+        docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
+        refnode = make_refnode(
+            env.app.builder,
+            node["refdoc"],
+            docname,
+            labelid,
+            nodes.Text(sectionname.strip()),
+            target_id,
+        )
+        return refnode
+    else:
+        lineno = node.line or getattr(node.parent, "line", 0)
+        error_message = env.get_doctree(node["refdoc"]).reporter.error(
+            f"Unresolved :typer: reference: '{target_id}' in document '{node['refdoc']}'. "
+            f"Expected one of: {pformat(list(env.domaindata["std"]["typer"].keys()), indent=2)}",
+            line=lineno,
+        )
+        msgid = node.document.set_id(error_message, node.parent)
+        problematic = nodes.problematic(node.rawsource, node.rawsource, refid=msgid)
+        prbid = node.document.set_id(problematic)
+        error_message.add_backref(prbid)
+        return problematic
+
+
 def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env
     target_id = nodes.make_id(text)
@@ -960,19 +991,32 @@ def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[])
             env.docname,
             docname,
             labelid,
-            nodes.Text(sectionname),
+            nodes.Text(sectionname.strip()),
             target_id,
         )
         return [refnode], []
     else:
-        msg = inliner.reporter.error(f'Unknown typer reference: "{text}"', line=lineno)
-        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+        pending = pending_xref(
+            rawtext,
+            refdomain="std",
+            reftype="typer",
+            reftarget=target_id,
+            modname=None,
+            classname=None,
+            refexplicit=True,
+            refwarn=True,
+            reftitle=text,
+            refdoc=env.docname,
+        )
+        pending += nodes.Text(text)
+        return [pending], []
 
 
 def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
     app.add_role("typer", typer_ref_role)
+    app.connect("missing-reference", resolve_typer_reference)
 
     app.add_config_value(
         "typer_render_html", "sphinxcontrib.typer.typer_render_html", "env"

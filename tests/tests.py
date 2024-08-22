@@ -238,8 +238,8 @@ def check_svg(html, help_txt, svg_number=0, threshold=0.75):
     soup = bs(html, "html.parser")
     svg = soup.find_all("svg")[svg_number]
     assert svg is not None
-    txt = svg.text.strip()
-    assert similarity(svg.text.strip(), help_txt) > threshold
+    txt = svg.text.strip().replace("\xa0", " ")
+    assert similarity(txt, help_txt) > threshold
     return txt
 
 
@@ -616,6 +616,27 @@ def test_click_ex_imagepipe():
         shutil.rmtree(bld_dir.parent)
 
 
+def test_typer_ex_reference():
+    clear_callbacks()
+
+    html_dir, index_html = build_example(
+        "reference", "html", example_dir=TYPER_EXAMPLES
+    )
+
+    doc_help = check_svg(
+        (html_dir / "reference.html").read_text(),
+        get_typer_ex_help("reference", command_file="cli-ref"),
+        0,
+        threshold=0.82,
+    )
+    assert "python -m cli-ref.py" in doc_help
+
+    index = bs(index_html, "html.parser")
+    for ref in index.find_all("section")[0].find_all("p")[0].find_all("a"):
+        assert ref.text == "python -m cli-ref.py"
+        assert ref.attrs["href"] == "reference.html#python-m-cli-ref-py"
+
+
 def test_typer_ex_composite():
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     cli_py = EX_DIR / "cli.py"
@@ -705,6 +726,16 @@ def test_typer_ex_composite():
             if files[idx].name in ["composite.html", "multiply.html", "repeat.html"]:
                 continue
             assert t5 > t4, f"file {files[idx]} not regenerated."
+
+        # check navbar
+        navitems = list(
+            bs(index_html.read_text()).find("div", class_="sphinxsidebar").find_all("a")
+        )
+        assert navitems[1].text == "composite"
+        assert navitems[2].text.strip() == "python -m cli.py repeat"
+        assert navitems[3].text == "cli subgroup"
+        assert navitems[4].text == "cli subgroup echo"
+        assert navitems[5].text == "cli subgroup multiply"
 
     finally:
         os.system(f"git checkout {cli_py}")

@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+v0.4.1 (21-AUG-2024)
+====================
+
+* Fixed `:typer: role does not work if processed before the definition. <https://github.com/sphinx-contrib/typer/issues/40>`_
+* Fixed `:typer: role link text does not reflect the actual command invocation. <https://github.com/sphinx-contrib/typer/issues/39>`_
+
 v0.4.0 (19-AUG-2024)
 ====================
 

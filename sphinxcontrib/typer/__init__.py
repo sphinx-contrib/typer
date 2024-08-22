@@ -971,7 +971,7 @@ def resolve_typer_reference(app, env, node, contnode):
         lineno = node.line or getattr(node.parent, "line", 0)
         error_message = env.get_doctree(node["refdoc"]).reporter.error(
             f"Unresolved :typer: reference: '{target_id}' in document '{node['refdoc']}'. "
-            f"Expected one of: {pformat(list(env.domaindata["std"]["typer"].keys()), indent=2)}",
+            f"Expected one of: {pformat(list(env.domaindata['std']['typer'].keys()), indent=2)}",
             line=lineno,
         )
         msgid = node.document.set_id(error_message, node.parent)

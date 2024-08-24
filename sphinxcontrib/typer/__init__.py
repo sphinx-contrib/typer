@@ -54,7 +54,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 4, 2)
+VERSION = (0, 4, 3)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -509,7 +509,7 @@ class TyperDirective(rst.Directive):
         orig_getter = typer_rich_utils._get_rich_console
         orig_format_help = command.format_help
         command.rich_markup_mode = getattr(
-            self, "markup_mode", getattr(command, "rich_markup_mode", None)
+            self, "markup_mode", getattr(command, "rich_markup_mode", "markdown")
         )
         command.format_help = TyperGroup.format_help.__get__(command, command.__class__)
         typer_rich_utils._get_rich_console = get_console

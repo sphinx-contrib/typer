@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+v0.4.3 (24-AUG-2024)
+====================
+
+* Fixed `typer 0.12.5+ breaks click compatibility <https://github.com/sphinx-contrib/typer/issues/43>`_
+
 v0.4.2 (22-AUG-2024)
 ====================
 

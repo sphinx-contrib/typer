@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13rc1']
         sphinx-version:
           - 'Sphinx~=7.0.0'
           - 'Sphinx~=7.2.0'
@@ -57,12 +57,14 @@ jobs:
         exclude:
           - python-version: '3.12'
             sphinx-version: 'Sphinx~=7.0.0'
-          - python-version: '3.8'
+          - python-version: '3.13rc1'
+            sphinx-version: 'Sphinx~=7.0.0'
+          - python-version: '3.13rc1'
+            sphinx-version: 'Sphinx~=7.1.0'
+          - python-version: '3.13rc1'
             sphinx-version: 'Sphinx~=7.2.0'
-          - python-version: '3.8'
+          - python-version: '3.13rc1'
             sphinx-version: 'Sphinx~=7.3.0'
-          - python-version: '3.8'
-            sphinx-version: 'Sphinx~=7.4.0'
 
     steps:
     - uses: actions/checkout@v4

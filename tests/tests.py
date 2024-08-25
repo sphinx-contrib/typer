@@ -1,6 +1,7 @@
 import pytest
 import re
 from sphinx.application import Sphinx
+from sphinx import version_info as sphinx_version
 from typer import __version__ as typer_version
 import typing as t
 import os
@@ -89,6 +90,7 @@ def replace_in_file(file_path: str, search_string: str, replacement_string: str)
         file.write(file_contents.replace(search_string, replacement_string))
 
 
+@pytest.mark.skipif(sphinx_version[0] < 6, reason="Sphinx >=6.0 required to build docs")
 def test_sphinx_html_build():
     """
     The documentation is extensive and exercises most of the features of the extension so

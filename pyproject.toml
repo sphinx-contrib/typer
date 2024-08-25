@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sphinxcontrib-typer"
-version = "0.4.3"
+version = "0.5.0"
 description = "Auto generate docs for typer commands."
 authors = ["Brian Kohan <bckohan@gmail.com>"]
 license = "MIT"
@@ -11,7 +11,9 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Environment :: Web Environment",
+    "Framework :: Sphinx",
     "Framework :: Sphinx :: Extension",
+    "Topic :: Documentation :: Sphinx",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -32,11 +34,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-sphinx = ">=4.0.0"
+sphinx = ">=5.0.0"
 
 selenium = "^4.0.0"
 webdriver-manager = ">=3.0.0,<5.0.0"
-cairosvg = "^2.4.0"
+cairosvg = "^2.7.0"
 lxml = ">=4.2.0,<6.0.0"
 typer-slim = {extras = ["standard"], version = ">=0.12.0,<1.0.0"}
 pillow = ">=8.0.0"
@@ -45,33 +47,21 @@ pillow = ">=8.0.0"
 ruff = "^0.4.4"
 ipdb = "^0.13.13"
 pytest = ">=7.4.3,<9.0.0"
-pytest-cov = "^4.1.0"
+pytest-cov = "^5.0.0"
 doc8 = ">0.1"
-mypy = "^1.7.1"
-readme-renderer = {extras = ["md"], version = ">=42,<44"}
+mypy = "^1.11.1"
+readme-renderer = {extras = ["md"], version = ">=44"}
 aiohttp = "^3.9.1"
-numpy = [
-    { version = "^1.26", markers = "python_version > '3.8'" },
-    { version = "<=1.24", markers = "python_version <= '3.8'" },
-]
-scipy = [
-    { version = ">=1.11", markers = "python_version > '3.8'" },
-    { version = "<=1.10", markers = "python_version <= '3.8'" },
-]
-scikit-image = [
-    { version = ">=0.22", markers = "python_version > '3.8'" },
-    { version = "<=0.21", markers = "python_version <= '3.8'" },
-]
-typing-extensions = { version = ">=3.7.4.3", python = "<3.9" }
-scikit-learn = "^1.3.2"
+numpy = ">=2.0"
+scipy = ">=1.13"
+scikit-image = ">=0.24"
+typing-extensions = ">=4.12"
+scikit-learn = "^1.5.1"
 beautifulsoup4 = "^4.12.2"
 pypdf = ">=3.17.3,<5.0.0"
-sphinx-autobuild = [
-    { version = ">=2024.2.4", python = ">=3.9"},
-    { version = "<2024.2.4", python = "<3.9"},
-]
+sphinx-autobuild = ">=2024.4.16"
 furo = "^2024.8.6"
-sphinx-rtd-theme = "^2.0.0"
+sphinx-rtd-theme = ">=1.3.0"
 
 
 [tool.poetry.extras]

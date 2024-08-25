@@ -36,6 +36,7 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Dependencies
         run: |
+          sudo apt-get install libopenblas-dev
           poetry config virtualenvs.in-project true
           poetry run pip install --upgrade pip
           poetry install -E html -E png -E pdf
@@ -50,21 +51,20 @@ jobs:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13.0-rc.1']
         sphinx-version:
-          - 'Sphinx~=7.0.0'
-          - 'Sphinx~=7.2.0'
-          - 'Sphinx~=7.3.0'
-          - 'Sphinx~=7.4.0'
+          - '6.0'
+          - '7.0'
+          - '8'
         exclude:
           - python-version: '3.12'
-            sphinx-version: 'Sphinx~=7.0.0'
+            sphinx-version: '7.0'
+          - python-version: '3.12'
+            sphinx-version: '6.0'
           - python-version: '3.13.0-rc.1'
-            sphinx-version: 'Sphinx~=7.0.0'
+            sphinx-version: '7.0'
           - python-version: '3.13.0-rc.1'
-            sphinx-version: 'Sphinx~=7.1.0'
-          - python-version: '3.13.0-rc.1'
-            sphinx-version: 'Sphinx~=7.2.0'
-          - python-version: '3.13.0-rc.1'
-            sphinx-version: 'Sphinx~=7.3.0'
+            sphinx-version: '6.0'
+          - python-version: '3.9'
+            sphinx-version: '8'
 
     steps:
     - uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
         poetry config virtualenvs.in-project true
         poetry run pip install --upgrade pip
         poetry install -E html -E png -E pdf
-        poetry run pip install -U "${{ matrix.sphinx-version }}"
+        poetry run pip install -U "Sphinx~=${{ matrix.sphinx-version }}"
 
     - name: Install Emacs
       if: ${{ github.event.inputs.debug == 'on' }}

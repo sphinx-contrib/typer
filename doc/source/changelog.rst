@@ -2,9 +2,11 @@
 Change Log
 ==========
 
-v0.4.3 (24-AUG-2024)
+v0.5.0 (24-AUG-2024)
 ====================
 
+* Implemented `Support Sphinx 8 <https://github.com/sphinx-contrib/typer/issues/45>`_
+* Implemented `Support Python 3.13 <https://github.com/sphinx-contrib/typer/issues/44>`_
 * Fixed `typer 0.12.5+ breaks click compatibility <https://github.com/sphinx-contrib/typer/issues/43>`_
 
 v0.4.2 (22-AUG-2024)

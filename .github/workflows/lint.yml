@@ -30,12 +30,6 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-      - name: Install Dependencies
-        run: |
-          sudo apt-get install libopenblas-dev
-          poetry config virtualenvs.in-project true
-          poetry run pip install --upgrade pip
-          poetry install
       - name: Install Emacs
         if: ${{ github.event.inputs.debug == 'on' }}
         run: |
@@ -46,6 +40,12 @@ jobs:
         with:
           detached: true
         timeout-minutes: 60
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install libopenblas-dev
+          poetry config virtualenvs.in-project true
+          poetry run pip install --upgrade pip
+          poetry install
       - name: Run Static Analysis
         run: |
           source .venv/bin/activate

@@ -52,7 +52,7 @@ jobs:
         poetry config virtualenvs.in-project true
         poetry run pip install --upgrade pip
         poetry install -E html -E png -E pdf
-        poetry run pip install -U "Sphinx=~${{ matrix.sphinx-version }}"
+        poetry run pip install -U "Sphinx~=${{ matrix.sphinx-version }}"
 
     - name: Install Emacs
       if: ${{ github.event.inputs.debug == 'on' }}

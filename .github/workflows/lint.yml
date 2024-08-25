@@ -32,6 +32,7 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Dependencies
         run: |
+          sudo apt-get install libopenblas-dev
           poetry config virtualenvs.in-project true
           poetry run pip install --upgrade pip
           poetry install

@@ -34,6 +34,7 @@ jobs:
         run: |
           poetry config virtualenvs.in-project true
           poetry run pip install --upgrade pip
+          poetry install
       - name: Install Emacs
         if: ${{ github.event.inputs.debug == 'on' }}
         run: |

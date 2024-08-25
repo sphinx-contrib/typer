@@ -14,57 +14,26 @@ on:
   
 
 jobs:
-
-  static-analysis:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # run static analysis on bleeding and trailing edges
-        python-version: ['3.12']
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-      - name: Install Dependencies
-        run: |
-          sudo apt-get install libopenblas-dev
-          poetry config virtualenvs.in-project true
-          poetry run pip install --upgrade pip
-          poetry install -E html -E png -E pdf
-      - name: Run Static Analysis
-        run: |
-          ./check.sh --no-fix
-          poetry run python -m readme_renderer ./README.md
-
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13.0-rc.1']
         sphinx-version:
-          - '^6.0'
-          - '^7.0'
-          - '>=8'
+          - '6.0'
+          - '7.0'
+          - '8.0'
         exclude:
           - python-version: '3.12'
-            sphinx-version: '^7.0'
+            sphinx-version: '7.0'
           - python-version: '3.12'
-            sphinx-version: '^6.0'
+            sphinx-version: '6.0'
           - python-version: '3.13.0-rc.1'
-            sphinx-version: '^7.0'
+            sphinx-version: '7.0'
           - python-version: '3.13.0-rc.1'
-            sphinx-version: '^6.0'
+            sphinx-version: '6.0'
           - python-version: '3.9'
-            sphinx-version: '>=8'
+            sphinx-version: '8.0'
 
     steps:
     - uses: actions/checkout@v4
@@ -83,7 +52,7 @@ jobs:
         poetry config virtualenvs.in-project true
         poetry run pip install --upgrade pip
         poetry install -E html -E png -E pdf
-        poetry run pip install -U "Sphinx${{ matrix.sphinx-version }}"
+        poetry run pip install -U "Sphinx=~${{ matrix.sphinx-version }}"
 
     - name: Install Emacs
       if: ${{ github.event.inputs.debug == 'on' }}

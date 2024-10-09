@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13.0-rc.1']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         sphinx-version:
           - '6.0'
           - '7.0'
@@ -28,9 +28,9 @@ jobs:
             sphinx-version: '7.0'
           - python-version: '3.12'
             sphinx-version: '6.0'
-          - python-version: '3.13.0-rc.1'
+          - python-version: '3.13'
             sphinx-version: '7.0'
-          - python-version: '3.13.0-rc.1'
+          - python-version: '3.13'
             sphinx-version: '6.0'
           - python-version: '3.9'
             sphinx-version: '8.0'
@@ -57,6 +57,9 @@ jobs:
       with:
         detached: true
       timeout-minutes: 60
+    - name: Install libopenblas-dev
+      if: matrix.python-version == '3.13.0-rc1'
+      run: sudo apt-get install libopenblas-dev
     - name: Install Release Dependencies
       run: |
         sudo apt-get install libopenblas-dev

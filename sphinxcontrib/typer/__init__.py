@@ -528,10 +528,14 @@ class TyperDirective(rst.Directive):
             **export_options,
         )
 
-        if self.typer_convert_png:
-            png_path = Path(self.env.app.builder.outdir) / (
-                f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}.png'
+        def to_path(name: str, ext: str) -> Path:
+            return (
+                Path(self.env.app.builder.outdir)
+                / f'{name.replace(":", "_").replace(" ", "_")}_{self.uuid(name)}.{ext}'
             )
+
+        if self.typer_convert_png:
+            png_path = to_path(normal_cmd, "png")
             get_function(self.env.app.config.typer_convert_png)(
                 self, rendered, png_path
             )
@@ -551,13 +555,14 @@ class TyperDirective(rst.Directive):
             if "html" in self.builder:
                 section += nodes.raw("", rendered, format="html")
             else:
-                img_name = f'{normal_cmd.replace(":", "_")}_{self.uuid(normal_cmd)}'
-                out_dir = Path(self.env.app.builder.outdir)
-                (out_dir / f"{img_name}.svg").write_text(rendered)
-                pdf_img = out_dir / f"{img_name}.pdf"
-                get_function(self.env.app.config.typer_svg2pdf)(self, rendered, pdf_img)
+                svg_path = to_path(normal_cmd, "svg")
+                pdf_path = to_path(normal_cmd, "pdf")
+                svg_path.write_text(rendered)
+                get_function(self.env.app.config.typer_svg2pdf)(
+                    self, rendered, pdf_path
+                )
                 section += nodes.image(
-                    uri=os.path.relpath(pdf_img, Path(self.env.srcdir)),
+                    uri=os.path.relpath(pdf_path, Path(self.env.srcdir)),
                     alt=section_title,
                 )
 

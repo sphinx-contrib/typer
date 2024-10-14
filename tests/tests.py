@@ -145,7 +145,12 @@ def test_sphinx_latex_build():
 
 
 def build_example(
-    name, builder, example_dir=CLICK_EXAMPLES, clean_first=True, subprocess=False
+    name,
+    builder,
+    example_dir=CLICK_EXAMPLES,
+    clean_first=True,
+    subprocess=False,
+    project=None,
 ):
     cwd = os.getcwd()
     ex_dir = example_dir / name
@@ -169,8 +174,11 @@ def build_example(
         # Build the documentation
         app.build()
     else:
-        os.system(
-            f"poetry run sphinx-build {ex_dir} {bld_dir / builder} -c {ex_dir.parent}"
+        assert (
+            os.system(
+                f"poetry run sphinx-build {ex_dir} {bld_dir / builder} -c {ex_dir.parent}"
+            )
+            == 0
         )
 
     os.chdir(cwd)
@@ -179,7 +187,8 @@ def build_example(
     elif builder == "text":
         result = (bld_dir / builder / "index.txt").read_text()
     elif builder == "latex":
-        from conf import project
+        if not project:
+            from conf import project
 
         result = (
             bld_dir / builder / f'{project.lower().replace(" ", "")}.tex'

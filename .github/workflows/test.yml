@@ -57,9 +57,9 @@ jobs:
       with:
         detached: true
       timeout-minutes: 60
-    - name: Install libopenblas-dev
-      if: matrix.python-version == '3.13.0-rc1'
-      run: sudo apt-get install libopenblas-dev
+    # - name: Install libopenblas-dev
+    #   if: matrix.python-version == '3.13'
+    #   run: sudo apt-get install libopenblas-dev
     - name: Install Release Dependencies
       run: |
         sudo apt-get install libopenblas-dev

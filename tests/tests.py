@@ -279,7 +279,7 @@ def test_click_ex_validation():
     assert check_callback("typer_get_iframe_height")
     assert not check_callback("typer_get_web_driver")
 
-    check_svg(html, help_txt)
+    check_svg(html, help_txt, threshold=0.7)
     check_text(html, help_txt)
 
     if bld_dir.exists():

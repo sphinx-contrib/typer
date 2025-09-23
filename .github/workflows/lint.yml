@@ -46,7 +46,7 @@ jobs:
         uses: extractions/setup-just@v3
       - name: Install Dependencies
         run: |
-          sudo apt-get install libopenblas-dev
+          sudo apt-get install libopenblas-dev libxml2-dev libxslt1-dev zlib1g-dev
           just setup ${{ steps.sp.outputs.python-path }}
           just install
       - name: Install Emacs

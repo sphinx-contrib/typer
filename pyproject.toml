@@ -80,6 +80,7 @@ dev = [
     "scipy>=1.13.1",
     "sphinx-rtd-theme>=3.0.2",
     "pre-commit>=4.3.0",
+    "tomlkit>=0.13.3",
 ]
 
 

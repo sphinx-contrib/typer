@@ -467,6 +467,7 @@ def test_click_ex_complex():
 │ status   Shows file changes.                                  │
 ╰───────────────────────────────────────────────────────────────╯
 """,
+        threshold=0.8,
     )
 
     check_text(

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sphinxcontrib-typer"
-version = "0.6.0"
+version = "0.6.1"
 requires-python = ">=3.9,<4.0"
 authors = [
   {name = "Brian Kohan", email = "bckohan@gmail.com"},
@@ -40,6 +40,15 @@ dependencies = [
     "sphinx>=6.0",
     "typer-slim[standard]>=0.12.0,<1.0.0"
 ]
+
+
+[project.urls]
+"Homepage" = "https://sphinxcontrib-typer.readthedocs.io"
+"Documentation" = "https://sphinxcontrib-typer.readthedocs.io"
+"Repository" = "https://github.com/sphinx-contrib/typer"
+"Issues" = "https://github.com/sphinx-contrib/typer/issues"
+"Changelog" = "https://sphinxcontrib-typer.readthedocs.io/en/stable/changelog.html"
+
 
 [tool.uv]
 package = true

@@ -2553,7 +2553,7 @@ dev = [
     { name = "pypdf", specifier = ">=6.1.0" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "readme-renderer", extras = ["md"], specifier = ">=44.0" },
+    { name = "readme-renderer", extras = ["md"], specifier = ">=40.0" },
     { name = "ruff", specifier = ">=0.13.1" },
     { name = "scikit-image", specifier = ">=0.24.0" },
     { name = "scikit-learn", specifier = ">=1.6.1" },

@@ -176,7 +176,7 @@ def build_example(
     else:
         assert (
             os.system(
-                f"poetry run sphinx-build {ex_dir} {bld_dir / builder} -c {ex_dir.parent}"
+                f"uv run sphinx-build {ex_dir} {bld_dir / builder} -c {ex_dir.parent}"
             )
             == 0
         )
@@ -204,7 +204,7 @@ def scrub(output: str) -> str:
 def get_ex_help(name, *subcommands, example_dir, command_file=None):
     ret = subprocess.run(
         [
-            "poetry",
+            "uv",
             "run",
             "python",
             example_dir / name / f"{command_file or name}.py",

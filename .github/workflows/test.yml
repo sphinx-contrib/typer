@@ -70,7 +70,7 @@ jobs:
       timeout-minutes: 60
     - name: Install Release Dependencies
       run: |
-        sudo apt-get install libopenblas-dev
+        sudo apt-get install libopenblas-dev libxml2-dev libxslt1-dev zlib1g-dev
         just test-lock "Sphinx~=${{ matrix.sphinx-version }}"
 
     - name: Run Unit Tests

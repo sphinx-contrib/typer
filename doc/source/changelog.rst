@@ -1,6 +1,15 @@
+.. include:: ./refs.rst
+
 ==========
 Change Log
 ==========
+
+v0.6.0 (2025-09-22)
+===================
+
+* Implemented `Use intersphinx for better integration with the sphinx ecosystem <https://github.com/sphinx-contrib/typer/issues/51>`_
+* Implemented `Support python 3.14. <https://github.com/sphinx-contrib/typer/issues/50>`_
+* Implemented `Switch from poetry to uv. <https://github.com/sphinx-contrib/typer/issues/48>`_
 
 v0.5.1 (2024-10-14)
 ===================
@@ -152,7 +161,7 @@ v0.1.3 (2023-12-19)
 v0.1.2 (2023-12-19)
 ====================
 
-* Try big 4 web browser managers before giving up when selenium features are used.
+* Try big 4 web browser managers before giving up when :pypi:`selenium` features are used.
 * Fixed pypi.org rendering of the readme, and rtd documentation build.
 
 v0.1.1 (2023-12-19)

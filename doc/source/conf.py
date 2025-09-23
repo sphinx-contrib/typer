@@ -18,11 +18,9 @@ sys.path.append(str(Path(__file__).parent / 'typer_doc_ext'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'sphinxcontrib-typer'
-copyright = f'2023-{datetime.now().year}, Brian Kohan'
-author = 'Brian Kohan'
-
-# The full version, including alpha/beta/rc tags
+project = sphinxcontrib_typer.__title__
+copyright = sphinxcontrib_typer.__copyright__
+author = sphinxcontrib_typer.__author__
 release = sphinxcontrib_typer.__version__
 
 
@@ -33,7 +31,9 @@ release = sphinxcontrib_typer.__version__
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib.typer'
+    'sphinxcontrib.typer',
+    "sphinx.ext.viewcode",
+    'sphinx.ext.intersphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -70,6 +70,30 @@ latex_engine = 'xelatex'
 
 typer_get_web_driver = 'web_driver.typer_get_web_driver'
 
+
+autodoc_typehints = "description"  # or signature
+autodoc_typehints_format = "short"
+
+intersphinx_mapping = {
+    "click": ("https://click.palletsprojects.com/en/stable", None),
+    "rich": ("https://rich.readthedocs.io/en/stable", None),
+    "python": ('https://docs.python.org/3', None),
+    "sphinx-rtd-theme": ("https://sphinx-rtd-theme.readthedocs.io/en/stable", None),
+    "sphinx-click": ("https://sphinx-click.readthedocs.io/en/stable", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master", None)
+}
+
+def pypi_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    from docutils import nodes
+
+    url = f"https://pypi.org/project/{text}/"
+    node = nodes.reference(rawtext, text, refuri=url, **options)
+    return [node], []
+
+
 def setup(app):
+    from docutils.parsers.rst import roles
+    roles.register_local_role("pypi", pypi_role)
     if Path(app.doctreedir).exists():
         shutil.rmtree(app.doctreedir)
+    return app

@@ -3,9 +3,9 @@
 Themes
 ======
 
-You can always create and use custom themes with the `:svg-kwargs:`, `:html-kwargs:`, and
-`:console-kwargs:` options but there are also predefined named themes available that can be swapped
-in using the `:theme:` option.
+You can always create and use custom themes with the :rst:dir:`typer:svg-kwargs`,
+:rst:dir:`typer:html-kwargs`, and :rst:dir:`typer:console-kwargs` options but there are also
+predefined named themes available that can be swapped in using the :rst:dir:`typer:theme` option.
 
 .. code-block:: rst
 

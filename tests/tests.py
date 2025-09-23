@@ -191,7 +191,7 @@ def build_example(
             from conf import project
 
         result = (
-            bld_dir / builder / f'{project.lower().replace(" ", "")}.tex'
+            bld_dir / builder / f"{project.lower().replace(' ', '')}.tex"
         ).read_text()
     return bld_dir / builder, result
 
@@ -461,6 +461,10 @@ def test_click_ex_complex():
 │                               on.                             │
 │ --verbose  -v                 Enables verbose mode.           │
 │ --help                        Show this message and exit.     │
+╰───────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────╮
+│ init     Initializes a repo.                                  │
+│ status   Shows file changes.                                  │
 ╰───────────────────────────────────────────────────────────────╯
 """,
     )
@@ -792,16 +796,16 @@ def test_click_latex_build_works():
 
     assert (bld_dir / "validation_2a8082c3.svg").is_file()
 
-    assert (
-        len(list(bld_dir.glob("**/*.pdf"))) == 1
-    ), "Should have rendered the help 1 time as pdf"
+    assert len(list(bld_dir.glob("**/*.pdf"))) == 1, (
+        "Should have rendered the help 1 time as pdf"
+    )
     assert pdf.name.split(".")[0] in latex
     pdf_txt = pdf_text(pdf)[0]
     assert similarity(pdf_txt, help_txt) > 0.95
 
-    assert (
-        len(list(bld_dir.glob("**/*.png"))) == 1
-    ), "Should have rendered the help 1 time as png"
+    assert len(list(bld_dir.glob("**/*.png"))) == 1, (
+        "Should have rendered the help 1 time as png"
+    )
     html_png = bld_dir / "validation_4697b61f.png"
     assert img_similarity(CLICK_EXAMPLES / "validation" / "html.png", html_png) < 9000
 

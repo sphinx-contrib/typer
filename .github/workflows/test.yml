@@ -1,24 +1,29 @@
 name: test
-
+  
 on:
   push:
+    tags-ignore:
+      - '*'
+    branches:
+      - '*'
   pull_request:
+  workflow_call:
   workflow_dispatch:
     inputs:
       debug:
-        description: 'Set to on, to open ssh debug session.'
+        description: 'Open ssh debug session.'
         required: true
-        default: 'off'
+        default: false
+        type: boolean
   schedule:
     - cron: '0 13 * * *'  # Runs at 6 am pacific every day
   
-
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14.0-rc.3']
         sphinx-version:
           - '6.0'
           - '7.0'
@@ -34,6 +39,10 @@ jobs:
             sphinx-version: '6.0'
           - python-version: '3.9'
             sphinx-version: '8.0'
+          - python-version: '3.14.0-rc.3'
+            sphinx-version: '7.0'
+          - python-version: '3.14.0-rc.3'
+            sphinx-version: '6.0'
 
     steps:
     - uses: actions/checkout@v4
@@ -42,11 +51,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
       with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
+        enable-cache: true
+    - name: Install Just
+      uses: extractions/setup-just@v3
+
     - name: Install Emacs
       if: ${{ github.event.inputs.debug == 'on' }}
       run: |
@@ -57,20 +68,14 @@ jobs:
       with:
         detached: true
       timeout-minutes: 60
-    # - name: Install libopenblas-dev
-    #   if: matrix.python-version == '3.13'
-    #   run: sudo apt-get install libopenblas-dev
     - name: Install Release Dependencies
       run: |
         sudo apt-get install libopenblas-dev
-        poetry config virtualenvs.in-project true
-        poetry run pip install --upgrade pip
-        poetry install -E html -E png -E pdf
-        poetry run pip install -U "Sphinx~=${{ matrix.sphinx-version }}"
+        just test-lock "Sphinx~=${{ matrix.sphinx-version }}"
 
     - name: Run Unit Tests
       run: |
-        poetry run pytest
+        just test
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

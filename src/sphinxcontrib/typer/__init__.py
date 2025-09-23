@@ -1,20 +1,20 @@
 r"""
-   _____       _     _             _____            _        _ _                  
-  / ____|     | |   (_)           / ____|          | |      (_| |                 
- | (___  _ __ | |__  _ _ __ __  _| |     ___  _ __ | |_ _ __ _| |__               
-  \___ \| '_ \| '_ \| | '_ \\ \/ | |    / _ \| '_ \| __| '__| | '_ \              
-  ____) | |_) | | | | | | | |>  <| |___| (_) | | | | |_| |  | | |_) |             
- |_____/| .__/|_| |_|_|_| |_/_/\_\\_____\___/|_| |_|\__|_|  |_|_.__/              
-        | |                                                                       
-        |_|                                                                       
-                      _______                                                     
-                     |__   __|                                                    
-                        | |_   _ _ __   ___ _ __                                  
-                        | | | | | '_ \ / _ | '__|                                 
-                        | | |_| | |_) |  __| |                                    
-                        |_|\__, | .__/ \___|_|                                    
-                            __/ | |                                               
-                           |___/|_|                                               
+::
+
+
+    ███████╗██████╗ ██╗  ██╗██╗███╗   ██╗██╗  ██╗
+    ██╔════╝██╔══██╗██║  ██║██║████╗  ██║╚██╗██╔╝
+    ███████╗██████╔╝███████║██║██╔██╗ ██║ ╚███╔╝
+    ╚════██║██╔═══╝ ██╔══██║██║██║╚██╗██║ ██╔██╗
+    ███████║██║     ██║  ██║██║██║ ╚████║██╔╝ ██╗
+    ╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+
+    ████████╗██╗   ██╗██████╗ ███████╗██████╗
+    ╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
+       ██║    ╚████╔╝ ██████╔╝█████╗  ██████╔╝
+       ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗
+       ██║      ██║   ██║     ███████╗██║  ██║
+       ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚═╝  ╚═╝
 
 """
 
@@ -54,13 +54,13 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 5, 1)
+VERSION = (0, 6, 0)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
 __author__ = "Brian Kohan"
 __license__ = "MIT"
-__copyright__ = "Copyright 2023-2024 Brian Kohan"
+__copyright__ = "Copyright 2023-2025 Brian Kohan"
 
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
@@ -531,7 +531,7 @@ class TyperDirective(rst.Directive):
         def to_path(name: str, ext: str) -> Path:
             return (
                 Path(self.env.app.builder.outdir)
-                / f'{name.replace(":", "_").replace(" ", "_")}_{self.uuid(name)}.{ext}'
+                / f"{name.replace(':', '_').replace(' ', '_')}_{self.uuid(name)}.{ext}"
             )
 
         if self.typer_convert_png:
@@ -603,7 +603,7 @@ class TyperDirective(rst.Directive):
                 )
             except Exception as err:
                 raise self.severe(
-                    "Unable to determine program name, please specify using " ":prog:"
+                    "Unable to determine program name, please specify using :prog:"
                 ) from err
 
         self.prog_name = self.prog_name.strip()
@@ -700,8 +700,8 @@ def typer_get_iframe_height(
     ) as driver:
         # use base64 to avoid issues with special characters
         driver.get(
-            f'data:text/html;base64,'
-            f'{base64.b64encode(html_page.encode("utf-8")).decode()}'
+            f"data:text/html;base64,"
+            f"{base64.b64encode(html_page.encode('utf-8')).decode()}"
         )
         height = (
             int(
@@ -789,7 +789,7 @@ def typer_get_web_driver(
         from selenium.webdriver.chrome.options import Options as ChromeOptions
     except ImportError:
         raise directive.severe(
-            "This feature requires selenium and webdriver-manager to be " "installed."
+            "This feature requires selenium and webdriver-manager to be installed."
         )
 
     # Set up headless browser options

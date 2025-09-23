@@ -28,11 +28,11 @@ sphinxcontrib-typer
    :target: https://app.codecov.io/gh/sphinx-contrib/typer
    :alt: Code Cov
 
-.. image:: https://github.com/sphinx-contrib/typer/workflows/test/badge.svg
+.. image:: https://github.com/sphinx-contrib/typer/workflows/Test/badge.svg
    :target: https://github.com/sphinx-contrib/typer/actions/workflows/test.yml
    :alt: Test Status
 
-.. image:: https://github.com/sphinx-contrib/typer/workflows/lint/badge.svg
+.. image:: https://github.com/sphinx-contrib/typer/workflows/Lint/badge.svg
    :target: https://github.com/sphinx-contrib/typer/actions/workflows/lint.yml
    :alt: Lint Status
 

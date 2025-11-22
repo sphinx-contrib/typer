@@ -16,7 +16,9 @@ on:
         default: false
         type: boolean
   schedule:
-    - cron: '0 13 * * *'  # Runs at 6 am pacific every day
+    # Every Sunday at 9:00 AM Los Angeles time.
+    # GitHub cron is UTC; 09:00 PT == 17:00 UTC (PST).
+    - cron: '0 17 * * 0'
   
 jobs:
   build:
@@ -54,6 +56,9 @@ jobs:
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
+    - name: Upgrade all dependencies for our weekly runs
+      if: github.event_name == 'schedule'
+      run: uv lock --upgrade
     - name: Install Just
       uses: extractions/setup-just@v3
 

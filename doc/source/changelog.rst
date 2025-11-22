@@ -4,6 +4,11 @@
 Change Log
 ==========
 
+v0.7.0 (2025-11-22)
+===================
+
+* `Drop python 3.9 support <https://github.com/sphinx-contrib/typer/issues/53>`_
+
 v0.6.2 (2025-09-23)
 ===================
 

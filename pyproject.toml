@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sphinxcontrib-typer"
-version = "0.7.0"
+version = "0.7.1"
 requires-python = ">=3.10,<4.0"
 authors = [
   {name = "Brian Kohan", email = "bckohan@gmail.com"},

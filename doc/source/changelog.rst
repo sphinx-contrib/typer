@@ -4,6 +4,11 @@
 Change Log
 ==========
 
+v0.7.1 (2025-12-22)
+===================
+
+* `AttributeError: module 'typer.rich_utils' has no attribute 'MarkupMode' with typer 0.20.1 <https://github.com/sphinx-contrib/typer/issues/54>`_
+
 v0.7.0 (2025-11-22)
 ===================
 

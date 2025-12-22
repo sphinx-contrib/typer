@@ -235,7 +235,8 @@ def get_typer_ex_help(name, *subcommands, command_file=None):
 
 def check_html(html, help_txt, iframe_number=0, threshold=0.85):
     soup = bs(html, "html.parser")
-    iframe = soup.find_all("iframe")[iframe_number]
+    iframes = soup.find_all("iframe")
+    iframe = iframes[iframe_number]
     assert iframe is not None
     iframe_src = bs(iframe.attrs["srcdoc"], "html.parser")
     assert iframe_src is not None

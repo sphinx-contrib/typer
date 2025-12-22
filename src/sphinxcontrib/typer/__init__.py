@@ -54,7 +54,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 7, 0)
+VERSION = (0, 7, 1)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -228,7 +228,7 @@ class TyperDirective(rst.Directive):
     theme: RenderTheme = RenderTheme.LIGHT
     preferred: t.Optional[RenderTarget] = None
 
-    markup_mode: typer_rich_utils.MarkupMode
+    markup_mode: t.Literal["markdown", "rich", None]
 
     # the console_kwargs option can be a dict or a callable that returns a dict, the callable
     # must conform to the RenderOptions signature

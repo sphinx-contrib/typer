@@ -4,6 +4,11 @@
 Change Log
 ==========
 
+v0.7.2 (2025-12-23)
+===================
+
+* `Fix compatibility with typer 0.20.1+ <https://github.com/sphinx-contrib/typer/issues/56>`_
+
 v0.7.1 (2025-12-22)
 ===================
 

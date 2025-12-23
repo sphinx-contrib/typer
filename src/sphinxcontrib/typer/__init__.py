@@ -48,7 +48,7 @@ from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 
 from typer import rich_utils as typer_rich_utils
-from typer.core import TyperGroup
+from typer.core import MarkupMode, TyperGroup
 from typer.main import Typer
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
@@ -228,7 +228,7 @@ class TyperDirective(rst.Directive):
     theme: RenderTheme = RenderTheme.LIGHT
     preferred: t.Optional[RenderTarget] = None
 
-    markup_mode: t.Literal["markdown", "rich", None]
+    markup_mode: MarkupMode
 
     # the console_kwargs option can be a dict or a callable that returns a dict, the callable
     # must conform to the RenderOptions signature

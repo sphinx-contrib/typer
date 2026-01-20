@@ -29,7 +29,7 @@ jobs:
         python-version: [ '3.10', '3.13', '3.14' ]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
@@ -40,7 +40,7 @@ jobs:
           allow-prereleases: true
       
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
       - name: Install Just
@@ -56,7 +56,7 @@ jobs:
           sudo apt install emacs
       - name: Setup tmate session
         if: ${{ github.event.inputs.debug == 'true' }}
-        uses: mxschmitt/action-tmate@v3.22
+        uses: mxschmitt/action-tmate@v3
         with:
           detached: true
         timeout-minutes: 60

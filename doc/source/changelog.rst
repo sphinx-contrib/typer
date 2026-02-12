@@ -4,6 +4,18 @@
 Change Log
 ==========
 
+v0.8.0 (2026-02-12)
+===================
+
+* Report version to sphinx loader appropriately.
+* Change dependency to :pypi:`typer` instead of :pypi:`typer-slim`. This was done to track `upstream
+  packaging changes <https://github.com/fastapi/typer/pull/1522>`_.
+
+v0.7.2 (2025-12-23)
+===================
+
+* `Fix compatibility with typer 0.20.1+ <https://github.com/sphinx-contrib/typer/issues/56>`_
+
 v0.7.1 (2025-12-22)
 ===================
 

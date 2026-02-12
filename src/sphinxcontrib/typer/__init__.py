@@ -54,7 +54,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 7, 1)
+VERSION = (0, 8, 0)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -1053,6 +1053,7 @@ def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
     )
 
     return {
+        "version": __version__,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

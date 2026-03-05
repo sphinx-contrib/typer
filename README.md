@@ -1,15 +1,17 @@
+# sphinxcontrib-typer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer/)
 [![PyPI status](https://img.shields.io/pypi/status/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer)
+[![PyPI - Types](https://img.shields.io/pypi/types/typer.svg)](https://pypi.python.org/pypi/typer)
 [![Documentation Status](https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest)](http://sphinxcontrib-typer.readthedocs.io/?badge=latest/)
 [![Code Cov](https://codecov.io/gh/sphinx-contrib/typer/branch/main/graph/badge.svg?token=0IZOKN2DYL)](https://app.codecov.io/gh/sphinx-contrib/typer)
 [![Test Status](https://github.com/sphinx-contrib/typer/workflows/Test/badge.svg)](https://github.com/sphinx-contrib/typer/actions/workflows/test.yml)
 [![Lint Status](https://github.com/sphinx-contrib/typer/workflows/Lint/badge.svg)](https://github.com/sphinx-contrib/typer/actions/workflows/lint.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/sphinx-contrib/typer/badge)](https://securityscorecards.dev/viewer/?uri=github.com/sphinx-contrib/typer)
 
-# sphinxcontrib-typer
 
 A Sphinx directive for auto generating docs for [Typer](https://typer.tiangolo.com/) 
 (and [Click](https://click.palletsprojects.com/) commands!) using the rich console

@@ -167,3 +167,5 @@ tests/click/callback_record.json
 tests/click/cache.json
 tests/click/validation/resized_html.png
 uv.lock
+CLAUDE.md
+

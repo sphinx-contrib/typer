@@ -4,41 +4,51 @@
 sphinxcontrib-typer
 ===================
 
-.. image:: https://img.shields.io/badge/License-MIT-blue.svg
-   :target: https://opensource.org/licenses/MIT
-   :alt: License: MIT
+.. only:: html
 
-.. image:: https://badge.fury.io/py/sphinxcontrib-typer.svg
-   :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
-   :alt: PyPI version
+   .. image:: https://img.shields.io/badge/License-MIT-blue.svg
+      :target: https://opensource.org/licenses/MIT
+      :alt: License: MIT
 
-.. image:: https://img.shields.io/pypi/pyversions/sphinxcontrib-typer.svg
-   :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
-   :alt: PyPI pyversions
+   .. image:: https://badge.fury.io/py/sphinxcontrib-typer.svg
+      :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
+      :alt: PyPI version
 
-.. image:: https://img.shields.io/pypi/status/sphinxcontrib-typer.svg
-   :target: https://pypi.python.org/pypi/sphinxcontrib-typer
-   :alt: PyPI status
+   .. image:: https://img.shields.io/pypi/pyversions/sphinxcontrib-typer.svg
+      :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
+      :alt: PyPI pyversions
 
-.. image:: https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest
-   :target: http://sphinxcontrib-typer.readthedocs.io/?badge=latest/
-   :alt: Documentation Status
+   .. image:: https://img.shields.io/pypi/status/sphinxcontrib-typer.svg
+      :target: https://pypi.python.org/pypi/sphinxcontrib-typer
+      :alt: PyPI status
 
-.. image:: https://codecov.io/gh/sphinx-contrib/typer/branch/main/graph/badge.svg?token=0IZOKN2DYL
-   :target: https://app.codecov.io/gh/sphinx-contrib/typer
-   :alt: Code Cov
+   .. image:: https://img.shields.io/pypi/types/sphinxcontrib-typer.svg
+      :target: https://pypi.python.org/pypi/sphinxcontrib-typer
+      :alt: PyPi Typed
 
-.. image:: https://github.com/sphinx-contrib/typer/workflows/Test/badge.svg
-   :target: https://github.com/sphinx-contrib/typer/actions/workflows/test.yml
-   :alt: Test Status
+   .. image:: https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest
+      :target: http://sphinxcontrib-typer.readthedocs.io/?badge=latest/
+      :alt: Documentation Status
 
-.. image:: https://github.com/sphinx-contrib/typer/workflows/Lint/badge.svg
-   :target: https://github.com/sphinx-contrib/typer/actions/workflows/lint.yml
-   :alt: Lint Status
+   .. image:: https://codecov.io/gh/sphinx-contrib/typer/branch/main/graph/badge.svg?token=0IZOKN2DYL
+      :target: https://app.codecov.io/gh/sphinx-contrib/typer
+      :alt: Code Cov
 
-.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
-   :target: https://github.com/astral-sh/ruff
-   :alt: Ruff
+   .. image:: https://github.com/sphinx-contrib/typer/workflows/Test/badge.svg
+      :target: https://github.com/sphinx-contrib/typer/actions/workflows/test.yml
+      :alt: Test Status
+
+   .. image:: https://github.com/sphinx-contrib/typer/workflows/Lint/badge.svg
+      :target: https://github.com/sphinx-contrib/typer/actions/workflows/lint.yml
+      :alt: Lint Status
+
+   .. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+      :target: https://github.com/astral-sh/ruff
+      :alt: Ruff
+
+   .. image:: https://api.securityscorecards.dev/projects/github.com/sphinx-contrib/typer/badge
+      :target: https://securityscorecards.dev/viewer/?uri=github.com/sphinx-contrib/typer
+      :alt: OSSF Scorecard
 
 
 A Sphinx directive for auto generating docs for Typer_ (and :doc:`Click <click:index>` commands!)

@@ -54,13 +54,13 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 8, 0)
+VERSION = (0, 8, 1)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
 __author__ = "Brian Kohan"
 __license__ = "MIT"
-__copyright__ = "Copyright 2023-2025 Brian Kohan"
+__copyright__ = "Copyright 2023-2026 Brian Kohan"
 
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920

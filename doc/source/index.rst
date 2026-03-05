@@ -12,19 +12,15 @@ sphinxcontrib-typer
 
    .. image:: https://badge.fury.io/py/sphinxcontrib-typer.svg
       :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
-      :alt: PyPI version
+      :alt: Package Version
 
    .. image:: https://img.shields.io/pypi/pyversions/sphinxcontrib-typer.svg
       :target: https://pypi.python.org/pypi/sphinxcontrib-typer/
-      :alt: PyPI pyversions
+      :alt: Python Versions
 
    .. image:: https://img.shields.io/pypi/status/sphinxcontrib-typer.svg
       :target: https://pypi.python.org/pypi/sphinxcontrib-typer
-      :alt: PyPI status
-
-   .. image:: https://img.shields.io/pypi/types/sphinxcontrib-typer.svg
-      :target: https://pypi.python.org/pypi/sphinxcontrib-typer
-      :alt: PyPi Typed
+      :alt: Development Status
 
    .. image:: https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest
       :target: http://sphinxcontrib-typer.readthedocs.io/?badge=latest/

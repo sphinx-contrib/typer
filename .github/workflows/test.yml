@@ -1,12 +1,15 @@
 name: Test
-  
+
+permissions:
+  contents: read
+
 on:
   push:
     tags-ignore:
       - '*'
-    branches:
-      - '*'
+    branches: ['main']
   pull_request:
+    branches: ['main']
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -19,75 +22,105 @@ on:
     # Every Sunday at 9:00 AM Los Angeles time.
     # GitHub cron is UTC; 09:00 PT == 17:00 UTC (PST).
     - cron: '0 17 * * 0'
-  
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
-        sphinx-version:
-          - '6.0'
-          - '7.0'
-          - '8.0'
-          - '9.0'
+        sphinx-version: ['6', '7', '8', '9']
         exclude:
           - python-version: '3.12'
-            sphinx-version: '6.0'
+            sphinx-version: '6'
           - python-version: '3.13'
-            sphinx-version: '6.0'
+            sphinx-version: '6'
           - python-version: '3.14'
-            sphinx-version: '6.0'
+            sphinx-version: '6'
           - python-version: '3.12'
-            sphinx-version: '7.0'
+            sphinx-version: '7'
           - python-version: '3.13'
-            sphinx-version: '7.0'
+            sphinx-version: '7'
           - python-version: '3.11'
-            sphinx-version: '9.0'
+            sphinx-version: '9'
           - python-version: '3.14'
-            sphinx-version: '7.0'
+            sphinx-version: '7'
           - python-version: '3.10'
-            sphinx-version: '9.0'
+            sphinx-version: '9'
+    env:
+      COVERAGE_FILE: py${{ matrix.python-version }}-sphinx${{ matrix.sphinx-version }}.coverage
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
-
     - name: Install uv
-      uses: astral-sh/setup-uv@v7
+      uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       with:
-        enable-cache: true
+        enable-cache: false
     - name: Upgrade all dependencies for our weekly runs
       if: github.event_name == 'schedule'
       run: uv lock --upgrade
     - name: Install Just
-      uses: extractions/setup-just@v3
-
+      uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
     - name: Install Emacs
-      if: ${{ github.event.inputs.debug == 'on' }}
+      if: ${{ github.event.inputs.debug == 'true' }}
       run: |
         sudo apt install emacs
     - name: Setup tmate session
-      if: ${{ github.event.inputs.debug == 'on' }}
-      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event.inputs.debug == 'true' }}
+      uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101
       with:
         detached: true
       timeout-minutes: 60
-    - name: Install Release Dependencies
+    - name: Install System Dependencies
       run: |
         sudo apt-get install libopenblas-dev libxml2-dev libxslt1-dev zlib1g-dev
-        just test-lock "Sphinx~=${{ matrix.sphinx-version }}"
-
     - name: Run Unit Tests
       run: |
-        just test
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+        just test-sphinx ${{ matrix.sphinx-version }}
+    - name: Store coverage files
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.xml
+        name: ${{ env.COVERAGE_FILE }}
+        path: ${{ env.COVERAGE_FILE }}
+
+  coverage-combine:
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        id: sp
+      - name: Install uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
+        with:
+          enable-cache: false
+      - name: Install Just
+        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
+      - name: Install Dependencies
+        env:
+          PYTHON_PATH: ${{ steps.sp.outputs.python-path }}
+        run: |
+          just setup "$PYTHON_PATH"
+      - name: Get coverage files
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          pattern: "*.coverage"
+          merge-multiple: true
+      - run: ls -la *.coverage
+      - run: just coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          verbose: true

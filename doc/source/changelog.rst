@@ -4,6 +4,12 @@
 Change Log
 ==========
 
+v0.8.1 (2026-03-05)
+===================
+
+* Tighten up CI
+* Add typed classifier and badges
+
 v0.8.0 (2026-02-12)
 ===================
 

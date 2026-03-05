@@ -4,7 +4,6 @@
 [![PyPI version](https://badge.fury.io/py/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer/)
 [![PyPI status](https://img.shields.io/pypi/status/sphinxcontrib-typer.svg)](https://pypi.python.org/pypi/sphinxcontrib-typer)
-[![PyPI - Types](https://img.shields.io/pypi/types/typer.svg)](https://pypi.python.org/pypi/typer)
 [![Documentation Status](https://readthedocs.org/projects/sphinxcontrib-typer/badge/?version=latest)](http://sphinxcontrib-typer.readthedocs.io/?badge=latest/)
 [![Code Cov](https://codecov.io/gh/sphinx-contrib/typer/branch/main/graph/badge.svg?token=0IZOKN2DYL)](https://app.codecov.io/gh/sphinx-contrib/typer)
 [![Test Status](https://github.com/sphinx-contrib/typer/workflows/Test/badge.svg)](https://github.com/sphinx-contrib/typer/actions/workflows/test.yml)

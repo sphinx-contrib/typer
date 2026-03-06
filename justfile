@@ -71,8 +71,8 @@ clean-git-ignored:
 clean: clean-docs clean-git-ignored clean-env
 
 # build html documentation
-build-docs-html: _install-docs
-    @just run sphinx-build --fresh-env --builder html --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/html
+build-docs-html:
+    @just run --group docs --extra png --exact --no-default-groups --isolated sphinx-build --fresh-env --builder html --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/html
 
 [script]
 _open-pdf-docs:
@@ -81,8 +81,8 @@ _open-pdf-docs:
     webbrowser.open(f"file://{Path('./doc/build/pdf/sphinxcontribtyper.pdf').absolute()}")
 
 # build pdf documentation
-build-docs-pdf: _install-docs
-    @just run sphinx-build --fresh-env --builder latex --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/pdf
+build-docs-pdf:
+    @just run --group docs --extra pdf --exact --no-default-groups --isolated sphinx-build --fresh-env --builder latex --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/pdf
     make -C ./doc/build/pdf
     @just _open-pdf-docs
 
@@ -104,8 +104,8 @@ open-docs:
 docs: build-docs-html open-docs
 
 # serve the documentation, with auto-reload
-docs-live: _install-docs
-    @just run --no-default-groups --group docs sphinx-autobuild doc/source doc/build --open-browser --watch src --port 8000 --delay 1
+docs-live:
+    @just run --group docs --extra png --exact --no-default-groups --isolated sphinx-autobuild doc/source doc/build --open-browser --watch src --port 0 --delay 1
 
 _link_check:
     -@just run --no-default-groups --group docs sphinx-build -b linkcheck -Q -D linkcheck_timeout=10 ./doc/source ./doc/build

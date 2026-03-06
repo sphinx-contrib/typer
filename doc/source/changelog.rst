@@ -9,6 +9,7 @@ v0.8.1 (2026-03-05)
 
 * Tighten up CI
 * Add typed classifier and badges
+* Fixed `When typer is used in docstrings image paths can break in pdf builds. <https://github.com/sphinx-contrib/typer/issues/58>`_
 
 v0.8.0 (2026-02-12)
 ===================

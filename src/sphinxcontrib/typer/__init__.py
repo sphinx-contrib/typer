@@ -54,13 +54,13 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 8, 0)
+VERSION = (0, 8, 1)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
 __author__ = "Brian Kohan"
 __license__ = "MIT"
-__copyright__ = "Copyright 2023-2025 Brian Kohan"
+__copyright__ = "Copyright 2023-2026 Brian Kohan"
 
 
 SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
@@ -534,13 +534,19 @@ class TyperDirective(rst.Directive):
                 / f"{name.replace(':', '_').replace(' ', '_')}_{self.uuid(name)}.{ext}"
             )
 
+        # Image URIs must be relative to the document's directory, not srcdir,
+        # so that Sphinx can locate the file when the directive appears in a
+        # document nested inside a subdirectory (e.g. via autodoc).
+        # See https://github.com/sphinx-contrib/typer/issues/58
+        doc_dir = Path(self.env.srcdir) / Path(self.env.docname).parent
+
         if self.typer_convert_png:
             png_path = to_path(normal_cmd, "png")
             get_function(self.env.app.config.typer_convert_png)(
                 self, rendered, png_path
             )
             section += nodes.image(
-                uri=os.path.relpath(png_path, Path(self.env.srcdir)),
+                uri=os.path.relpath(png_path, doc_dir),
                 alt=section_title,
             )
         elif self.target == RenderTarget.HTML:
@@ -562,7 +568,7 @@ class TyperDirective(rst.Directive):
                     self, rendered, pdf_path
                 )
                 section += nodes.image(
-                    uri=os.path.relpath(pdf_path, Path(self.env.srcdir)),
+                    uri=os.path.relpath(pdf_path, doc_dir),
                     alt=section_title,
                 )
 

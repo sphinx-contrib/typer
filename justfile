@@ -22,33 +22,24 @@ install-uv:
 # setup the venv and pre-commit hooks
 setup python="python":
     uv venv -p {{ python }}
-    @just run pre-commit install
+    @just install-precommit
 
 # install git pre-commit hooks
 install-precommit:
-    @just run pre-commit install
+    @just run --no-default-groups --group precommit --exact --isolated pre-commit install
 
 # update and install development dependencies
-install *OPTS:
-    uv sync --all-extras {{ OPTS }}
-    @just run pre-commit install
+install *OPTS="--all-extras":
+    uv sync {{ OPTS }}
+    @just install-precommit
 
 # install without extra dependencies
 install-basic:
     uv sync
 
-[script]
-_lock-python:
-    import tomlkit
-    import sys
-    f='pyproject.toml'
-    d=tomlkit.parse(open(f).read())
-    d['project']['requires-python']='=={}'.format(sys.version.split()[0])
-    open(f,'w').write(tomlkit.dumps(d))
-
-# lock to specific python and versions of given dependencies
-test-lock +PACKAGES: _lock-python
-    uv add {{ PACKAGES }}
+# install documentation dependencies
+_install-docs:
+    uv sync --no-default-groups --group docs --all-extras
 
 # run static type checking
 check-types:
@@ -57,7 +48,7 @@ check-types:
 
 # run package checks
 check-package:
-    @just run pip check
+    uv pip check
 
 # remove doc build artifacts
 [script]
@@ -80,7 +71,7 @@ clean-git-ignored:
 clean: clean-docs clean-git-ignored clean-env
 
 # build html documentation
-build-docs-html: install
+build-docs-html: _install-docs
     @just run sphinx-build --fresh-env --builder html --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/html
 
 [script]
@@ -90,7 +81,7 @@ _open-pdf-docs:
     webbrowser.open(f"file://{Path('./doc/build/pdf/sphinxcontribtyper.pdf').absolute()}")
 
 # build pdf documentation
-build-docs-pdf: install
+build-docs-pdf: _install-docs
     @just run sphinx-build --fresh-env --builder latex --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/pdf
     make -C ./doc/build/pdf
     @just _open-pdf-docs
@@ -113,11 +104,11 @@ open-docs:
 docs: build-docs-html open-docs
 
 # serve the documentation, with auto-reload
-docs-live: install
-    @just run sphinx-autobuild doc/source doc/build --open-browser --watch src --port 8000 --delay 1
+docs-live: _install-docs
+    @just run --no-default-groups --group docs sphinx-autobuild doc/source doc/build --open-browser --watch src --port 8000 --delay 1
 
 _link_check:
-    -@just run sphinx-build -b linkcheck -Q -D linkcheck_timeout=10 ./doc/source ./doc/build
+    -@just run --no-default-groups --group docs sphinx-build -b linkcheck -Q -D linkcheck_timeout=10 ./doc/source ./doc/build
 
 # check the documentation links for broken links
 [script]
@@ -136,11 +127,11 @@ check-docs-links: _link_check
 
 # lint the documentation
 check-docs:
-    @just run doc8 --ignore-path ./doc/build --max-line-length 100 -q ./doc
+    @just run --no-default-groups --group docs doc8 --ignore-path ./doc/build --max-line-length 100 -q ./doc
 
 # fetch the intersphinx references for the given package
 [script]
-fetch-refs LIB: install
+fetch-refs LIB: _install-docs
     import os
     from pathlib import Path
     import logging as _logging
@@ -162,39 +153,58 @@ fetch-refs LIB: install
 
 # lint the code
 check-lint:
-    @just run ruff check --select I
-    @just run ruff check
+    @just run --no-default-groups --group lint ruff check --select I
+    @just run --no-default-groups --group lint ruff check
 
 # check if the code needs formatting
 check-format:
-    @just run ruff format --check
+    @just run --no-default-groups --group lint ruff format --check
 
 # check that the readme renders
 check-readme:
-    @just run python -m readme_renderer ./README.md -o /tmp/README.html
+    @just run --no-default-groups --group lint python -m readme_renderer ./README.md -o /tmp/README.html
 
 # sort the python imports
 sort-imports:
-    @just run ruff check --fix --select I
+    @just run --no-default-groups --group lint ruff check --fix --select I
 
 # format the code and sort imports
 format: sort-imports
     just --fmt --unstable
-    @just run ruff format
+    @just run --no-default-groups --group lint ruff format
 
 # sort the imports and fix linting issues
 lint: sort-imports
-    @just run ruff check --fix
+    @just run --no-default-groups --group lint ruff check --fix
 
 # fix formatting, linting issues and import sorting
 fix: lint format
 
 # run all static checks
-check: check-lint check-format check-types check-package check-docs check-docs-links check-readme
+check: check-lint check-format check-types check-package check-docs check-readme
+
+# run all checks including documentation link checking (slow)
+check-all: check check-docs-links
+
+# run zizmor security analysis of CI
+zizmor:
+    cargo install --locked zizmor
+    zizmor --format sarif .github/workflows/ > zizmor.sarif
 
 # run tests
 test *TESTS:
-    @just run pytest --cov-append {{ TESTS }}
+    @just run --no-default-groups --exact --all-extras --group test --isolated pytest --cov-append {{ TESTS }}
+
+# run tests against a specific sphinx major version (for CI matrix)
+test-sphinx SPHINX_MAJOR *TESTS:
+    @just run --no-default-groups --exact --all-extras --group test --group sphinx-{{ SPHINX_MAJOR }} --isolated pytest --cov-append {{ TESTS }}
+
+# debug a test
+debug-test *TESTS:
+    @just run pytest \
+      -o addopts='-ra -q' \
+      -s --trace --pdbcls=IPython.terminal.debugger:Pdb \
+      {{ TESTS }}
 
 # run the pre-commit checks
 precommit:
@@ -202,17 +212,17 @@ precommit:
 
 # erase any coverage data
 coverage-erase:
-    @just run coverage erase
+    @just run --no-default-groups --group coverage coverage erase
 
 # generate the test coverage report
 coverage:
-    @just run coverage combine --keep *.coverage
-    @just run coverage report
-    @just run coverage xml
+    @just run --no-default-groups --group coverage coverage combine --keep *.coverage
+    @just run --no-default-groups --group coverage coverage report
+    @just run --no-default-groups --group coverage coverage xml
 
 # run the command in the virtual environment
 run +ARGS:
-    uv run --all-extras {{ ARGS }}
+    uv run {{ ARGS }}
 
 # validate the given version string against the lib version
 [script]
@@ -230,8 +240,8 @@ validate_version VERSION:
     assert raw_version == typer.__version__
     print(raw_version)
 
-# issue a relase for the given semver string (e.g. 2.1.0)
-release VERSION:
+# issue a release for the given semver string (e.g. 2.1.0)
+release VERSION: install check-all
     @just validate_version v{{ VERSION }}
     git tag -s v{{ VERSION }} -m "{{ VERSION }} Release"
     git push origin v{{ VERSION }}

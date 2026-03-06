@@ -815,6 +815,48 @@ def test_click_latex_build_works():
         shutil.rmtree(bld_dir.parent)
 
 
+def test_typer_ex_subdocdir_latex():
+    """
+    Regression test for https://github.com/sphinx-contrib/typer/issues/58
+
+    When a typer directive is in a document located in a subdirectory of the
+    source root (e.g. via autodoc from a nested module), the image URI must be
+    computed relative to the document's directory, not srcdir.  The buggy code
+    used ``os.path.relpath(path, self.env.srcdir)`` which resolves to the wrong
+    location when ``self.env.docname`` contains a path separator.
+    """
+    import io
+
+    ex_dir = TYPER_EXAMPLES / "subdocdir"
+    bld_dir = ex_dir / "build"
+    shutil.rmtree(bld_dir, ignore_errors=True)
+
+    warnings_io = io.StringIO()
+    app = Sphinx(
+        ex_dir,
+        TYPER_EXAMPLES,
+        bld_dir / "latex",
+        bld_dir / "doctrees",
+        buildername="latex",
+        warning=warnings_io,
+    )
+    app.build()
+    assert not app.statuscode, "Sphinx build failed"
+
+    # With the buggy URI computation (relative to srcdir instead of the
+    # document's directory), Sphinx cannot find the generated PDF and emits an
+    # "image file not readable" warning.  A clean build must produce no such
+    # warning.
+    warning_text = warnings_io.getvalue()
+    assert "image.not_readable" not in warning_text, (
+        "Image path was not resolved correctly for a directive in a "
+        f"subdirectory document (see issue #58).\nWarnings:\n{warning_text}"
+    )
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir)
+
+
 def test_enums():
     from sphinxcontrib.typer import RenderTarget, RenderTheme
 

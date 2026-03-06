@@ -99,7 +99,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
-        id: sp
       - name: Install uv
         uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
         with:
@@ -107,10 +106,8 @@ jobs:
       - name: Install Just
         uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
       - name: Install Dependencies
-        env:
-          PYTHON_PATH: ${{ steps.sp.outputs.python-path }}
         run: |
-          just setup "$PYTHON_PATH"
+          just setup
       - name: Get coverage files
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:

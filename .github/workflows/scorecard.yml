@@ -15,6 +15,9 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    environment:
+      name: scorecard
+      deployment: false
     permissions:
       security-events: write
       id-token: write

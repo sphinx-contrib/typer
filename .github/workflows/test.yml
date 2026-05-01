@@ -11,9 +11,6 @@ on:
   pull_request:
     branches: ['main']
   workflow_call:
-    secrets:
-      CODECOV_TOKEN:
-        required: true
   workflow_dispatch:
     inputs:
       debug:
@@ -96,6 +93,9 @@ jobs:
   coverage-combine:
     needs: [test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -121,6 +121,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: ./coverage.xml
           verbose: true

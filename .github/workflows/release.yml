@@ -46,13 +46,13 @@ jobs:
       with:
         python-version: "3.12"  # for tomllib
     - name: Install uv
-      uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
       with:
         enable-cache: false
         restore-cache: false
         save-cache: false
     - name: Setup Just
-      uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
+      uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3
     - name: Verify Tag
       run: |
         TAG_NAME=${GITHUB_REF#refs/tags/}
@@ -73,7 +73,7 @@ jobs:
     - name: Build the binary wheel and a source tarball
       run: just build
     - name: Store the distribution packages
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: python-package-distributions
         path: dist/
@@ -95,12 +95,12 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution to TestPyPI
-      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
       with:
         repository-url: https://test.pypi.org/legacy/
         skip-existing: true
@@ -120,12 +120,12 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
 
   github-release:
     name: Publish GitHub Release
@@ -140,12 +140,12 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         name: python-package-distributions
         path: dist/
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@a5caf349bc536fbef3668a10ed7f5cd309a4b53d
+      uses: sigstore/gh-action-sigstore-python@04cffa1d795717b140764e8b640de88853c92acc
       with:
         inputs: >-
           ./dist/*.tar.gz

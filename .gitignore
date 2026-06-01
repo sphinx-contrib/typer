@@ -163,9 +163,9 @@ cython_debug/
 doc/source/typer_cache.json
 poetry.lock
 tests/**/build
-tests/click/callback_record.json
-tests/click/cache.json
-tests/click/validation/resized_html.png
+tests/typer/callback_record.json
+tests/typer/cache.json
+tests/typer/render/resized_render.png
 uv.lock
 CLAUDE.md
 zizmor.sarif

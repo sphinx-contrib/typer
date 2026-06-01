@@ -72,4 +72,14 @@ html_static_path = []
 
 todo_include_todos = True
 
+###########################################################
+# Test our typer configuration parameter function overrides
+# (the render example exercises these hooks)
+
+typer_render_html = "callbacks.typer_render_html"
+typer_get_iframe_height = "callbacks.typer_get_iframe_height"
+typer_svg2pdf = "callbacks.typer_svg2pdf"
+typer_convert_png = "callbacks.typer_convert_png"
+typer_get_web_driver = "callbacks.typer_get_web_driver"
+
 typer_iframe_height_padding = 40

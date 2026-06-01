@@ -437,6 +437,65 @@ def test_typer_ex_subdocdir_latex():
         shutil.rmtree(bld_dir)
 
 
+def test_typer_render_html():
+    """
+    Render a Typer app to html and verify the iframe/svg/text output as well as
+    that the html render hooks fired (and that the cached iframe height avoided
+    spinning up a web driver).
+    """
+    clear_callbacks()
+
+    bld_dir, html = build_example("render", "html", example_dir=TYPER_EXAMPLES)
+
+    help_txt = get_typer_ex_help("render")
+
+    check_html(html, help_txt)
+    check_svg(html, help_txt, threshold=0.7)
+    check_text(html, help_txt)
+
+    assert check_callback("typer_render_html")
+    assert check_callback("typer_get_iframe_height")
+    # the :iframe-height: option should short-circuit the selenium web driver
+    assert not check_callback("typer_get_web_driver")
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
+def test_typer_render_latex():
+    """
+    Render a Typer app to latex and verify the svg->pdf and png conversions, the
+    associated render hooks (typer_svg2pdf, typer_convert_png) and the rendered
+    pdf/png content.
+    """
+    clear_callbacks()
+
+    bld_dir, latex = build_example("render", "latex", example_dir=TYPER_EXAMPLES)
+
+    help_txt = get_typer_ex_help("render")
+
+    assert check_callback("typer_svg2pdf")
+    assert check_callback("typer_convert_png")
+
+    # only the text render emits literal text into the latex source
+    assert latex.count("Usage") == 1
+
+    pdfs = list(bld_dir.glob("**/*.pdf"))
+    assert len(pdfs) == 1, "Should have rendered the help 1 time as pdf"
+    pdf = pdfs[0]
+    assert pdf.with_suffix(".svg").is_file()
+    assert pdf.name.split(".")[0] in latex
+    pdf_txt = pdf_text(pdf)[0]
+    assert similarity(pdf_txt, help_txt) > 0.9
+
+    pngs = list(bld_dir.glob("**/*.png"))
+    assert len(pngs) == 1, "Should have rendered the help 1 time as png"
+    assert img_similarity(TYPER_EXAMPLES / "render" / "render.png", pngs[0]) < 9000
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
 def test_enums():
     from sphinxcontrib.typer import RenderTarget, RenderTheme
 

@@ -341,7 +341,7 @@ class TyperDirective(rst.Directive):
         """
 
         def resolve_root_command(obj):
-            if isinstance(obj, click.Command):
+            if isinstance(obj, (TyperCommand, TyperGroup)):
                 return obj
 
             # use lenient duck typing check incase obj is a proxy for a Typer instance

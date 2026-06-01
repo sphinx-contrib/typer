@@ -8,6 +8,10 @@ v0.9.0 (2026-06-01)
 ===================
 
 * Support typer 0.26.0+ (post click vendoring).
+* **Breaking:** dropped support for rendering standalone Click commands. The
+  ``typer`` directive now only accepts Typer apps (and the commands typer
+  derives from them). Wrap a Click command in a ``typer.Typer`` app to document
+  it.
 
 
 v0.8.1 (2026-03-05)

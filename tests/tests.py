@@ -496,6 +496,21 @@ def test_typer_render_latex():
         shutil.rmtree(bld_dir.parent)
 
 
+def test_typer_factory():
+    """
+    The directive target may be a factory callable that returns a Typer app
+    (the callable branch of resolve_root_command).  Regression test for the
+    factory being passed to get_command instead of its return value.
+    """
+    bld_dir, html = build_example("factory", "html", example_dir=TYPER_EXAMPLES)
+
+    help_txt = get_typer_ex_help("factory")
+    check_text(html, help_txt)
+
+    if bld_dir.exists():
+        shutil.rmtree(bld_dir.parent)
+
+
 def test_enums():
     from sphinxcontrib.typer import RenderTarget, RenderTheme
 

@@ -28,7 +28,7 @@ Directives
       :text-kwargs: import.path.to.text_kwargs
 
   The only required parameter is the first argument. This is an import path to the Typer_
-  or :doc:`Click <click:index>` application to render. It may also include nested subcommands and
+  application to render. It may also include nested subcommands and
   may be delimited by either ``.``, ``:`` or ``::`` characters. For example, to render a subcommand
   called `print` from another subcommand called `add` in a Typer app named `app` in a module called
   `command` in a package called `mypackage`:

@@ -47,10 +47,11 @@ sphinxcontrib-typer
       :alt: OSSF Scorecard
 
 
-A Sphinx directive for auto generating docs for Typer_ (and :doc:`Click <click:index>` commands!)
+A Sphinx directive for auto generating docs for Typer_ applications
 using the rich console formatting available in Typer_. This package generates concise command
-documentation in text, html or svg formats out of the box, but if your goal is to greatly customize
-the generated documentation :doc:`sphinx-click:index` may be more appropriate and will also work for
+documentation in text, html or svg formats out of the box. If you need to document a standalone
+:doc:`Click <click:index>` command, or your goal is to greatly customize the generated
+documentation, :doc:`sphinx-click:index` may be more appropriate and will also work for
 Typer_ commands.
 
 See the `github <https://github.com/sphinx-contrib/typer>`_ repository for issue tracking and source

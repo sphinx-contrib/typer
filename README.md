@@ -12,11 +12,12 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/sphinx-contrib/typer/badge)](https://securityscorecards.dev/viewer/?uri=github.com/sphinx-contrib/typer)
 
 
-A Sphinx directive for auto generating docs for [Typer](https://typer.tiangolo.com/) 
-(and [Click](https://click.palletsprojects.com/) commands!) using the rich console
-formatting available in [Typer](https://typer.tiangolo.com/). This package generates
-concise command documentation in text, html or svg formats out of the box, but if your
-goal is to greatly customize the generated documentation
+A Sphinx directive for auto generating docs for [Typer](https://typer.tiangolo.com/)
+applications using the rich console formatting available in
+[Typer](https://typer.tiangolo.com/). This package generates concise command
+documentation in text, html or svg formats out of the box. If you need to document a
+standalone [Click](https://click.palletsprojects.com/) command, or want to greatly
+customize the generated documentation,
 [sphinx-click](https://sphinx-click.readthedocs.io/en/latest/) may be more appropriate
 and will also work for [Typer](https://typer.tiangolo.com/) commands.
 

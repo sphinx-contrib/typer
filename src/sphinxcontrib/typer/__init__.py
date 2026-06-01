@@ -35,7 +35,6 @@ from importlib.util import find_spec
 from pathlib import Path
 from pprint import pformat
 
-import click
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
@@ -47,8 +46,12 @@ from sphinx.addnodes import pending_xref
 from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 
+# As of typer 0.26 click is vendored into typer (typer._click). Typer commands
+# are instances of the vendored click classes, not the standalone click package
+# (which typer no longer depends on), so we use the vendored click throughout.
+from typer import _click as click
 from typer import rich_utils as typer_rich_utils
-from typer.core import MarkupMode, TyperGroup
+from typer.core import MarkupMode, TyperCommand, TyperGroup
 from typer.main import Typer
 from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
@@ -154,7 +157,7 @@ class RenderTheme(str, Enum):
         }[self]
 
 
-Command = t.Union[click.Command, click.Group]
+Command = t.Union[TyperCommand, TyperGroup]
 
 """
 Callbacks that return a dict of kwargs to pass to various renderer functions
@@ -330,7 +333,7 @@ class TyperDirective(rst.Directive):
 
         return obj
 
-    def load_root_command(self, typer_path: str) -> t.Union[click.Command, click.Group]:
+    def load_root_command(self, typer_path: str) -> Command:
         """
         Load the module.
 
@@ -338,7 +341,7 @@ class TyperDirective(rst.Directive):
         """
 
         def resolve_root_command(obj):
-            if isinstance(obj, (click.Command, click.Group)):
+            if isinstance(obj, click.Command):
                 return obj
 
             # use lenient duck typing check incase obj is a proxy for a Typer instance
@@ -353,17 +356,14 @@ class TyperDirective(rst.Directive):
                     getattr(obj, "info", None), TyperInfo
                 ):
                     return get_typer_command(obj)
-                if isinstance(ret, (click.Command, click.Group)):
+                if isinstance(ret, click.Command):
                     return ret
 
             raise self.error(
-                f'"{typer_path}" of type {type(obj)} is not Typer, click.Command or '
-                "click.Group."
+                f'"{typer_path}" of type {type(obj)} is not a Typer app or command.'
             )
 
-        def access_command(
-            obj, attr, imprt_path
-        ) -> t.Union[click.Command, click.Group]:
+        def access_command(obj, attr, imprt_path) -> Command:
             attr_obj = None
             try:
                 attr_obj = getattr(obj, attr)
@@ -422,9 +422,9 @@ class TyperDirective(rst.Directive):
         """
         Generate the relevant Sphinx nodes.
 
-        Generate node help for `click.Group` or `click.Command`.
+        Generate node help for a Typer command or group.
 
-        :param command: Instance of `click.Group` or `click.Command`
+        :param command: Instance of a Typer command or group
         :param parent: Instance of `typer.models.Context`, or None
         :returns: A list of nested docutil nodes
         """
@@ -578,7 +578,7 @@ class TyperDirective(rst.Directive):
             raise self.severe(f"Invalid typer render target: {self.target}")
 
         # recurse through subcommands if we should
-        if isinstance(command, click.MultiCommand):
+        if isinstance(command, TyperGroup):
             commands = _filter_commands(ctx, command.list_commands(ctx))
             for command in commands:
                 if self.nested:

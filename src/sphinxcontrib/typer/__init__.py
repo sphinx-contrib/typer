@@ -353,10 +353,10 @@ class TyperDirective(rst.Directive):
             if callable(obj):
                 ret = obj()
                 if isinstance(ret, Typer) or isinstance(
-                    getattr(obj, "info", None), TyperInfo
+                    getattr(ret, "info", None), TyperInfo
                 ):
-                    return get_typer_command(obj)
-                if isinstance(ret, click.Command):
+                    return get_typer_command(ret)
+                if isinstance(ret, (TyperCommand, TyperGroup)):
                     return ret
 
             raise self.error(

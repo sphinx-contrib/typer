@@ -57,7 +57,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 9, 0)
+VERSION = (0, 9, 1)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -483,8 +483,8 @@ class TyperDirective(rst.Directive):
                             "switch": typer_rich_utils.STYLE_SWITCH,
                             "negative_option": typer_rich_utils.STYLE_NEGATIVE_OPTION,
                             "negative_switch": typer_rich_utils.STYLE_NEGATIVE_SWITCH,
-                            "metavar": typer_rich_utils.STYLE_METAVAR,
-                            "metavar_sep": typer_rich_utils.STYLE_METAVAR_SEPARATOR,
+                            "types": typer_rich_utils.STYLE_TYPES,
+                            "types_sep": typer_rich_utils.STYLE_TYPES_SEPARATOR,
                             "usage": typer_rich_utils.STYLE_USAGE,
                         },
                     ),

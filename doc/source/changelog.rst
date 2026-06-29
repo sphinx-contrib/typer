@@ -4,6 +4,11 @@
 Change Log
 ==========
 
+v0.9.1 (2026-06-29)
+===================
+
+* Fixed `Does not work with latest release of Typer, 0.26.8 <https://github.com/sphinx-contrib/typer/issues/68>`_
+
 v0.9.0 (2026-06-01)
 ===================
 

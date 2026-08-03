@@ -4,6 +4,13 @@
 Change Log
 ==========
 
+v0.9.2 (2026-08-03)
+===================
+
+* Python 3.15 compat
+* Linting fixes for latest ruff versions.
+
+
 v0.9.1 (2026-06-29)
 ===================
 

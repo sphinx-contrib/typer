@@ -57,7 +57,7 @@ from typer.main import get_command as get_typer_command
 from typer.models import Context as TyperContext
 from typer.models import TyperInfo
 
-VERSION = (0, 9, 1)
+VERSION = (0, 9, 2)
 
 __title__ = "SphinxContrib Typer"
 __version__ = ".".join(str(i) for i in VERSION)
@@ -70,7 +70,7 @@ SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
 SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
 
 
-def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
+def get_function(function: str | t.Callable[..., t.Any]):
     if callable(function):
         return function
     if isinstance(function, str):
@@ -78,7 +78,7 @@ def get_function(function: t.Union[str, t.Callable[..., t.Any]]):
         return getattr(import_module(".".join(parts[0:-1])), parts[-1])
 
 
-def _filter_commands(ctx: click.Context, cmd_filter: t.List[str]):
+def _filter_commands(ctx: click.Context, cmd_filter: list[str]):
     return [ctx.command.get_command(ctx, cmd_name) for cmd_name in cmd_filter]
 
 
@@ -89,7 +89,7 @@ def _add_dependency(env, command):
         env.note_dependency(inspect.getfile(cb))
 
 
-def _command_path(ctx: t.Optional[click.Context]):
+def _command_path(ctx: click.Context | None):
     parts = []
     while ctx:
         parts.append(ctx.info_name)
@@ -130,34 +130,34 @@ class RenderTheme(str, Enum):
                 (132, 42, 38),  # background
                 (210, 193, 159),  # text
                 [
-                    (210, 193, 159),  #
+                    (210, 193, 159),
                     (0, 0, 0),  # required
                     (77, 218, 77),  # option on short name
                     (227, 189, 57),  # Usage/metavar
-                    (210, 193, 159),  #
+                    (210, 193, 159),
                     (0, 18, 140),  # option off
                     (75, 214, 225),  # option on/command names
-                    (210, 193, 159),  #
+                    (210, 193, 159),
                 ],
             ),
             RenderTheme.BLUE_WAVES: rich_theme.TerminalTheme(
                 (20, 118, 247),  # background
                 (250, 240, 250),  # text
                 [
-                    (250, 240, 250),  #
+                    (250, 240, 250),
                     (0, 0, 0),  # required
                     (0, 255, 0),  # option on short name
                     (227, 189, 57),  # Usage/metavar
-                    (250, 240, 250),  #
+                    (250, 240, 250),
                     (2, 2, 214),  # option off
                     (146, 226, 252),  # option on/command names
-                    (250, 240, 250),  #
+                    (250, 240, 250),
                 ],
             ),
         }[self]
 
 
-Command = t.Union[TyperCommand, TyperGroup]
+Command = TyperCommand | TyperGroup
 
 """
 Callbacks that return a dict of kwargs to pass to various renderer functions
@@ -169,9 +169,9 @@ RenderCallback = t.Callable[
         str,  # name - the name of the command
         Command,  # command - the command instance
         click.Context,  # ctx - the click.Context instance
-        t.Optional[click.Context],  # parent - the parent click.Context instance
+        click.Context | None,  # parent - the parent click.Context instance
     ],
-    t.Dict[str, t.Any],
+    dict[str, t.Any],
 ]
 
 """
@@ -179,7 +179,7 @@ Custom render options can be provided at a python path that resolves to the
 following type. Either a dictionary of kwargs to pass to the relevant function
 or a callable that returns a dictionary of kwargs to pass to the relevant function
 """
-RenderOptions = t.Union[t.Dict[str, t.Any], RenderCallback]
+RenderOptions = dict[str, t.Any] | RenderCallback
 
 
 class TyperDirective(rst.Directive):
@@ -200,7 +200,7 @@ class TyperDirective(rst.Directive):
 
     has_content = False
     required_arguments = 1
-    option_spec = {
+    option_spec: t.ClassVar[dict[str, t.Any]] = {
         "prog": directives.unchanged_required,
         "make-sections": directives.flag,
         "show-nested": directives.flag,
@@ -222,14 +222,14 @@ class TyperDirective(rst.Directive):
     nested: bool
     make_sections: bool
     width: int
-    iframe_height: t.Optional[int] = None
+    iframe_height: int | None = None
     typer_convert_png: bool = False
 
     console: Console
     parent: click.Context
 
     theme: RenderTheme = RenderTheme.LIGHT
-    preferred: t.Optional[RenderTarget] = None
+    preferred: RenderTarget | None = None
 
     markup_mode: MarkupMode
 
@@ -242,7 +242,7 @@ class TyperDirective(rst.Directive):
 
     target: RenderTarget
 
-    builder_targets = {
+    builder_targets: t.ClassVar[dict[str, list[RenderTarget]]] = {
         **{
             builder: [RenderTarget.SVG, RenderTarget.HTML, RenderTarget.TEXT]
             for builder in [
@@ -280,12 +280,12 @@ class TyperDirective(rst.Directive):
         line_number = self.state_machine.get_source_and_line()[1]
         source = os.path.relpath(source, self.env.app.builder.srcdir)
         return hashlib.sha256(
-            f"{source}.{line_number}[{normal_cmd}]".encode("utf-8")
+            f"{source}.{line_number}[{normal_cmd}]".encode()
         ).hexdigest()[:8]
 
     def import_object(
         self,
-        obj_path: t.Optional[str],
+        obj_path: str | None,
         accessor: t.Callable[[t.Any, str, t.Any], t.Any] = lambda obj, attr, _: getattr(
             obj, attr
         ),
@@ -320,13 +320,13 @@ class TyperDirective(rst.Directive):
                     if tries >= len(parts):
                         raise
 
-        except (Exception, SystemExit) as exc:
+        except (Exception, SystemExit) as exc:  # noqa: BLE001
             err_msg = f'Failed to import "{obj_path}"'
             if isinstance(exc, SystemExit):
                 err_msg += "The module appeared to call sys.exit()."
             else:
-                err_msg += "The following exception was raised:\n{}".format(
-                    traceback.format_exc()
+                err_msg += (
+                    f"The following exception was raised:\n{traceback.format_exc()}"
                 )
 
             raise self.severe(err_msg)
@@ -417,8 +417,8 @@ class TyperDirective(rst.Directive):
         self,
         name: str,
         command: click.Command,
-        parent: t.Optional[click.Context],
-    ) -> t.List[nodes.section]:
+        parent: click.Context | None,
+    ) -> list[nodes.section]:
         """
         Generate the relevant Sphinx nodes.
 
@@ -463,9 +463,7 @@ class TyperDirective(rst.Directive):
         )
 
         # Summary
-        def resolve_options(
-            options: RenderOptions, parameter: str
-        ) -> t.Dict[str, t.Any]:
+        def resolve_options(options: RenderOptions, parameter: str) -> dict[str, t.Any]:
             if callable(options):
                 options = options(self, name, command, ctx, parent)
             if isinstance(options, dict):
@@ -580,13 +578,11 @@ class TyperDirective(rst.Directive):
         # recurse through subcommands if we should
         if isinstance(command, TyperGroup):
             commands = _filter_commands(ctx, command.list_commands(ctx))
-            for command in commands:
+            for cmd in commands:
                 if self.nested:
-                    section.extend(
-                        self.generate_nodes(command.name, command, parent=ctx)
-                    )
+                    section.extend(self.generate_nodes(cmd.name, cmd, parent=ctx))
                 else:
-                    _add_dependency(self.env, command)
+                    _add_dependency(self.env, cmd)
         return [section]
 
     def run(self) -> t.Iterable[nodes.section]:
@@ -799,7 +795,8 @@ def typer_get_web_driver(
         )
 
     # Set up headless browser options
-    def opts(options=ChromeOptions()):
+    def opts(options=None):
+        options = options or ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -813,7 +810,7 @@ def typer_get_web_driver(
 
         try:
             return webdriver.Chrome(options=opts())
-        except Exception:
+        except Exception:  # noqa: BLE001
             return webdriver.Chrome(
                 service=Service(ChromeDriverManager().install()), options=opts()
             )
@@ -864,7 +861,7 @@ def typer_get_web_driver(
         try:
             driver = service()
             break  # use the first one that works!
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             directive.debug(f"Unable to initialize webdriver {service.__name__}: {err}")
 
     if driver:
@@ -877,7 +874,7 @@ def typer_get_web_driver(
 def typer_convert_png(
     directive: TyperDirective,
     rendered: str,
-    png_path: t.Union[str, Path],
+    png_path: str | Path,
     selenium_width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
     selenium_height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT,
 ):
@@ -902,45 +899,47 @@ def typer_convert_png(
     from selenium.webdriver.common.by import By
 
     tag = "code"
-    with get_function(directive.env.app.config.typer_get_web_driver)(
-        directive
-    ) as driver:
-        with tempfile.NamedTemporaryFile(suffix=".html") as tmp:
-            if directive.target is RenderTarget.TEXT:
-                tag = "pre"
-                rendered = f"<html><body><pre>{rendered}</pre></body></html>"
-            elif directive.target is RenderTarget.SVG:
-                tag = "svg"
-                rendered = f"<html><body>{rendered}</body></html>"
+    with (
+        get_function(directive.env.app.config.typer_get_web_driver)(
+            directive
+        ) as driver,
+        tempfile.NamedTemporaryFile(suffix=".html") as tmp,
+    ):
+        if directive.target is RenderTarget.TEXT:
+            tag = "pre"
+            rendered = f"<html><body><pre>{rendered}</pre></body></html>"
+        elif directive.target is RenderTarget.SVG:
+            tag = "svg"
+            rendered = f"<html><body>{rendered}</body></html>"
 
-            tmp.write(rendered.encode("utf-8"))
-            tmp.flush()
-            driver.get(f"file://{tmp.name}")
-            png = driver.get_screenshot_as_png()
-            # Find the element you want a screenshot of
-            element = driver.find_element(By.CSS_SELECTOR, tag)
-            pixel_ratio = driver.execute_script("return window.devicePixelRatio")
-            # Get the element's location and size
-            location = element.location
-            size = element.size
+        tmp.write(rendered.encode("utf-8"))
+        tmp.flush()
+        driver.get(f"file://{tmp.name}")
+        png = driver.get_screenshot_as_png()
+        # Find the element you want a screenshot of
+        element = driver.find_element(By.CSS_SELECTOR, tag)
+        pixel_ratio = driver.execute_script("return window.devicePixelRatio")
+        # Get the element's location and size
+        location = element.location
+        size = element.size
 
-            if size["width"] > selenium_width or size["height"] > selenium_height:
-                # if our window is too small, resize it with some padding and try again
-                return typer_convert_png(
-                    directive,
-                    rendered,
-                    png_path,
-                    size["width"] + 100,
-                    size["height"] + 100,
-                )
+        if size["width"] > selenium_width or size["height"] > selenium_height:
+            # if our window is too small, resize it with some padding and try again
+            return typer_convert_png(
+                directive,
+                rendered,
+                png_path,
+                size["width"] + 100,
+                size["height"] + 100,
+            )
 
-            # Open the screenshot and crop it to the element
-            im = Image.open(BytesIO(png))
-            left = location["x"] * pixel_ratio
-            top = location["y"] * pixel_ratio
-            if directive.target is RenderTarget.TEXT:
-                # getting the width of the text is actually a bit tricky
-                script = """
+        # Open the screenshot and crop it to the element
+        im = Image.open(BytesIO(png))
+        left = location["x"] * pixel_ratio
+        top = location["y"] * pixel_ratio
+        if directive.target is RenderTarget.TEXT:
+            # getting the width of the text is actually a bit tricky
+            script = """
                     const pre = arguments[0];
                     const textContent = pre.textContent || pre.innerText;
                     const temporarySpan = document.createElement('span');
@@ -955,13 +954,13 @@ def typer_convert_png(
 
                     return temporarySpan.offsetWidth;
                 """
-                width = driver.execute_script(script, element)
-                right = left + width * pixel_ratio
-            else:
-                right = left + size["width"] * pixel_ratio
-            bottom = top + size["height"] * pixel_ratio
-            im = im.crop((left, top, right, bottom))  # Defines crop points
-            im.save(str(png_path))  # Saves the screenshot
+            width = driver.execute_script(script, element)
+            right = left + width * pixel_ratio
+        else:
+            right = left + size["width"] * pixel_ratio
+        bottom = top + size["height"] * pixel_ratio
+        im = im.crop((left, top, right, bottom))  # Defines crop points
+        im.save(str(png_path))  # Saves the screenshot
 
 
 _link_regex = re.compile(r"([^<]+)(?:<(.+?)>)?")
@@ -1000,7 +999,9 @@ def resolve_typer_reference(app, env, node, contnode):
         return problematic
 
 
-def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+def typer_ref_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+    options = options or {}
+    content = content or []
     env = inliner.document.settings.env
     title, link = _link_and_text(text)
     title = title.strip()
@@ -1035,7 +1036,7 @@ def typer_ref_role(name, rawtext, text, lineno, inliner, options={}, content=[])
         return [pending], []
 
 
-def setup(app: application.Sphinx) -> t.Dict[str, t.Any]:
+def setup(app: application.Sphinx) -> dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
     app.add_role("typer", typer_ref_role)

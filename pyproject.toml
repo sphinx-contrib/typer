@@ -103,11 +103,9 @@ test = [
     "beautifulsoup4>=4.13.5",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
-    "scikit-learn>=1.6.1",
     "pypdf>=6.1.0",
-    "scikit-image>=0.24.0",
     "numpy>=2.0.2",
-    "scipy>=1.13.1",
+    "pillow>=8.0.0",
 ]
 sphinx-6 = ["sphinx>=6.0,<7.0"]
 sphinx-7 = ["sphinx>=7.0,<8.0"]

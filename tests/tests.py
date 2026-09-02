@@ -9,13 +9,12 @@ from pathlib import Path
 import shutil
 import subprocess
 from bs4 import BeautifulSoup as bs
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from skimage import io
-from skimage.transform import resize
+from PIL import Image
 from pypdf import PdfReader
 import numpy as np
 import json
+import math
+from collections import Counter
 
 TYPER_VERISON = tuple(int(v) for v in typer_version.split("."))
 
@@ -40,17 +39,32 @@ def clear_callbacks():
         os.remove(TEST_CALLBACKS)
 
 
+_TOKEN = re.compile(r"(?u)\b\w\w+\b")
+
+
 def similarity(text1, text2):
     """
-    Compute the cosine similarity between two texts.
+    Compute the TF-IDF cosine similarity between two texts.
     https://en.wikipedia.org/wiki/Cosine_similarity
+
+    This mirrors the defaults of scikit-learn's TfidfVectorizer (lowercase,
+    ``\b\w\w+\b`` tokens, smoothed idf, l2 norm) without the dependency.
 
     We use this to lazily evaluate the output of --help to our
     renderings.
     """
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([text1, text2])
-    return cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+    docs = [Counter(_TOKEN.findall(text.lower())) for text in (text1, text2)]
+    n_docs = len(docs)
+    idf = {
+        word: math.log((1 + n_docs) / (1 + sum(word in doc for doc in docs))) + 1
+        for word in set(docs[0]) | set(docs[1])
+    }
+    vecs = [{word: count * idf[word] for word, count in doc.items()} for doc in docs]
+    norms = [math.sqrt(sum(v * v for v in vec.values())) for vec in vecs]
+    if not all(norms):
+        return 0.0
+    dot = sum(vecs[0][word] * vecs[1].get(word, 0.0) for word in vecs[0])
+    return dot / (norms[0] * norms[1])
 
 
 def pdf_text(pdf_path) -> t.List[str]:
@@ -68,17 +82,17 @@ def img_similarity(expected, to_compare):
     Higher values indicate less similarity.
     """
     img_a, img_b = resize_image_to_match(expected, to_compare)
-    io.imsave(str(expected.parent / f"resized_{expected.name}"), img_a)
+    Image.fromarray(img_a).save(expected.parent / f"resized_{expected.name}")
     err = np.sum((img_a.astype("float") - img_b.astype("float")) ** 2)
     err /= float(img_a.shape[0] * img_a.shape[1])
     return err
 
 
 def resize_image_to_match(source_image_path, target_image_path):
-    target = io.imread(target_image_path)[:, :, :3]
-    source = io.imread(source_image_path)[:, :, :3]
-    resized = resize(source, target.shape[0:2], anti_aliasing=True)
-    return np.clip(resized * 255, 0, 255).astype(np.uint8), target
+    target = np.asarray(Image.open(target_image_path).convert("RGB"))
+    source = Image.open(source_image_path).convert("RGB")
+    resized = source.resize((target.shape[1], target.shape[0]), Image.LANCZOS)
+    return np.asarray(resized), target
 
 
 def replace_in_file(file_path: str, search_string: str, replacement_string: str):

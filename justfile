@@ -184,12 +184,12 @@ fix: lint format
 check: check-lint check-format check-types check-package check-docs check-readme
 
 # run all checks including documentation link checking (slow)
-check-all: check check-docs-links
+check-all: check zizmor check-docs-links
 
 # run zizmor security analysis of CI
 zizmor:
     cargo install --locked zizmor
-    zizmor --format sarif .github/workflows/ > zizmor.sarif
+    zizmor --persona auditor --format sarif .github/workflows/ > zizmor.sarif
 
 # run tests
 test *TESTS:

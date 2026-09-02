@@ -82,6 +82,18 @@ def _filter_commands(ctx: click.Context, cmd_filter: list[str]):
     return [ctx.command.get_command(ctx, cmd_name) for cmd_name in cmd_filter]
 
 
+def _get_app(env):
+    """
+    Fetch the Sphinx application from the build environment.
+
+    ``BuildEnvironment.app`` was deprecated in Sphinx 9 (removal in 11) and
+    Sphinx itself now reaches the application through the private ``_app``
+    attribute. Prefer that, falling back to the public attribute on older
+    versions.
+    """
+    return getattr(env, "_app", None) or env.app
+
+
 def _add_dependency(env, command):
     cb = getattr(command, "callback", None)
     cb = getattr(cb, "__wrapped__", cb)
@@ -264,7 +276,7 @@ class TyperDirective(rst.Directive):
 
     @property
     def builder(self) -> str:
-        return self.env.app.builder.name
+        return _get_app(self.env).builder.name
 
     def uuid(self, normal_cmd: str) -> str:
         """
@@ -278,7 +290,7 @@ class TyperDirective(rst.Directive):
         # Contextual information
         source = self.state_machine.get_source_and_line()[0]
         line_number = self.state_machine.get_source_and_line()[1]
-        source = os.path.relpath(source, self.env.app.builder.srcdir)
+        source = os.path.relpath(source, self.env.srcdir)
         return hashlib.sha256(
             f"{source}.{line_number}[{normal_cmd}]".encode()
         ).hexdigest()[:8]
@@ -528,7 +540,7 @@ class TyperDirective(rst.Directive):
 
         def to_path(name: str, ext: str) -> Path:
             return (
-                Path(self.env.app.builder.outdir)
+                Path(_get_app(self.env).builder.outdir)
                 / f"{name.replace(':', '_').replace(' ', '_')}_{self.uuid(name)}.{ext}"
             )
 
@@ -540,9 +552,7 @@ class TyperDirective(rst.Directive):
 
         if self.typer_convert_png:
             png_path = to_path(normal_cmd, "png")
-            get_function(self.env.app.config.typer_convert_png)(
-                self, rendered, png_path
-            )
+            get_function(self.env.config.typer_convert_png)(self, rendered, png_path)
             section += nodes.image(
                 uri=os.path.relpath(png_path, doc_dir),
                 alt=section_title,
@@ -550,7 +560,7 @@ class TyperDirective(rst.Directive):
         elif self.target == RenderTarget.HTML:
             section += nodes.raw(
                 "",
-                get_function(self.env.app.config.typer_render_html)(
+                get_function(self.env.config.typer_render_html)(
                     self, normal_cmd, rendered
                 ),
                 format="html",
@@ -562,9 +572,7 @@ class TyperDirective(rst.Directive):
                 svg_path = to_path(normal_cmd, "svg")
                 pdf_path = to_path(normal_cmd, "pdf")
                 svg_path.write_text(rendered)
-                get_function(self.env.app.config.typer_svg2pdf)(
-                    self, rendered, pdf_path
-                )
+                get_function(self.env.config.typer_svg2pdf)(self, rendered, pdf_path)
                 section += nodes.image(
                     uri=os.path.relpath(pdf_path, doc_dir),
                     alt=section_title,
@@ -697,9 +705,7 @@ def typer_get_iframe_height(
     if height := directive.env.iframe_heights.get(normal_cmd, None):
         return height
 
-    with get_function(directive.env.app.config.typer_get_web_driver)(
-        directive
-    ) as driver:
+    with get_function(directive.env.config.typer_get_web_driver)(directive) as driver:
         # use base64 to avoid issues with special characters
         driver.get(
             f"data:text/html;base64,"
@@ -711,7 +717,7 @@ def typer_get_iframe_height(
                     "return document.documentElement.getBoundingClientRect().height"
                 )
             )
-            + directive.env.app.config.typer_iframe_height_padding
+            + directive.env.config.typer_iframe_height_padding
         )
     directive.env.iframe_heights[normal_cmd] = height
     return height
@@ -731,7 +737,7 @@ def typer_render_html(
     :param html_page: The html page rendered by console.export_html
     """
 
-    height = get_function(directive.env.app.config.typer_get_iframe_height)(
+    height = get_function(directive.env.config.typer_get_iframe_height)(
         directive, normal_cmd, html_page
     )
     return (
@@ -900,9 +906,7 @@ def typer_convert_png(
 
     tag = "code"
     with (
-        get_function(directive.env.app.config.typer_get_web_driver)(
-            directive
-        ) as driver,
+        get_function(directive.env.config.typer_get_web_driver)(directive) as driver,
         tempfile.NamedTemporaryFile(suffix=".html") as tmp,
     ):
         if directive.target is RenderTarget.TEXT:
@@ -977,7 +981,7 @@ def resolve_typer_reference(app, env, node, contnode):
     if target_id in env.domaindata["std"].get("typer", {}):
         docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
         refnode = make_refnode(
-            env.app.builder,
+            app.builder,
             node["refdoc"],
             docname,
             labelid,
@@ -1011,7 +1015,7 @@ def typer_ref_role(name, rawtext, text, lineno, inliner, options=None, content=N
     if target_id in env.domaindata["std"].get("typer", {}):
         docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
         refnode = make_refnode(
-            env.app.builder,
+            _get_app(env).builder,
             env.docname,
             docname,
             labelid,

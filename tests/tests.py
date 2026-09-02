@@ -48,7 +48,7 @@ def similarity(text1, text2):
     https://en.wikipedia.org/wiki/Cosine_similarity
 
     This mirrors the defaults of scikit-learn's TfidfVectorizer (lowercase,
-    ``\b\w\w+\b`` tokens, smoothed idf, l2 norm) without the dependency.
+    whole word tokens, smoothed idf, l2 norm) without the dependency.
 
     We use this to lazily evaluate the output of --help to our
     renderings.
@@ -395,7 +395,9 @@ def test_typer_ex_composite():
 
         # check navbar
         navitems = list(
-            bs(index_html.read_text()).find("div", class_="sphinxsidebar").find_all("a")
+            bs(index_html.read_text(), features="lxml")
+            .find("div", class_="sphinxsidebar")
+            .find_all("a")
         )
         assert navitems[1].text == "composite"
         assert navitems[2].text.strip() == "python -m cli.py repeat"

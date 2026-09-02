@@ -9,6 +9,9 @@ v0.9.2 (2026-08-03)
 
 * Python 3.15 compat
 * Linting fixes for latest ruff versions.
+* Fixed ``RemovedInSphinx11Warning`` deprecation warnings for
+  ``BuildEnvironment.app`` on Sphinx 9+.
+* **Breaking:** dropped support for Sphinx 6. Sphinx 7.0+ is now required.
 
 
 v0.9.1 (2026-06-29)

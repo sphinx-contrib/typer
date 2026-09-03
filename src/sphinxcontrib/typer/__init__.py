@@ -18,13 +18,14 @@ r"""
 
 """
 
-import base64
 import contextlib
 import hashlib
 import inspect
 import io
 import os
 import re
+import subprocess
+import sys
 import traceback
 import typing as t
 from contextlib import contextmanager
@@ -67,8 +68,8 @@ __license__ = "MIT"
 __copyright__ = "Copyright 2023-2026 Brian Kohan"
 
 
-SELENIUM_DEFAULT_WINDOW_WIDTH = 1920
-SELENIUM_DEFAULT_WINDOW_HEIGHT = 2048
+BROWSER_DEFAULT_VIEWPORT_WIDTH = 1920
+BROWSER_DEFAULT_VIEWPORT_HEIGHT = 2048
 
 
 def get_function(function: str | t.Callable[..., t.Any]):
@@ -700,10 +701,10 @@ def typer_get_iframe_height(
     1) Return the global iframe-height parameter if one was supplied as a parameter on the
        directive.
     2) Check for a cached height value.
-    3) Attempt to use Selenium to dynamically determine the height of the iframe. Padding will
-       be added from the config.typer_iframe_height_padding configuration value. The resulting
-       height is then cached if that path is not None. If the attempt to use Selenium fails
-       (it is not installed) a warning is issued and a default height of 600 is returned.
+    3) Render the page in a headless browser (see :func:`typer_get_page`) to dynamically
+       determine the height of the iframe. Padding will be added from the
+       config.typer_iframe_height_padding configuration value. The resulting height is then
+       cached.
 
     :param directive: The TyperDirective instance
     :param normal_cmd: The normalized name of the command.
@@ -719,17 +720,11 @@ def typer_get_iframe_height(
     if height := directive.env.iframe_heights.get(normal_cmd, None):
         return height
 
-    with get_function(directive.env.config.typer_get_web_driver)(directive) as driver:
-        # use base64 to avoid issues with special characters
-        driver.get(
-            f"data:text/html;base64,"
-            f"{base64.b64encode(html_page.encode('utf-8')).decode()}"
-        )
+    with get_function(directive.env.config.typer_get_page)(directive) as page:
+        page.set_content(html_page)
         height = (
             int(
-                driver.execute_script(
-                    "return document.documentElement.getBoundingClientRect().height"
-                )
+                page.evaluate("document.documentElement.getBoundingClientRect().height")
             )
             + directive.env.config.typer_iframe_height_padding
         )
@@ -785,200 +780,118 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
 
 
 @contextmanager
-def typer_get_web_driver(
-    directive: TyperDirective,
-    width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
-    height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT,
-) -> t.Any:
+def typer_install_browser(directive: TyperDirective) -> None:
     """
-    The default get_web_driver function. This function yields a selenium web driver
-    instance. It requires selenium to be installed.
+    Install the chromium browser used by playwright by running
+    ``python -m playwright install chromium`` in a subprocess with the active interpreter.
 
-    To override this function with a custom function see the ``typer_get_web_driver``
+    This is invoked automatically by :func:`typer_get_page` when the browser is missing
+    and the ``typer_playwright_install`` configuration value is enabled.
+
+    :param directive: The TyperDirective instance
+    """
+    directive.logger.info(
+        "sphinxcontrib-typer: installing the playwright chromium browser..."
+    )
+    subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium"], check=True
+    )
+
+
+@contextmanager
+def typer_get_page(
+    directive: TyperDirective,
+    width: int = BROWSER_DEFAULT_VIEWPORT_WIDTH,
+    height: int = BROWSER_DEFAULT_VIEWPORT_HEIGHT,
+) -> t.Iterator[t.Any]:
+    """
+    The default get_page function. This function yields a headless :pypi:`playwright`
+    chromium :class:`~playwright.sync_api.Page`. It requires playwright to be installed. If
+    the chromium browser has not been installed it will be installed on first use unless
+    the ``typer_playwright_install`` configuration value is False.
+
+    To override this function with a custom function see the ``typer_get_page``
     configuration parameter.
 
     .. note::
 
-        This must be implemented as a context manager that yields the webdriver
-        instance and cleans it up on exit!
+        This must be implemented as a context manager that yields the page instance and
+        cleans it up on exit!
 
     :param directive: The TyperDirective instance
+    :param width: The width of the browser viewport in pixels
+    :param height: The height of the browser viewport in pixels
     """
-    import platform
-
     try:
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options as ChromeOptions
-    except ImportError:
+        from playwright.sync_api import Error, sync_playwright
+    except ImportError as err:
         raise directive.severe(
-            "This feature requires selenium and webdriver-manager to be installed."
-        )
+            "This feature requires playwright to be installed. "
+            "Install the html or png extra: pip install sphinxcontrib-typer[html]"
+        ) from err
 
-    # Set up headless browser options
-    def opts(options=None):
-        options = options or ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument(f"--window-size={width}x{height}")
-        return options
+    def missing_browser(err: Exception) -> bool:
+        msg = str(err)
+        return "playwright install" in msg or "Executable doesn't exist" in msg
 
-    def chrome():
-        from selenium.webdriver.chrome.service import Service
-        from webdriver_manager.chrome import ChromeDriverManager
-
+    with sync_playwright() as playwright:
         try:
-            return webdriver.Chrome(options=opts())
-        except Exception:  # noqa: BLE001
-            return webdriver.Chrome(
-                service=Service(ChromeDriverManager().install()), options=opts()
-            )
-
-    def chromium():
-        from selenium.webdriver.chrome.service import Service as ChromiumService
-        from webdriver_manager.chrome import ChromeDriverManager
-        from webdriver_manager.core.os_manager import ChromeType
-
-        return webdriver.Chrome(
-            service=ChromiumService(
-                ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-            ),
-            options=opts(),
-        )
-
-    def firefox():
-        from selenium import webdriver
-        from selenium.webdriver.firefox.options import Options
-        from selenium.webdriver.firefox.service import Service as FirefoxService
-        from webdriver_manager.firefox import GeckoDriverManager
-
-        return webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=opts(Options()),
-        )
-
-    def edge():
-        from selenium.webdriver.edge.options import Options
-        from selenium.webdriver.edge.service import Service as EdgeService
-        from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
-        options = Options()
-        options.use_chromium = True
-        return webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=opts(options),
-        )
-
-    services = [
-        chrome,
-        edge if platform.system().lower() == "windows" else chromium,
-        firefox,
-    ]
-
-    driver = None
-    for service in services:
+            browser = playwright.chromium.launch()
+        except Error as err:
+            if not missing_browser(err):
+                raise
+            if not directive.env.config.typer_playwright_install:
+                raise directive.severe(
+                    "The playwright chromium browser is not installed, run: "
+                    "playwright install chromium"
+                ) from err
+            typer_install_browser(directive)
+            browser = playwright.chromium.launch()
         try:
-            driver = service()
-            break  # use the first one that works!
-        except Exception as err:  # noqa: BLE001
-            directive.debug(f"Unable to initialize webdriver {service.__name__}: {err}")
-
-    if driver:
-        yield driver
-        driver.quit()
-    else:
-        raise directive.severe("Unable to initialize any webdriver.")
+            yield browser.new_page(viewport={"width": width, "height": height})
+        finally:
+            browser.close()
 
 
 def typer_convert_png(
     directive: TyperDirective,
     rendered: str,
     png_path: str | Path,
-    selenium_width: int = SELENIUM_DEFAULT_WINDOW_WIDTH,
-    selenium_height: int = SELENIUM_DEFAULT_WINDOW_HEIGHT,
+    width: int = BROWSER_DEFAULT_VIEWPORT_WIDTH,
+    height: int = BROWSER_DEFAULT_VIEWPORT_HEIGHT,
 ):
     """
     The default typer_convert_png function. This function writes a png file to the given
-    path by taking a selenium screen shot. It requires selenium to be installed.
+    path by taking a screenshot of the rendered help in a headless browser (see
+    :func:`typer_get_page`). It requires playwright to be installed.
+
     To override this function with a custom function see the ``typer_convert_png``
     configuration parameter.
 
     :param directive: The TyperDirective instance
     :param rendered: The rendered command help. May be html, svg, or text.
     :param png_path: The path to write the png to
-    :param selenium_width: The width of the selenium window - must be larger than the png
-        to avoid cropping, default auto determine
-    :param selenium_height: The height of the selenium window - must be larger than the png
-        to avoid cropping, default auto determine
+    :param width: The width of the browser viewport, the screenshot is of the rendered
+        element only so this just needs to be larger than the help output.
+    :param height: The height of the browser viewport.
     """
-    import tempfile
-    from io import BytesIO
-
-    from PIL import Image
-    from selenium.webdriver.common.by import By
-
     tag = "code"
-    with (
-        get_function(directive.env.config.typer_get_web_driver)(directive) as driver,
-        tempfile.NamedTemporaryFile(suffix=".html") as tmp,
-    ):
-        if directive.target is RenderTarget.TEXT:
-            tag = "pre"
-            rendered = f"<html><body><pre>{rendered}</pre></body></html>"
-        elif directive.target is RenderTarget.SVG:
-            tag = "svg"
-            rendered = f"<html><body>{rendered}</body></html>"
+    if directive.target is RenderTarget.TEXT:
+        tag = "pre"
+        # inline-block so the element shrinks to the width of the text
+        rendered = (
+            "<html><body><pre style='display: inline-block; margin: 0;'>"
+            f"{rendered}</pre></body></html>"
+        )
+    elif directive.target is RenderTarget.SVG:
+        tag = "svg"
+        rendered = f"<html><body>{rendered}</body></html>"
 
-        tmp.write(rendered.encode("utf-8"))
-        tmp.flush()
-        driver.get(f"file://{tmp.name}")
-        png = driver.get_screenshot_as_png()
-        # Find the element you want a screenshot of
-        element = driver.find_element(By.CSS_SELECTOR, tag)
-        pixel_ratio = driver.execute_script("return window.devicePixelRatio")
-        # Get the element's location and size
-        location = element.location
-        size = element.size
-
-        if size["width"] > selenium_width or size["height"] > selenium_height:
-            # if our window is too small, resize it with some padding and try again
-            return typer_convert_png(
-                directive,
-                rendered,
-                png_path,
-                size["width"] + 100,
-                size["height"] + 100,
-            )
-
-        # Open the screenshot and crop it to the element
-        im = Image.open(BytesIO(png))
-        left = location["x"] * pixel_ratio
-        top = location["y"] * pixel_ratio
-        if directive.target is RenderTarget.TEXT:
-            # getting the width of the text is actually a bit tricky
-            script = """
-                    const pre = arguments[0];
-                    const textContent = pre.textContent || pre.innerText;
-                    const temporarySpan = document.createElement('span');
-                    document.body.appendChild(temporarySpan);
-
-                    // Copy styles to match formatting
-                    const preStyle = window.getComputedStyle(pre);
-                    temporarySpan.style.fontFamily = preStyle.fontFamily;
-                    temporarySpan.style.fontSize = preStyle.fontSize;
-                    temporarySpan.style.whiteSpace = 'pre';
-                    temporarySpan.textContent = textContent;
-
-                    return temporarySpan.offsetWidth;
-                """
-            width = driver.execute_script(script, element)
-            right = left + width * pixel_ratio
-        else:
-            right = left + size["width"] * pixel_ratio
-        bottom = top + size["height"] * pixel_ratio
-        im = im.crop((left, top, right, bottom))  # Defines crop points
-        im.save(str(png_path))  # Saves the screenshot
+    with get_function(directive.env.config.typer_get_page)(
+        directive, width, height
+    ) as page:
+        page.set_content(rendered)
+        page.locator(tag).first.screenshot(path=str(png_path))
 
 
 class TyperXRefRole(XRefRole):
@@ -1103,9 +1016,8 @@ def setup(app: application.Sphinx) -> dict[str, t.Any]:
     app.add_config_value(
         "typer_convert_png", "sphinxcontrib.typer.typer_convert_png", "env"
     )
-    app.add_config_value(
-        "typer_get_web_driver", "sphinxcontrib.typer.typer_get_web_driver", "env"
-    )
+    app.add_config_value("typer_get_page", "sphinxcontrib.typer.typer_get_page", "env")
+    app.add_config_value("typer_playwright_install", True, "env")
 
     return {
         "version": __version__,

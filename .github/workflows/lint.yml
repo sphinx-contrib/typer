@@ -65,6 +65,9 @@ jobs:
           PYTHON_PATH: ${{ steps.sp.outputs.python-path }}
         run: |
           just setup "$PYTHON_PATH"
+      - name: Install Playwright Browser
+        run: |
+          just run playwright install --with-deps chromium
       - name: Run Static Analysis
         run: |
           just check-lint

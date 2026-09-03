@@ -446,6 +446,108 @@ def test_typer_ex_nested_prog():
     assert "Usage: foo nested other [OPTIONS]" in blocks[3]
 
 
+class _FakeDirective:
+    """Minimal stand in for a TyperDirective for hook unit tests."""
+
+    class env:
+        class config:
+            typer_playwright_install = True
+
+    class _Logger:
+        def info(self, *args, **kwargs): ...
+
+        def warning(self, *args, **kwargs): ...
+
+    logger = _Logger()
+
+    def severe(self, message):
+        from docutils.parsers.rst import DirectiveError
+
+        return DirectiveError(4, message)
+
+
+def test_playwright_install_browser(monkeypatch):
+    """
+    typer_install_browser invokes playwright's cli through subprocess using
+    the running interpreter, so the browser lands in the active environment.
+    """
+    from sphinxcontrib import typer as sct
+
+    calls = []
+    monkeypatch.setattr(
+        sct.subprocess, "run", lambda *args, **kwargs: calls.append((args, kwargs))
+    )
+    sct.typer_install_browser(_FakeDirective())
+    assert calls == [
+        (
+            (([sys.executable, "-m", "playwright", "install", "chromium"],)),
+            {"check": True},
+        )
+    ]
+
+
+def _missing_browser(monkeypatch, fail_times):
+    """
+    Patch playwright's chromium launch to raise the missing executable error
+    the first fail_times calls, then delegate to the real launch.
+    """
+    from playwright.sync_api import BrowserType, Error
+
+    real_launch = BrowserType.launch
+    attempts = []
+
+    def launch(self, *args, **kwargs):
+        attempts.append(1)
+        if len(attempts) <= fail_times:
+            raise Error(
+                "BrowserType.launch: Executable doesn't exist at /nowhere/chrome\n"
+                "Please run the following command to download new browsers:\n"
+                "    playwright install"
+            )
+        return real_launch(self, *args, **kwargs)
+
+    monkeypatch.setattr(BrowserType, "launch", launch)
+    return attempts
+
+
+def test_playwright_auto_install(monkeypatch):
+    """
+    When the browser is missing, typer_get_page installs it and retries once.
+    """
+    from sphinxcontrib import typer as sct
+
+    attempts = _missing_browser(monkeypatch, fail_times=1)
+    installs = []
+    monkeypatch.setattr(sct, "typer_install_browser", lambda d: installs.append(d))
+
+    with sct.typer_get_page(_FakeDirective()) as page:
+        page.set_content("<html><body><p id='x'>hi</p></body></html>")
+        assert page.locator("#x").inner_text() == "hi"
+    assert len(installs) == 1
+    assert len(attempts) == 2
+
+
+def test_playwright_auto_install_disabled(monkeypatch):
+    """
+    With typer_playwright_install off the missing browser error is reported
+    as a directive error and no install is attempted.
+    """
+    from docutils.parsers.rst import DirectiveError
+    from sphinxcontrib import typer as sct
+
+    _missing_browser(monkeypatch, fail_times=1)
+    installs = []
+    monkeypatch.setattr(sct, "typer_install_browser", lambda d: installs.append(d))
+
+    directive = _FakeDirective()
+    directive.env.config.typer_playwright_install = False
+    with pytest.raises(DirectiveError) as exc:
+        with sct.typer_get_page(directive):
+            pass
+    assert "playwright install chromium" in exc.value.msg
+    assert installs == []
+
+
 def test_typer_ex_composite():
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     cli_py = EX_DIR / "cli.py"
@@ -614,8 +716,8 @@ def test_typer_render_html():
 
     assert check_callback("typer_render_html")
     assert check_callback("typer_get_iframe_height")
-    # the :iframe-height: option should short-circuit the selenium web driver
-    assert not check_callback("typer_get_web_driver")
+    # the :iframe-height: option should short-circuit the browser page hook
+    assert not check_callback("typer_get_page")
 
     if bld_dir.exists():
         shutil.rmtree(bld_dir.parent)
@@ -635,6 +737,8 @@ def test_typer_render_latex():
 
     assert check_callback("typer_svg2pdf")
     assert check_callback("typer_convert_png")
+    # png conversion is done with a screenshot from the browser page hook
+    assert check_callback("typer_get_page")
 
     # only the text render emits literal text into the latex source
     assert latex.count("Usage") == 1

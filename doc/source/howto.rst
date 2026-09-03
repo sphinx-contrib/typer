@@ -118,12 +118,15 @@ Render as HTML
 By default for html builders, svg output is generated. HTML output is also supported, but requires
 rendering the html output into an iframe to isolate the generated css. The iframe heights can be
 given directly using the :rst:dir:`typer:iframe-height` option - or dynamically calculated using
-:pypi:`selenium` and a web driver. To use the dynamic height calculation, you must install the html
-dependency set:
+:pypi:`playwright` and a headless browser. To use the dynamic height calculation, you must install
+the html dependency set:
 
 .. code-block:: bash
 
     pip install sphinxcontrib-typer[html]
+
+The chromium browser is downloaded automatically the first time it is needed unless
+:confval:`typer_playwright_install` is disabled.
 
 Otherwise provide the :rst:dir:`typer:iframe-height` option. Use :rst:dir:`typer:preferred` html to
 render the html output

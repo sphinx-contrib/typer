@@ -10,12 +10,20 @@ The basic library can be installed with pip:
     ?> pip install sphinxcontrib-typer
 
 There are several optional dependency sets that are involved in more advanced automated rendering.
-If you want to use :pypi:`selenium` to automatically determine the heights of the iframes when
+If you want to use :pypi:`playwright` to automatically determine the heights of the iframes when
 rendering in html you should install the html extras:
 
 .. code-block:: bash
 
     ?> pip install sphinxcontrib-typer[html]
+
+:pypi:`playwright` drives a headless chromium browser which must be downloaded separately. By
+default this is done automatically the first time it is needed (see
+:confval:`typer_playwright_install`), or you can install it yourself:
+
+.. code-block:: bash
+
+    ?> playwright install chromium
 
 If you wish to convert rendered docs to png images you'll need the png dependency set:
 

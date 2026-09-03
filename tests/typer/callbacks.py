@@ -16,9 +16,9 @@ def record_callback(callback):
     TEST_CALLBACKS.write_text(json.dumps(test_callbacks))
 
 
-def typer_get_web_driver(*args, **kwargs):
-    record_callback("typer_get_web_driver")
-    return typer.typer_get_web_driver(*args, **kwargs)
+def typer_get_page(*args, **kwargs):
+    record_callback("typer_get_page")
+    return typer.typer_get_page(*args, **kwargs)
 
 
 def typer_render_html(*args, **kwargs):

@@ -19,6 +19,14 @@ v0.10.0 (2026-XX-XX)
 * Fixed `When the same app is rendered using multiple themes the themes can step on each other. <https://github.com/sphinx-contrib/typer/issues/32>`_
 * Fixed `:prog: does not work in the nested case <https://github.com/sphinx-contrib/typer/issues/23>`_ - ``:prog:`` now replaces the full invocation path for commands nested more than one level deep.
 * Implemented `Update docs to show how to use typer directive from markdown <https://github.com/sphinx-contrib/typer/issues/47>`_
+* Implemented `switch from selenium to playwright <https://github.com/sphinx-contrib/typer/issues/49>`_
+
+  * The ``html`` and ``png`` extras now depend on :pypi:`playwright` instead of :pypi:`selenium`
+    and :pypi:`webdriver-manager`. The chromium browser is installed automatically on first use,
+    or run ``playwright install chromium`` (disable with ``typer_playwright_install = False``).
+  * **Breaking:** the ``typer_get_web_driver`` configuration hook has been replaced by
+    ``typer_get_page`` which must yield a :class:`playwright.sync_api.Page`.
+
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 

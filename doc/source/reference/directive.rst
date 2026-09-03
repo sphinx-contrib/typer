@@ -102,8 +102,8 @@ Directives
 
       The height of the iframe to use when rendering to *html*. When *html* rendering is embedded
       in an html page an iframe is used. The height of the iframe can be set with this parameter.
-      Alternatively, the height of the iframe can be dynamically determined if :pypi:`selenium` is
-      installed. See also iframe height cache.
+      Alternatively, the height of the iframe can be dynamically determined if :pypi:`playwright`
+      is installed. See also iframe height cache.
 
   .. rst:directive:option:: convert-png
       :type: text - a delimited list of builders

@@ -32,10 +32,15 @@ install-precommit:
 install *OPTS="--all-extras":
     uv sync {{ OPTS }}
     @just install-precommit
+    @just install-browser
 
 # install without extra dependencies
 install-basic:
     uv sync
+
+# install the headless chromium browser used by playwright for html/png rendering
+install-browser:
+    @just run playwright install chromium
 
 # install documentation dependencies
 _install-docs:

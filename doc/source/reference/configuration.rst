@@ -75,14 +75,28 @@ Configuration Attributes
    listed in the :rst:dir:`typer:convert-png:` parameter. See the default implementation
    :func:`~sphinxcontrib.typer.typer_convert_png`.
 
-.. confval:: typer_get_web_driver
-    :type: :code-py:`str | Callable[[TyperDirective, int, int], ContextManager[WebDriver]]`
-    :default: :code-py:`"sphinxcontrib.typer.typer_get_web_driver"`
+.. confval:: typer_get_page
+    :type: :code-py:`str | Callable[[TyperDirective, int, int], ContextManager[Page]]`
+    :default: :code-py:`"sphinxcontrib.typer.typer_get_page"`
 
-    A callable function to get a :pypi:`selenium` web driver. This function must be a context
-    manager and it must yield a :pypi:`selenium` web driver. It is used by other workflows that need
-    access to a webdriver. See the default implementation
-    :func:`~sphinxcontrib.typer.typer_get_web_driver`.
+    A callable function to get a :pypi:`playwright` browser page. This function must be a context
+    manager and it must yield a :class:`playwright.sync_api.Page`. It is used by other workflows
+    that need to render content in a browser (iframe height calculation and png conversion). See
+    the default implementation :func:`~sphinxcontrib.typer.typer_get_page`.
+
+    .. versionchanged:: 0.10.0
+
+        Replaces ``typer_get_web_driver`` which yielded a :pypi:`selenium` web driver.
+
+.. confval:: typer_playwright_install
+    :type: :code-py:`bool`
+    :default: :code-py:`True`
+
+    When the :pypi:`playwright` chromium browser is not installed, install it automatically by
+    running ``playwright install chromium`` in a subprocess the first time it is needed. Set to
+    :code-py:`False` to fail with an error instead.
+
+    .. versionadded:: 0.10.0
 
 
 Function Hooks
@@ -101,5 +115,6 @@ default behaviors. Your override functions must conform to these function signat
 .. autofunction:: sphinxcontrib.typer.typer_get_iframe_height
 .. autofunction:: sphinxcontrib.typer.typer_svg2pdf
 .. autofunction:: sphinxcontrib.typer.typer_convert_png
-.. autofunction:: sphinxcontrib.typer.typer_get_web_driver
+.. autofunction:: sphinxcontrib.typer.typer_get_page
+.. autofunction:: sphinxcontrib.typer.typer_install_browser
 

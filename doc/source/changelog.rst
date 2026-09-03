@@ -5,7 +5,16 @@ Change Log
 ==========
 
 v0.10.0 (2026-XX-XX)
-===================
+====================
+
+* Implemented `Look again at roles - are there builtin sphinx roles that would be more appropriate? <https://github.com/sphinx-contrib/typer/issues/52>`_
+
+  * Cross references are now backed by a ``typer`` Sphinx domain. References resolve correctly in
+    parallel builds (``-j``), stale targets are cleared on incremental rebuilds, commands are
+    exported to the intersphinx inventory and are resolvable via the ``:any:`` role.
+  * The ``:typer:`` role works for commands rendered without ``:make-sections:``.
+  * Link text is now rendered in code font, consistent with other Sphinx cross references.
+  * Unresolved references emit a standard Sphinx warning instead of an inline error node.
 
 * Drop support for Python 3.10
 

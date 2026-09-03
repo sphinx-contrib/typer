@@ -5,8 +5,12 @@ This tests that references to commands like :typer:`python -m cli-ref.py` work. 
 a section id style reference: :typer:`python-m-cli-ref-py`. You can also use link text: 
 :typer:`command <python -m cli-ref.py>`.
 
+Commands rendered without :make-sections: are also referenceable: :typer:`noref`
+and :typer:`no-sections <noref>`.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
    reference
+   nosections

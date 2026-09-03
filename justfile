@@ -87,7 +87,7 @@ _open-pdf-docs:
 
 # build pdf documentation
 build-docs-pdf:
-    @just run --group docs --extra pdf --exact --no-default-groups --isolated sphinx-build --fresh-env --builder latex --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/pdf
+    @just run --group docs --extra pdf --extra png --exact --no-default-groups --isolated sphinx-build --fresh-env --builder latex --doctree-dir ./doc/build/doctrees ./doc/source ./doc/build/pdf
     make -C ./doc/build/pdf
     @just _open-pdf-docs
 

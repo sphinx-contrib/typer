@@ -67,7 +67,7 @@ jobs:
           just setup "$PYTHON_PATH"
       - name: Install Playwright Browser
         run: |
-          just run playwright install --with-deps chromium
+          just run --all-extras python -m playwright install --with-deps chromium
       - name: Run Static Analysis
         run: |
           just check-lint

@@ -8,6 +8,8 @@ a section id style reference: :typer:`python-m-cli-ref-py`. You can also use lin
 Commands rendered without :make-sections: are also referenceable: :typer:`noref`
 and :typer:`no-sections <noref>`.
 
+The any role also resolves commands: :any:`python-m-cli-ref-py`.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:

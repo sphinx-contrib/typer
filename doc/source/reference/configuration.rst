@@ -101,10 +101,14 @@ Configuration Attributes
 
 .. confval:: typer_dark_theme
     :type: :code-py:`str | None`
-    :default: :code-py:`None`
+    :default: :code-py:`"auto"`
 
-    The default :rst:dir:`typer:dark-theme` for all typer directives. Set this to render every
-    help output for both light and dark theme modes, e.g. :code-py:`typer_dark_theme = "dark"`.
+    The default :rst:dir:`typer:dark-theme` for all typer directives. The default
+    :code-py:`"auto"` resolves to :code-py:`"dark"` when :confval:`sphinx:html_theme` is a theme
+    known to support light and dark modes (``furo``, ``pydata_sphinx_theme`` and
+    ``sphinx_book_theme``) and to :code-py:`None` otherwise. Set a theme name (see
+    :rst:dir:`typer:theme`) to render every help output for both modes regardless of the theme,
+    or :code-py:`None` to switch dual rendering off.
 
     .. versionadded:: 0.10.0
 

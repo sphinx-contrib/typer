@@ -599,9 +599,10 @@ def test_typer_ex_dark_theme_text_builder():
     assert index_txt.count("Usage:") == 4
 
 
-def test_typer_dark_theme_config_default(tmp_path):
+def _build_dark_project(tmp_path, html_theme, conf_lines=()):
     """
-    typer_dark_theme in conf.py applies to directives without :dark-theme:.
+    Build a one page project rendering a command with the given html theme and
+    extra conf.py lines, returning the number of light and dark svg renderings.
     """
     src = tmp_path / "src"
     src.mkdir()
@@ -610,7 +611,7 @@ def test_typer_dark_theme_config_default(tmp_path):
         f"sys.path.insert(0, {str(TYPER_EXAMPLES / 'composite')!r})\n"
         "project = 'dark'\n"
         "extensions = ['sphinxcontrib.typer']\n"
-        "typer_dark_theme = 'dark'\n"
+        f"html_theme = {html_theme!r}\n" + "".join(f"{line}\n" for line in conf_lines)
     )
     (src / "index.rst").write_text(
         "Dark\n====\n\n"
@@ -628,8 +629,50 @@ def test_typer_dark_theme_config_default(tmp_path):
     finally:
         sys.path[:] = sys_path
     soup = bs((tmp_path / "html" / "index.html").read_text(), "html.parser")
-    assert len(soup.select("div.only-light svg")) == 1
-    assert len(soup.select("div.only-dark svg")) == 1
+    return (
+        len(soup.select("div.typer-only-light svg")),
+        len(soup.select("div.typer-only-dark svg")),
+        len(soup.select("svg.rich-terminal")),
+    )
+
+
+def test_typer_dark_theme_config_default(tmp_path):
+    """
+    typer_dark_theme in conf.py applies to directives without :dark-theme:.
+    """
+    assert _build_dark_project(
+        tmp_path, "alabaster", ["typer_dark_theme = 'dark'"]
+    ) == (
+        1,
+        1,
+        2,
+    )
+
+
+def test_typer_dark_theme_auto_known_theme(tmp_path):
+    """
+    When typer_dark_theme is not set and html_theme is known to support light
+    and dark modes, the dark theme defaults to "dark".
+    """
+    assert _build_dark_project(tmp_path, "furo") == (1, 1, 2)
+
+
+def test_typer_dark_theme_auto_unknown_theme(tmp_path):
+    """
+    Themes not known to support dark mode render once by default.
+    """
+    assert _build_dark_project(tmp_path, "alabaster") == (0, 0, 1)
+
+
+def test_typer_dark_theme_explicit_off(tmp_path):
+    """
+    typer_dark_theme = None switches the automatic default off.
+    """
+    assert _build_dark_project(tmp_path, "furo", ["typer_dark_theme = None"]) == (
+        0,
+        0,
+        1,
+    )
 
 
 def test_typer_ex_composite():

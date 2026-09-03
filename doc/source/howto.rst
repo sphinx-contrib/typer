@@ -258,13 +258,21 @@ when the documentation is built, instead the help can be rendered once for each 
     :width: 65
     :convert-png: latex
 
-Any of the named :doc:`themes <themes>` may be used for either mode. To enable this for every
-directive in your project set :confval:`typer_dark_theme` in ``conf.py`` rather than repeating
-the option:
+.. note::
+
+    If your ``html_theme`` is one that is known to support light and dark modes (currently
+    ``furo``, ``pydata_sphinx_theme`` and ``sphinx_book_theme``) this happens automatically: the
+    default value of :confval:`typer_dark_theme` is ``"auto"`` which resolves to ``"dark"`` for
+    those themes, so you do not need to do anything.
+
+Any of the named :doc:`themes <themes>` may be used for either mode. To use a different dark
+theme, or to enable dual rendering for a theme that is not recognized automatically, set
+:confval:`typer_dark_theme` in ``conf.py`` rather than repeating the option on every directive.
+Set it to ``None`` to switch dual rendering off:
 
 .. code-block:: python
 
-    typer_dark_theme = "dark"
+    typer_dark_theme = "monokai"
 
 This works for both the svg and html (iframe) render targets. Themes that do not define the
 ``only-light`` and ``only-dark`` classes are covered by a small stylesheet installed by the

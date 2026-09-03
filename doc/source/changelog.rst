@@ -27,7 +27,9 @@ v0.10.0 (2026-XX-XX)
   * **Breaking:** the ``typer_get_web_driver`` configuration hook has been replaced by
     ``typer_get_page`` which must yield a :class:`playwright.sync_api.Page`.
 
-* Implemented `Support automatic light/dark theme switching based on Sphinx theme <https://github.com/sphinx-contrib/typer/issues/62>`_ - see the ``:dark-theme:`` option and ``typer_dark_theme`` config value.
+* Implemented `Support automatic light/dark theme switching based on Sphinx theme <https://github.com/sphinx-contrib/typer/issues/62>`_
+  - see the ``:dark-theme:`` option and ``typer_dark_theme`` config value. Dual light/dark
+  rendering is enabled automatically for ``furo``, ``pydata_sphinx_theme`` and ``sphinx_book_theme``.
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 

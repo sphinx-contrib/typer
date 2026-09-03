@@ -249,3 +249,37 @@ reference the :typer:`example-bar` subcommand from the :ref:`render_structure` s
 
 
 The format for the reference is ``prog(-subcommand)``
+
+.. _markdown:
+
+Use from Markdown
+-----------------
+
+If your documentation is written in Markdown using MyST_, the typer directive and role are
+available with MyST's directive and role syntax. The directive options are given as ``:option:``
+lines at the top of the fence:
+
+.. code-block:: markdown
+
+    ```{typer} examples.example:app
+    :prog: example
+    :width: 65
+    :show-nested:
+    :make-sections:
+    ```
+
+The colon fence form works as well if you have enabled the ``colon_fence`` extension in
+``myst_enable_extensions``:
+
+.. code-block:: markdown
+
+    :::{typer} examples.example:app:bar
+    :prog: example bar
+    :::
+
+Cross references use the MyST role syntax, with the same target formats and optional link text
+as the ``:typer:`` role:
+
+.. code-block:: markdown
+
+    See {typer}`example-bar` or {typer}`the bar subcommand <example-bar>`.

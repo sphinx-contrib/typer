@@ -17,7 +17,8 @@ v0.10.0 (2026-XX-XX)
   * Unresolved references emit a standard Sphinx warning instead of an inline error node.
 
 * Fixed `When the same app is rendered using multiple themes the themes can step on each other. <https://github.com/sphinx-contrib/typer/issues/32>`_
-* Fixed `Add entry point to docs <https://github.com/sphinx-contrib/typer/issues/23>`_ - ``:prog:`` now replaces the full invocation path for commands nested more than one level deep.
+* Fixed `:prog: does not work in the nested case <https://github.com/sphinx-contrib/typer/issues/23>`_ - ``:prog:`` now replaces the full invocation path for commands nested more than one level deep.
+* Implemented `Update docs to show how to use typer directive from markdown <https://github.com/sphinx-contrib/typer/issues/47>`_
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 

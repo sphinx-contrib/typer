@@ -20,6 +20,9 @@ You can also use a string identical to the :prog: setting to make the reference.
 
     :typer:`python -m progname.py subcommand1 subcommand2`
 
+From Markdown documents using MyST_ the role is written as ``{typer}`progname-subcommand1```,
+see :ref:`markdown`.
+
 Explicit link text may be given using the usual Sphinx syntax:
 
 .. code-block:: rst

@@ -46,6 +46,7 @@ from sphinx.domains import Domain, ObjType
 from sphinx.environment import BuildEnvironment
 from sphinx.roles import XRefRole
 from sphinx.util import logging
+from sphinx.util.fileutil import copy_asset_file
 from sphinx.util.nodes import make_refnode
 
 # As of typer 0.26 click is vendored into typer (typer._click). Typer commands
@@ -222,6 +223,7 @@ class TyperDirective(rst.Directive):
         "markup-mode": directives.unchanged,
         "width": directives.nonnegative_int,
         "theme": RenderTheme,
+        "dark-theme": RenderTheme,
         "svg-kwargs": directives.unchanged,
         "text-kwargs": directives.unchanged,
         "html-kwargs": directives.unchanged,
@@ -244,6 +246,7 @@ class TyperDirective(rst.Directive):
     parent: click.Context
 
     theme: RenderTheme = RenderTheme.LIGHT
+    dark_theme: RenderTheme | None = None
     preferred: RenderTarget | None = None
 
     markup_mode: MarkupMode
@@ -428,6 +431,37 @@ class TyperDirective(rst.Directive):
     def get_text(self, **options):
         return self.console.export_text(**{**options, "clear": False})
 
+    def themed_nodes(
+        self,
+        rendered: str,
+        export_options: dict[str, t.Any],
+        wrap: t.Callable[[str], nodes.Node],
+    ) -> list[nodes.Node]:
+        """
+        Wrap the rendered output for an html builder. When a dark theme is configured
+        the help is exported a second time with the dark theme and both renderings are
+        emitted inside containers that the theme (or our stylesheet) shows or hides
+        based on the active light/dark mode.
+
+        https://github.com/sphinx-contrib/typer/issues/62
+
+        :param rendered: The output rendered with the primary theme
+        :param export_options: The options the primary rendering was exported with
+        :param wrap: A callable producing the docutils node for a rendering
+        """
+        if not self.dark_theme or "html" not in self.builder:
+            return [wrap(rendered)]
+        dark_options = {**export_options, "theme": self.dark_theme.terminal_theme}
+        if self.target is RenderTarget.SVG:
+            dark_options["unique_id"] = f"{export_options['unique_id']}-dark"
+        dark = getattr(self, f"get_{self.target}")(**dark_options)
+        return [
+            nodes.container(
+                "", wrap(rendered), classes=["only-light", "typer-only-light"]
+            ),
+            nodes.container("", wrap(dark), classes=["only-dark", "typer-only-dark"]),
+        ]
+
     def generate_nodes(
         self,
         name: str,
@@ -568,16 +602,28 @@ class TyperDirective(rst.Directive):
                 alt=section_title,
             )
         elif self.target == RenderTarget.HTML:
-            section += nodes.raw(
-                "",
-                get_function(self.env.config.typer_render_html)(
-                    self, normal_cmd, rendered
-                ),
-                format="html",
+            section.extend(
+                self.themed_nodes(
+                    rendered,
+                    export_options,
+                    lambda html_page: nodes.raw(
+                        "",
+                        get_function(self.env.config.typer_render_html)(
+                            self, normal_cmd, html_page
+                        ),
+                        format="html",
+                    ),
+                )
             )
         elif self.target == RenderTarget.SVG:
             if "html" in self.builder:
-                section += nodes.raw("", rendered, format="html")
+                section.extend(
+                    self.themed_nodes(
+                        rendered,
+                        export_options,
+                        lambda svg: nodes.raw("", svg, format="html"),
+                    )
+                )
             else:
                 svg_path = to_path(normal_cmd, "svg")
                 pdf_path = to_path(normal_cmd, "pdf")
@@ -648,6 +694,8 @@ class TyperDirective(rst.Directive):
 
         self.preferred = self.options.get("preferred", None)
         self.theme = self.options.get("theme", self.theme)
+        dark_theme = self.options.get("dark-theme", self.env.config.typer_dark_theme)
+        self.dark_theme = RenderTheme(dark_theme) if dark_theme else None
 
         builder_targets = {}
         for builder_target in self.options.get("builders", "").split(":"):
@@ -997,6 +1045,14 @@ class TyperDomain(Domain):
             yield command_id, display_name, "command", docname, anchor, 1
 
 
+STATIC_CSS = Path(__file__).parent / "static" / "sphinxcontrib_typer.css"
+
+
+def _copy_static_css(app: application.Sphinx, exception: Exception | None) -> None:
+    if exception is None and app.builder.format == "html":
+        copy_asset_file(str(STATIC_CSS), str(Path(app.outdir) / "_static"))
+
+
 def setup(app: application.Sphinx) -> dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
@@ -1018,6 +1074,10 @@ def setup(app: application.Sphinx) -> dict[str, t.Any]:
     )
     app.add_config_value("typer_get_page", "sphinxcontrib.typer.typer_get_page", "env")
     app.add_config_value("typer_playwright_install", True, "env")
+    app.add_config_value("typer_dark_theme", None, "env")
+
+    app.add_css_file(STATIC_CSS.name)
+    app.connect("build-finished", _copy_static_css)
 
     return {
         "version": __version__,

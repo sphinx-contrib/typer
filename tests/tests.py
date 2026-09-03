@@ -548,6 +548,90 @@ def test_playwright_auto_install_disabled(monkeypatch):
     assert installs == []
 
 
+def _svg_class_prefixes(svg):
+    return set(re.findall(r"\.([\w-]+?)-r\d+ *\{", str(svg)))
+
+
+def test_typer_ex_dark_theme():
+    """
+    With :dark-theme: the help is rendered twice for html builders and wrapped
+    in only-light / only-dark containers so the active theme mode picks one.
+    https://github.com/sphinx-contrib/typer/issues/62
+    """
+    clear_callbacks()
+    html_dir, index_html = build_example("dark", "html", example_dir=TYPER_EXAMPLES)
+    soup = bs(index_html, "html.parser")
+
+    # svg: root + 2 nested subcommands, each rendered light and dark
+    light_svgs = soup.select("div.only-light.typer-only-light svg")
+    dark_svgs = soup.select("div.only-dark.typer-only-dark svg")
+    assert len(light_svgs) == 3
+    assert len(dark_svgs) == 3
+    for light, dark in zip(light_svgs, dark_svgs):
+        assert _svg_class_prefixes(light).isdisjoint(_svg_class_prefixes(dark))
+
+    # sections and their targets are not duplicated
+    ids = [sec.get("id") for sec in soup.find_all("section")]
+    for cmd in [
+        "composite-subgroup",
+        "composite-subgroup-echo",
+        "composite-subgroup-multiply",
+    ]:
+        assert ids.count(cmd) == 1
+
+    # html: one iframe per mode with different page backgrounds
+    light_iframes = soup.select("div.only-light iframe")
+    dark_iframes = soup.select("div.only-dark iframe")
+    assert len(light_iframes) == 1 and len(dark_iframes) == 1
+    assert light_iframes[0]["srcdoc"] != dark_iframes[0]["srcdoc"]
+
+    # the stylesheet that hides the inactive mode is installed and linked
+    assert (html_dir / "_static" / "sphinxcontrib_typer.css").is_file()
+    assert soup.find("link", href=re.compile(r"sphinxcontrib_typer\.css")) is not None
+
+
+def test_typer_ex_dark_theme_text_builder():
+    """
+    Non-html builders only render the primary theme.
+    """
+    clear_callbacks()
+    _, index_txt = build_example("dark", "text", example_dir=TYPER_EXAMPLES)
+    assert index_txt.count("Usage:") == 4
+
+
+def test_typer_dark_theme_config_default(tmp_path):
+    """
+    typer_dark_theme in conf.py applies to directives without :dark-theme:.
+    """
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "conf.py").write_text(
+        "import sys\n"
+        f"sys.path.insert(0, {str(TYPER_EXAMPLES / 'composite')!r})\n"
+        "project = 'dark'\n"
+        "extensions = ['sphinxcontrib.typer']\n"
+        "typer_dark_theme = 'dark'\n"
+    )
+    (src / "index.rst").write_text(
+        "Dark\n====\n\n"
+        ".. typer:: composite.cli.app:repeat\n"
+        "    :prog: composite repeat\n"
+        "    :preferred: svg\n"
+        "    :width: 65\n"
+    )
+    sys_path = list(sys.path)
+    try:
+        app = Sphinx(
+            src, src, tmp_path / "html", tmp_path / "doctrees", buildername="html"
+        )
+        app.build()
+    finally:
+        sys.path[:] = sys_path
+    soup = bs((tmp_path / "html" / "index.html").read_text(), "html.parser")
+    assert len(soup.select("div.only-light svg")) == 1
+    assert len(soup.select("div.only-dark svg")) == 1
+
+
 def test_typer_ex_composite():
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     cli_py = EX_DIR / "cli.py"

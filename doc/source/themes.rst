@@ -109,3 +109,30 @@ Blue Waves
     :theme: blue_waves
     :width: 65
     :convert-png: latex
+
+|
+
+.. _light_dark:
+
+Light and Dark Mode
+-------------------
+
+Sphinx themes that support both light and dark modes (e.g. Furo, pydata-sphinx-theme or
+sphinx-book-theme) switch modes in the browser, so the mode cannot be known when the docs are
+built. Use the :rst:dir:`typer:dark-theme` option to render the help for both modes, the rendering
+matching the active mode is shown and the other is hidden:
+
+.. code-block:: rst
+
+    .. typer:: examples.example:app
+        :theme: light
+        :dark-theme: dark
+
+.. typer:: examples.example:app
+    :theme: light
+    :dark-theme: dark
+    :width: 65
+    :convert-png: latex
+
+To do this for every directive set :confval:`typer_dark_theme` in your ``conf.py``. Toggle this
+page's theme to see the rendering above switch.

@@ -236,6 +236,43 @@ option. Refer to the :doc:`rich <rich:index>` documentation for more information
 options.
 
 
+.. _howto_light_dark:
+
+Render for Light and Dark Modes
+-------------------------------
+
+Many Sphinx themes (Furo, pydata-sphinx-theme, sphinx-book-theme) let the reader switch between
+light and dark modes in the browser. Since the mode is chosen at view time it cannot be detected
+when the documentation is built, instead the help can be rendered once for each mode using the
+:rst:dir:`typer:dark-theme` option. Only the rendering that matches the active mode is shown:
+
+.. code-block:: rst
+
+    .. typer:: examples.example:app
+        :theme: light
+        :dark-theme: dark
+
+.. typer:: examples.example:app
+    :theme: light
+    :dark-theme: dark
+    :width: 65
+    :convert-png: latex
+
+Any of the named :doc:`themes <themes>` may be used for either mode. To enable this for every
+directive in your project set :confval:`typer_dark_theme` in ``conf.py`` rather than repeating
+the option:
+
+.. code-block:: python
+
+    typer_dark_theme = "dark"
+
+This works for both the svg and html (iframe) render targets. Themes that do not define the
+``only-light`` and ``only-dark`` classes are covered by a small stylesheet installed by the
+extension that follows the ``data-theme`` attribute and the browser's color scheme preference.
+Builders other than html render the primary :rst:dir:`typer:theme` only.
+
+|
+
 .. _cross_references:
 
 Cross-Referencing Commands

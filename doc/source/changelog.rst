@@ -31,7 +31,8 @@ v0.10.0 (2026-09-03)
   - see the ``:dark-theme:`` option and ``typer_dark_theme`` config value. Dual light/dark
   rendering is enabled automatically for ``furo``, ``pydata_sphinx_theme`` and
   ``sphinx_book_theme``.
-* Fixed: a missing ``cairosvg`` package is now reported as an error when converting svg to pdf instead of silently producing no pdf.
+* Fixed: a missing ``cairosvg`` package is now reported as an error when converting svg to pdf
+  instead of silently producing no pdf.
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 

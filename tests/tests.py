@@ -428,6 +428,24 @@ def test_typer_ex_themes_do_not_collide():
     assert light.isdisjoint(dark), f"shared svg class prefixes: {light & dark}"
 
 
+def test_typer_ex_nested_prog():
+    """
+    :prog: must replace the entire invocation path, including for commands
+    nested more than one level deep, so the module name of the root app never
+    leaks into the usage line.
+    https://github.com/sphinx-contrib/typer/issues/23
+    """
+    clear_callbacks()
+    _, index_html = build_example("nested_prog", "html", example_dir=TYPER_EXAMPLES)
+    blocks = [pre.get_text() for pre in bs(index_html, "html.parser").find_all("pre")]
+    assert len(blocks) == 4
+    assert "__main__" not in index_html
+    assert "Usage: foo [OPTIONS]" in blocks[0]
+    assert "Usage: foo nested [OPTIONS]" in blocks[1]
+    assert "Usage: foo nested command [OPTIONS]" in blocks[2]
+    assert "Usage: foo nested other [OPTIONS]" in blocks[3]
+
+
 def test_typer_ex_composite():
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     cli_py = EX_DIR / "cli.py"

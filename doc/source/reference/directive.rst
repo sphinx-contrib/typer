@@ -43,7 +43,8 @@ Directives
       The script invocation name to use in the rendered help text. This parameter is optional,
       the directive will attempt to infer the name but this is not always possible to do reliably
       solely from the source code. If the name cannot be inferred, this parameter should be
-      supplied.
+      supplied. When rendering a subcommand this is the full invocation up to and including the
+      subcommand, for example ``:prog: mytool nested command``.
 
   .. rst:directive:option:: make-sections
       :type: flag

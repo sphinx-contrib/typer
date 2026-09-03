@@ -99,6 +99,16 @@ Configuration Attributes
     .. versionadded:: 0.10.0
 
 
+.. confval:: typer_dark_theme
+    :type: :code-py:`str | None`
+    :default: :code-py:`None`
+
+    The default :rst:dir:`typer:dark-theme` for all typer directives. Set this to render every
+    help output for both light and dark theme modes, e.g. :code-py:`typer_dark_theme = "dark"`.
+
+    .. versionadded:: 0.10.0
+
+
 Function Hooks
 --------------
 

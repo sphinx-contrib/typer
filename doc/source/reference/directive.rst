@@ -136,6 +136,19 @@ Directives
         * red_sands
         * blue_waves
 
+  .. rst:directive:option:: dark-theme
+      :type: text
+
+      **default**: :confval:`typer_dark_theme`
+
+      A second named theme (see :rst:dir:`typer:theme`) to use when the reader's Sphinx theme is
+      in dark mode. When given, html builders render the help twice and wrap the renderings in
+      ``only-light`` and ``only-dark`` containers so the theme (or the stylesheet shipped with this
+      extension) shows the one matching the active mode. Other builders use :rst:dir:`typer:theme`.
+      See :ref:`light_dark`.
+
+      .. versionadded:: 0.10.0
+
   .. rst:directive:option:: console-kwargs
       :type: text
 

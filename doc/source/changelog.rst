@@ -7,7 +7,7 @@ Change Log
 v0.10.0 (2026-XX-XX)
 ====================
 
-* Implemented `Look again at roles - are there builtin sphinx roles that would be more appropriate? <https://github.com/sphinx-contrib/typer/issues/52>`_
+* Implemented `Refactor the role to be more idiomatic. <https://github.com/sphinx-contrib/typer/issues/52>`_
 
   * Cross references are now backed by a ``typer`` Sphinx domain. References resolve correctly in
     parallel builds (``-j``), stale targets are cleared on incremental rebuilds, commands are
@@ -17,6 +17,7 @@ v0.10.0 (2026-XX-XX)
   * Unresolved references emit a standard Sphinx warning instead of an inline error node.
 
 * Drop support for Python 3.10
+* Drop support for Sphinx 7
 
 v0.9.2 (2026-09-02)
 ===================

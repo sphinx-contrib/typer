@@ -29,7 +29,8 @@ v0.10.0 (2026-XX-XX)
 
 * Implemented `Support automatic light/dark theme switching based on Sphinx theme <https://github.com/sphinx-contrib/typer/issues/62>`_
   - see the ``:dark-theme:`` option and ``typer_dark_theme`` config value. Dual light/dark
-  rendering is enabled automatically for ``furo``, ``pydata_sphinx_theme`` and ``sphinx_book_theme``.
+  rendering is enabled automatically for ``furo``, ``pydata_sphinx_theme`` and
+  ``sphinx_book_theme``.
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 

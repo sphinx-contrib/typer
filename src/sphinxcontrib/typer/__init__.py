@@ -33,7 +33,6 @@ from html import escape as html_escape
 from importlib import import_module
 from importlib.util import find_spec
 from pathlib import Path
-from pprint import pformat
 
 from docutils import nodes
 from docutils.parsers import rst
@@ -42,7 +41,9 @@ from rich import terminal_theme as rich_theme
 from rich.console import Console
 from rich.theme import Theme
 from sphinx import application
-from sphinx.addnodes import pending_xref
+from sphinx.domains import Domain, ObjType
+from sphinx.environment import BuildEnvironment
+from sphinx.roles import XRefRole
 from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 
@@ -466,12 +467,10 @@ class TyperDirective(rst.Directive):
                 names=[nodes.fully_normalize_name(section_title)],
             )
             if self.make_sections
-            else nodes.container()
+            else nodes.container(ids=[section_id])
         )
-        self.env.domaindata["std"].setdefault("typer", {})[section_id] = (
-            self.env.docname,
-            section_id,
-            normal_cmd,
+        t.cast(TyperDomain, self.env.get_domain(TyperDomain.name)).note_command(
+            section_id, normal_cmd
         )
 
         # Summary
@@ -967,84 +966,114 @@ def typer_convert_png(
         im.save(str(png_path))  # Saves the screenshot
 
 
-_link_regex = re.compile(r"([^<]+)(?:<(.+?)>)?")
+class TyperXRefRole(XRefRole):
+    """
+    The ``:typer:`` cross-reference role. Accepts either the section id form
+    (``prog-subcommand``) or the invocation form (``prog subcommand``) and
+    normalizes both to the id that :class:`TyperDirective` registers. When
+    no explicit link text is given the rendered link shows the full command
+    invocation.
+    """
+
+    def run(self) -> tuple[list[nodes.Node], list[nodes.system_message]]:
+        # route the short ``:typer:`` form into the typer domain
+        self.name = f"{TyperDomain.name}:command"
+        return super().run()
+
+    def process_link(
+        self,
+        env: BuildEnvironment,
+        refnode: nodes.Element,
+        has_explicit_title: bool,
+        title: str,
+        target: str,
+    ) -> tuple[str, str]:
+        return title.strip(), nodes.make_id(target.strip())
 
 
-def _link_and_text(text):
-    return _link_regex.search(text).groups()
+class TyperDomain(Domain):
+    """
+    Sphinx domain holding the cross-reference targets registered by the
+    :class:`TyperDirective` so that references survive parallel reads,
+    are cleared on incremental rebuilds, and are exported to the
+    intersphinx inventory.
+    """
 
+    name = "typer"
+    label = "Typer"
 
-def resolve_typer_reference(app, env, node, contnode):
-    if node["reftype"] != "typer":
-        return
-    target_id = node["reftarget"]
-    if target_id in env.domaindata["std"].get("typer", {}):
-        docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
-        refnode = make_refnode(
-            app.builder,
-            node["refdoc"],
-            docname,
-            labelid,
-            nodes.Text(node["reftitle"] or sectionname.strip()),
-            target_id,
+    object_types: t.ClassVar[dict[str, ObjType]] = {
+        "command": ObjType("Typer command", "command")
+    }
+    roles: t.ClassVar[dict[str, t.Any]] = {"command": TyperXRefRole(warn_dangling=True)}
+    initial_data: t.ClassVar[dict[str, dict[str, tuple[str, str, str]]]] = {
+        # command id -> (docname, anchor, display name)
+        "commands": {}
+    }
+
+    @property
+    def commands(self) -> dict[str, tuple[str, str, str]]:
+        return self.data.setdefault("commands", {})
+
+    def note_command(self, command_id: str, display_name: str) -> None:
+        self.commands[command_id] = (self.env.docname, command_id, display_name)
+
+    def clear_doc(self, docname: str) -> None:
+        for command_id, (doc, _, _) in list(self.commands.items()):
+            if doc == docname:
+                del self.commands[command_id]
+
+    def merge_domaindata(self, docnames: set[str], otherdata: dict[str, t.Any]) -> None:
+        for command_id, entry in otherdata.get("commands", {}).items():
+            if entry[0] in docnames:
+                self.commands[command_id] = entry
+
+    def resolve_xref(
+        self,
+        env: BuildEnvironment,
+        fromdocname: str,
+        builder: t.Any,
+        typ: str,
+        target: str,
+        node: nodes.Element,
+        contnode: nodes.Element,
+    ) -> nodes.reference | None:
+        entry = self.commands.get(target)
+        if not entry:
+            return None
+        docname, anchor, display_name = entry
+        if not node.get("refexplicit"):
+            contnode = nodes.literal(
+                display_name, display_name, classes=contnode.get("classes", [])
+            )
+        return make_refnode(
+            builder, fromdocname, docname, anchor, contnode, display_name
         )
-        return refnode
-    else:
-        lineno = node.line or getattr(node.parent, "line", 0)
-        error_message = env.get_doctree(node["refdoc"]).reporter.error(
-            f"Unresolved :typer: reference: '{target_id}' in document '{node['refdoc']}'. "
-            f"Expected one of: {pformat(list(env.domaindata['std'].get('typer', {}).keys()), indent=2)}",
-            line=lineno,
-        )
-        msgid = node.document.set_id(error_message, node.parent)
-        problematic = nodes.problematic(node.rawsource, node.rawsource, refid=msgid)
-        prbid = node.document.set_id(problematic)
-        error_message.add_backref(prbid)
-        return problematic
 
+    def resolve_any_xref(
+        self,
+        env: BuildEnvironment,
+        fromdocname: str,
+        builder: t.Any,
+        target: str,
+        node: nodes.Element,
+        contnode: nodes.Element,
+    ) -> list[tuple[str, nodes.reference]]:
+        refnode = self.resolve_xref(
+            env, fromdocname, builder, "command", nodes.make_id(target), node, contnode
+        )
+        return [(f"{self.name}:command", refnode)] if refnode else []
 
-def typer_ref_role(name, rawtext, text, lineno, inliner, options=None, content=None):
-    options = options or {}
-    content = content or []
-    env = inliner.document.settings.env
-    title, link = _link_and_text(text)
-    title = title.strip()
-    if link:
-        link = link.strip()
-    target_id = nodes.make_id(link or title)
-    if target_id in env.domaindata["std"].get("typer", {}):
-        docname, labelid, sectionname = env.domaindata["std"]["typer"][target_id]
-        refnode = make_refnode(
-            _get_app(env).builder,
-            env.docname,
-            docname,
-            labelid,
-            nodes.Text(sectionname.strip() if not link else title),
-            target_id,
-        )
-        return [refnode], []
-    else:
-        pending = pending_xref(
-            rawtext,
-            refdomain="std",
-            reftype="typer",
-            reftarget=target_id,
-            modname=None,
-            classname=None,
-            refexplicit=True,
-            refwarn=True,
-            reftitle=title if link else None,
-            refdoc=env.docname,
-        )
-        pending += nodes.Text(text)
-        return [pending], []
+    def get_objects(self) -> t.Iterator[tuple[str, str, str, str, str, int]]:
+        for command_id, (docname, anchor, display_name) in self.commands.items():
+            yield command_id, display_name, "command", docname, anchor, 1
 
 
 def setup(app: application.Sphinx) -> dict[str, t.Any]:
     # Need autodoc to support mocking modules
     app.add_directive("typer", TyperDirective)
-    app.add_role("typer", typer_ref_role)
-    app.connect("missing-reference", resolve_typer_reference)
+    app.add_domain(TyperDomain)
+    app.add_role("typer", TyperXRefRole(warn_dangling=True))
 
     app.add_config_value(
         "typer_render_html", "sphinxcontrib.typer.typer_render_html", "env"

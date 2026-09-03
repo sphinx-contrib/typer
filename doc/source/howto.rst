@@ -235,11 +235,12 @@ options.
 
 .. _cross_references:
 
-Cross-Reference with :make-sections:
-------------------------------------
+Cross-Referencing Commands
+--------------------------
 
-When using the :rst:dir:`typer:make-sections` option, a section will be generated for each
-subcommand. You can cross reference these sections using the ``:typer:`` role. For example, to
+Every command rendered by the :rst:dir:`typer` directive can be cross referenced using the
+``:typer:`` role. When the :rst:dir:`typer:make-sections` option is used the reference links to
+the generated section, otherwise it links to the rendered help output. For example, to
 reference the :typer:`example-bar` subcommand from the :ref:`render_structure` section above:
 
 .. code-block:: rst

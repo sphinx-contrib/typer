@@ -1,5 +1,6 @@
 import pytest
 import re
+import sys
 from sphinx.application import Sphinx
 from sphinx import version_info as sphinx_version
 from typer import __version__ as typer_version
@@ -164,6 +165,7 @@ def build_example(
     clean_first=True,
     subprocess=False,
     project=None,
+    parallel=0,
 ):
     cwd = os.getcwd()
     ex_dir = example_dir / name
@@ -180,6 +182,7 @@ def build_example(
             bld_dir / builder,
             bld_dir / "doctrees",
             buildername=builder,
+            parallel=parallel,
         )
 
         assert app.config.typer_iframe_height_padding == 40
@@ -301,6 +304,108 @@ def test_typer_ex_reference():
 
     assert ref3.text == "command"
     assert ref3.attrs["href"] == "reference.html#python-m-cli-ref-py"
+
+
+def _reference_links(index_html):
+    """Return the anchors in the two reference paragraphs of the reference index."""
+    index = bs(index_html, "html.parser")
+    paragraphs = index.find_all("section")[0].find_all("p")
+    return paragraphs[0].find_all("a"), paragraphs[1].find_all("a")
+
+
+def test_typer_ex_reference_parallel():
+    """
+    Cross references must survive a parallel read, where each worker process
+    records targets into its own copy of the environment and the domain has
+    to merge them back together.
+    """
+    clear_callbacks()
+    _, index_html = build_example(
+        "reference", "html", example_dir=TYPER_EXAMPLES, parallel=2
+    )
+    refs, no_section_refs = _reference_links(index_html)
+    assert [ref.attrs["href"] for ref in refs] == [
+        "reference.html#python-m-cli-ref-py"
+    ] * 3
+    assert [ref.attrs["href"] for ref in no_section_refs] == [
+        "nosections.html#noref"
+    ] * 2
+
+
+def test_typer_ex_reference_no_sections():
+    """
+    A command rendered without :make-sections: must still be a valid
+    reference target, and the anchor it points at must exist on the page.
+    """
+    clear_callbacks()
+    html_dir, index_html = build_example(
+        "reference", "html", example_dir=TYPER_EXAMPLES
+    )
+    _, refs = _reference_links(index_html)
+    assert [ref.attrs["href"] for ref in refs] == ["nosections.html#noref"] * 2
+    assert refs[0].text == "noref"
+    assert refs[1].text == "no-sections"
+
+    target_page = bs((html_dir / "nosections.html").read_text(), "html.parser")
+    assert target_page.find(id="noref") is not None
+
+
+def test_typer_ex_reference_inventory():
+    """
+    Commands are exported to objects.inv so intersphinx can link to them.
+    """
+    from sphinx.util.inventory import InventoryFile
+
+    clear_callbacks()
+    html_dir, _ = build_example("reference", "html", example_dir=TYPER_EXAMPLES)
+    with open(html_dir / "objects.inv", "rb") as f:
+        inv = InventoryFile.load(f, "", os.path.join)
+    commands = inv["typer:command"]
+
+    def uri(item):
+        # Sphinx < 8.2 uses plain tuples, newer versions use _InventoryItem
+        return item.uri if hasattr(item, "uri") else item[2]
+
+    assert uri(commands["python-m-cli-ref-py"]) == "reference.html#python-m-cli-ref-py"
+    assert uri(commands["noref"]) == "nosections.html#noref"
+
+
+def test_typer_reference_stale_targets_cleared(tmp_path):
+    """
+    When a document is re-read on an incremental build, targets it previously
+    contributed must be dropped so a renamed command does not linger.
+    """
+    src = tmp_path / "src"
+    shutil.copytree(
+        TYPER_EXAMPLES / "reference", src, ignore=shutil.ignore_patterns("build")
+    )
+    (src / "conf.py").write_text(
+        "import sys, pathlib\n"
+        "sys.path.insert(0, str(pathlib.Path(__file__).parent))\n"
+        "project = 'stale'\n"
+        "extensions = ['sphinxcontrib.typer']\n"
+    )
+
+    def build():
+        app = Sphinx(
+            src, src, tmp_path / "html", tmp_path / "doctrees", buildername="html"
+        )
+        app.build()
+        return app.env.domaindata["typer"]["commands"]
+
+    # conf.py above modifies sys.path, don't let that leak into other tests
+    sys_path = list(sys.path)
+    try:
+        commands = build()
+        assert "noref" in commands
+        assert commands["noref"][0] == "nosections"
+
+        replace_in_file(src / "nosections.rst", ":prog: noref", ":prog: renamed")
+        commands = build()
+        assert "renamed" in commands
+        assert "noref" not in commands
+    finally:
+        sys.path[:] = sys_path
 
 
 def test_typer_ex_composite():

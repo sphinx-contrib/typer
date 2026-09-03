@@ -69,6 +69,11 @@ __license__ = "MIT"
 __copyright__ = "Copyright 2023-2026 Brian Kohan"
 
 
+# html themes known to support switching between light and dark modes using a
+# data-theme attribute and the only-light / only-dark classes - when html_theme is
+# one of these, typer_dark_theme = "auto" resolves to "dark"
+DARK_MODE_THEMES = frozenset({"furo", "pydata_sphinx_theme", "sphinx_book_theme"})
+
 BROWSER_DEFAULT_VIEWPORT_WIDTH = 1920
 BROWSER_DEFAULT_VIEWPORT_HEIGHT = 2048
 
@@ -695,6 +700,12 @@ class TyperDirective(rst.Directive):
         self.preferred = self.options.get("preferred", None)
         self.theme = self.options.get("theme", self.theme)
         dark_theme = self.options.get("dark-theme", self.env.config.typer_dark_theme)
+        if dark_theme == "auto":
+            dark_theme = (
+                RenderTheme.DARK
+                if self.env.config.html_theme in DARK_MODE_THEMES
+                else None
+            )
         self.dark_theme = RenderTheme(dark_theme) if dark_theme else None
 
         builder_targets = {}
@@ -1074,7 +1085,7 @@ def setup(app: application.Sphinx) -> dict[str, t.Any]:
     )
     app.add_config_value("typer_get_page", "sphinxcontrib.typer.typer_get_page", "env")
     app.add_config_value("typer_playwright_install", True, "env")
-    app.add_config_value("typer_dark_theme", None, "env")
+    app.add_config_value("typer_dark_theme", "auto", "env")
 
     app.add_css_file(STATIC_CSS.name)
     app.connect("build-finished", _copy_static_css)

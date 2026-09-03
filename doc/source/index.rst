@@ -78,7 +78,7 @@ For example, commands and subcommands are renderable separately in four differen
 |
 
 .. typer:: examples.example.app:bar
-   :width: 92
+   :width: 90
    :preferred: text
    :convert-png: latex
 

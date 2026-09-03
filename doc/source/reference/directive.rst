@@ -139,7 +139,8 @@ Directives
   .. rst:directive:option:: dark-theme
       :type: text
 
-      **default**: :confval:`typer_dark_theme`
+      **default**: :confval:`typer_dark_theme` (``dark`` for themes known to support dark mode,
+      otherwise off)
 
       A second named theme (see :rst:dir:`typer:theme`) to use when the reader's Sphinx theme is
       in dark mode. When given, html builders render the help twice and wrap the renderings in

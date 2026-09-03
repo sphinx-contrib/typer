@@ -532,10 +532,19 @@ class TyperDirective(rst.Directive):
             getattr(self, f"{self.target}_kwargs", {}), f"{self.target}-kwargs"
         )
 
-        rendered = getattr(self, f"get_{self.target}")(
-            **({"title": section_title} if self.target is RenderTarget.SVG else {}),
-            **export_options,
-        )
+        if self.target is RenderTarget.SVG:
+            export_options = {
+                "title": section_title,
+                # rich derives the svg css class prefix from a hash of the content,
+                # so two renderings of the same command that differ only by theme
+                # would share class names and restyle each other when embedded in
+                # the same page - use a prefix unique to this directive instance.
+                # https://github.com/sphinx-contrib/typer/issues/32
+                "unique_id": f"typer-{self.uuid(normal_cmd)}",
+                **export_options,
+            }
+
+        rendered = getattr(self, f"get_{self.target}")(**export_options)
 
         def to_path(name: str, ext: str) -> Path:
             return (

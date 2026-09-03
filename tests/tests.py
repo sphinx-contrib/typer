@@ -1,3 +1,4 @@
+import io
 import pytest
 import re
 import sys
@@ -672,6 +673,276 @@ def test_typer_dark_theme_explicit_off(tmp_path):
         0,
         0,
         1,
+    )
+
+
+def _build_project(
+    tmp_path, index_rst, conf_lines=(), buildername="html", html_theme="alabaster"
+):
+    """
+    Build a one page project from the given index.rst and extra conf.py lines.
+    Returns the rendered index and the captured sphinx warnings.
+    """
+    src = tmp_path / "src"
+    src.mkdir(parents=True, exist_ok=True)
+    (src / "conf.py").write_text(
+        "\n".join(
+            [
+                "import sys",
+                f"sys.path.insert(0, {str(TYPER_EXAMPLES / 'composite')!r})",
+                f"sys.path.insert(0, {str(TYPER_EXAMPLES / 'options')!r})",
+                "project = 'proj'",
+                "extensions = ['sphinxcontrib.typer']",
+                f"html_theme = {html_theme!r}",
+                *conf_lines,
+            ]
+        )
+        + "\n"
+    )
+    (src / "index.rst").write_text(index_rst)
+    warnings = io.StringIO()
+    sys_path = list(sys.path)
+    try:
+        app = Sphinx(
+            src,
+            src,
+            tmp_path / "out",
+            tmp_path / "doctrees",
+            buildername=buildername,
+            status=None,
+            warning=warnings,
+        )
+        app.build()
+    finally:
+        sys.path[:] = sys_path
+    ext = {"html": "html", "text": "txt", "xml": "xml"}[buildername]
+    # running many Sphinx apps in one process re-registers nodes/directives,
+    # those warnings are noise for our purposes
+    warnings = "\n".join(
+        line
+        for line in warnings.getvalue().splitlines()
+        if "already registered" not in line
+    )
+    return (tmp_path / "out" / f"index.{ext}").read_text(), warnings
+
+
+_REPEAT = """Index
+=====
+
+.. typer:: composite.cli.app:repeat
+    :prog: composite repeat
+    :width: 65
+{options}
+"""
+
+
+def test_typer_any_role():
+    """
+    Commands resolve through the builtin :any: role.
+    """
+    clear_callbacks()
+    _, index_html = build_example("reference", "html", example_dir=TYPER_EXAMPLES)
+    paragraphs = bs(index_html, "html.parser").find_all("section")[0].find_all("p")
+    (ref,) = paragraphs[2].find_all("a")
+    assert ref.attrs["href"] == "reference.html#python-m-cli-ref-py"
+    assert ref.text == "python -m cli-ref.py"
+
+
+def test_typer_builders_option(tmp_path):
+    """
+    :builders: overrides the render target for the given builder.
+    """
+    html, warnings = _build_project(
+        tmp_path, _REPEAT.format(options="    :builders: html=text")
+    )
+    assert not warnings
+    soup = bs(html, "html.parser")
+    assert not soup.select("svg.rich-terminal")
+    assert "Usage: composite repeat" in soup.find("pre").get_text()
+
+
+def test_typer_unknown_builder_falls_back_to_text(tmp_path):
+    """
+    Builders with no configured render targets fall back to text output.
+    """
+    xml, warnings = _build_project(
+        tmp_path, _REPEAT.format(options=""), buildername="xml"
+    )
+    assert not warnings
+    assert "<literal_block" in xml
+    assert "Usage: composite repeat" in xml
+
+
+def test_typer_markup_mode_option(tmp_path):
+    """
+    :markup-mode: controls how rich markup in help text is interpreted.
+    """
+    page = """Index
+=====
+
+.. typer:: options_cli.app:hello
+    :prog: hello
+    :preferred: text
+    :width: 65
+{options}
+"""
+    markdown, warnings = _build_project(
+        tmp_path / "markdown", page.format(options="    :markup-mode: markdown")
+    )
+    assert not warnings
+    assert (
+        "Say [bold]hello[/bold]." in bs(markdown, "html.parser").find("pre").get_text()
+    )
+
+    rich, warnings = _build_project(
+        tmp_path / "rich", page.format(options="    :markup-mode: rich")
+    )
+    assert not warnings
+    assert "[bold]" not in rich
+    assert "Say hello." in bs(rich, "html.parser").find("pre").get_text()
+
+
+def test_typer_hidden_command(tmp_path):
+    """
+    A directive pointed at a hidden command renders nothing.
+    """
+    html, warnings = _build_project(
+        tmp_path,
+        "Index\n=====\n\n.. typer:: options_cli.app:secret\n    :preferred: text\n",
+    )
+    assert not warnings
+    assert "Usage:" not in html
+
+
+def test_typer_callable_render_options(tmp_path):
+    """
+    The *-kwargs options may point at a callable returning the kwargs dict, and
+    a callable returning anything else is reported.
+    """
+    html, warnings = _build_project(
+        tmp_path / "good",
+        _REPEAT.format(
+            options="    :preferred: svg\n    :svg-kwargs: options_cli.svg_kwargs"
+        ),
+    )
+    assert not warnings
+    svg = bs(html, "html.parser").select_one("svg.rich-terminal")
+    title = svg.find("text").get_text().replace("\xa0", " ")
+    assert title == "custom title for composite repeat"
+
+    _, warnings = _build_project(
+        tmp_path / "bad",
+        _REPEAT.format(
+            options="    :preferred: svg\n    :svg-kwargs: options_cli.bad_kwargs"
+        ),
+    )
+    assert "Invalid svg-kwargs, must be a dict or callable" in warnings
+
+
+def test_typer_callable_config_hook(tmp_path):
+    """
+    Render hooks may be configured as callables instead of import strings.
+    """
+    html, _ = _build_project(
+        tmp_path,
+        _REPEAT.format(options="    :preferred: html"),
+        conf_lines=[
+            "def typer_render_html(directive, normal_cmd, html_page):",
+            "    return f'<div class=\"hooked\">{normal_cmd}</div>'",
+        ],
+    )
+    soup = bs(html, "html.parser")
+    assert soup.find("div", class_="hooked").get_text() == "composite repeat"
+    assert not soup.find("iframe")
+
+
+def test_typer_import_errors(tmp_path):
+    """
+    Import failures are reported with the reason.
+    """
+    page = """Index
+=====
+
+.. typer:: nonexistent.module:app
+    :preferred: text
+
+.. typer:: options_raises.app
+    :preferred: text
+
+.. typer:: options_exit.app
+    :preferred: text
+
+.. typer:: options_cli.not_an_app
+    :preferred: text
+"""
+    _, warnings = _build_project(tmp_path, page)
+    assert 'Failed to import "nonexistent.module:app"' in warnings
+    assert "boom during import" in warnings
+    assert "The module appeared to call sys.exit()" in warnings
+    assert "is not a Typer app or command" in warnings
+
+
+def test_playwright_other_launch_errors_propagate(monkeypatch):
+    """
+    Launch errors other than a missing browser are not swallowed or retried.
+    """
+    from playwright.sync_api import BrowserType, Error
+    from sphinxcontrib import typer as sct
+
+    def launch(self, *args, **kwargs):
+        raise Error("something else went wrong")
+
+    monkeypatch.setattr(BrowserType, "launch", launch)
+    installs = []
+    monkeypatch.setattr(sct, "typer_install_browser", lambda d: installs.append(d))
+    with pytest.raises(Error, match="something else"):
+        with sct.typer_get_page(_FakeDirective()):
+            pass
+    assert installs == []
+
+
+def test_playwright_not_installed(monkeypatch):
+    """
+    A missing playwright package is reported as a directive error.
+    """
+    from docutils.parsers.rst import DirectiveError
+    from sphinxcontrib import typer as sct
+
+    monkeypatch.setitem(sys.modules, "playwright.sync_api", None)
+    with pytest.raises(DirectiveError) as exc:
+        with sct.typer_get_page(_FakeDirective()):
+            pass
+    assert "requires playwright" in exc.value.msg
+
+
+def test_cairosvg_not_installed(monkeypatch, tmp_path):
+    """
+    A missing cairosvg package is reported as a directive error rather than
+    silently producing no pdf.
+    """
+    from docutils.parsers.rst import DirectiveError
+    from sphinxcontrib import typer as sct
+
+    monkeypatch.setitem(sys.modules, "cairosvg", None)
+    with pytest.raises(DirectiveError) as exc:
+        sct.typer_svg2pdf(_FakeDirective(), "<svg/>", tmp_path / "out.pdf")
+    assert "cairosvg must be installed" in exc.value.msg
+    assert not (tmp_path / "out.pdf").exists()
+
+
+def test_typer_command_factory(tmp_path):
+    """
+    The directive accepts a callable returning a click command.
+    """
+    html, warnings = _build_project(
+        tmp_path,
+        "Index\n=====\n\n.. typer:: options_cli.command_factory\n    :prog: factory\n"
+        "    :preferred: text\n    :width: 65\n",
+    )
+    assert not warnings
+    assert (
+        "Usage: factory [OPTIONS] COMMAND [ARGS]..."
+        in bs(html, "html.parser").find("pre").get_text()
     )
 
 

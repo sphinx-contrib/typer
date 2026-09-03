@@ -834,8 +834,11 @@ def typer_svg2pdf(directive: TyperDirective, svg_contents: str, pdf_path: str):
         import cairosvg
 
         cairosvg.svg2pdf(bytestring=svg_contents, write_to=str(pdf_path))
-    except ImportError:
-        directive.severe("cairosvg must be installed to render SVG in pdfs")
+    except ImportError as err:
+        raise directive.severe(
+            "cairosvg must be installed to render SVG in pdfs. "
+            "Install the pdf extra: pip install sphinxcontrib-typer[pdf]"
+        ) from err
 
 
 @contextmanager

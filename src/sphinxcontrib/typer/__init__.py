@@ -105,7 +105,8 @@ def _add_dependency(env, command):
 def _command_path(ctx: click.Context | None):
     parts = []
     while ctx:
-        parts.append(ctx.info_name)
+        if ctx.info_name:
+            parts.append(ctx.info_name)
         ctx = ctx.parent
     return ":".join(reversed(parts))
 
@@ -677,10 +678,15 @@ class TyperDirective(rst.Directive):
 
         parent = getattr(self, "parent", None)
         if parent and self.options.get("prog", None):
-            # we unset this because we're not at the root command and this gets
-            # messed up for whatever reason
+            # :prog: is the full invocation, so blank out the names of all
+            # ancestor contexts - otherwise the (unreliable) inferred name of
+            # the root app leaks into the usage line for nested commands
             # https://github.com/sphinx-contrib/typer/issues/24
-            parent.info_name = ""
+            # https://github.com/sphinx-contrib/typer/issues/23
+            ancestor: click.Context | None = parent
+            while ancestor:
+                ancestor.info_name = ""
+                ancestor = ancestor.parent
         return self.generate_nodes(self.prog_name, command, parent)
 
 

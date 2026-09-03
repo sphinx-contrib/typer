@@ -408,6 +408,26 @@ def test_typer_reference_stale_targets_cleared(tmp_path):
         sys.path[:] = sys_path
 
 
+def test_typer_ex_themes_do_not_collide():
+    """
+    Two renderings of the same command at the same width but with different
+    themes must not share SVG CSS class names, otherwise the inline styles of
+    one restyle the other when both are embedded in the same page.
+    https://github.com/sphinx-contrib/typer/issues/32
+    """
+    clear_callbacks()
+    _, index_html = build_example("themes", "html", example_dir=TYPER_EXAMPLES)
+    svgs = bs(index_html, "html.parser").find_all("svg")
+    assert len(svgs) == 2
+
+    def class_prefixes(svg):
+        return set(re.findall(r"\.([\w-]+?)-r\d+ *\{", str(svg)))
+
+    light, dark = (class_prefixes(svg) for svg in svgs)
+    assert light and dark
+    assert light.isdisjoint(dark), f"shared svg class prefixes: {light & dark}"
+
+
 def test_typer_ex_composite():
     EX_DIR = TYPER_EXAMPLES / "composite/composite"
     cli_py = EX_DIR / "cli.py"

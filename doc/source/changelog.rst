@@ -16,6 +16,7 @@ v0.10.0 (2026-XX-XX)
   * Link text is now rendered in code font, consistent with other Sphinx cross references.
   * Unresolved references emit a standard Sphinx warning instead of an inline error node.
 
+* Fixed `When the same app is rendered using multiple themes the themes can step on each other. <https://github.com/sphinx-contrib/typer/issues/32>`_
 * Drop support for Python 3.10
 * Drop support for Sphinx 7
 
